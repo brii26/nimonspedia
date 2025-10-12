@@ -3,6 +3,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # TODO
+    container_name: nimonspedia-web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=nimonspedia
+      - POSTGRES_USER=nimonspedia_user
+      - POSTGRES_PASSWORD=nimonspedia_pass
+    networks:
+      - nimonspedia-network
+      
   db:
-# TODO
+    image: postgres:16-alpine
+    container_name: nimonspedia-db
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: nimonspedia
+      POSTGRES_USER: nimonspedia_user
+      POSTGRES_PASSWORD: nimonspedia_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - nimonspedia-network
+
+volumes:
+  postgres_data:
+
+networks:
+  nimonspedia-network:
+    driver: bridge
