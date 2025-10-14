@@ -33,4 +33,36 @@ class Database {
         $stmt->execute($params);
         return $stmt;
     }
+    
+    /**
+     * Execute SELECT query and return all results
+     */
+    public function select($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Execute SELECT query and return single result
+     */
+    public function selectOne($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Execute INSERT query and return last insert ID
+     */
+    public function insert($sql, $params = []) {
+        $this->query($sql, $params);
+        return $this->connection->lastInsertId();
+    }
+    
+    /**
+     * Execute UPDATE/DELETE query and return affected rows
+     */
+    public function execute($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        return $stmt->rowCount();
+    }
 }

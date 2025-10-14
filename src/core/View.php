@@ -58,7 +58,8 @@ class View {
      * Format currency (Indonesian Rupiah)
      */
     public static function currency($amount) {
-        return 'Rp ' . number_format($amount, 0, ',', '.');
+        $amount = $amount ?? 0;
+        return 'Rp ' . number_format((float)$amount, 0, ',', '.');
     }
     
     /**

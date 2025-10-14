@@ -1,6 +1,12 @@
 <?php
 
 class AuthController extends BaseController {
+    private $userRepository;
+    
+    public function __construct() {
+        parent::__construct();
+        $this->userRepository = new UserRepository();
+    }
     
     /**
      * Show login form
@@ -22,9 +28,72 @@ class AuthController extends BaseController {
             $this->redirect('/dashboard');
         }
         
-        echo "<h1>Register Page</h1>";
-        echo "<p>This is a test register page - AuthController is working!</p>";
-        echo "<p><a href='/login'>Go to Login</a></p>";
+        $this->render('pages/auth/register');
+    }
+    
+    /**
+     * Process registration
+     */
+    public function register() {
+        try {
+            // Verify CSRF token
+            $this->verifyCsrf();
+            
+            // Validate input
+            $this->validate($this->getPost(), [
+                'name' => ['required', 'min:2', 'max:100'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'min:6'],
+                'password_confirmation' => 'required',
+                'role' => ['required', 'in:BUYER,SELLER'],
+                'address' => ['required', 'min:10']
+            ]);
+            
+            $postData = $this->getPost();
+            
+            // Check password confirmation
+            if ($postData['password'] !== $postData['password_confirmation']) {
+                throw new Exception('Password confirmation does not match');
+            }
+            
+            // Check if email already exists
+            if ($this->userRepository->emailExists($postData['email'])) {
+                throw new Exception('Email already registered');
+            }
+            
+            // Create user
+            $userData = [
+                'name' => $postData['name'],
+                'email' => $postData['email'],
+                'password' => $postData['password'], // Will be hashed in repository
+                'role' => $postData['role'],
+                'address' => $postData['address']
+            ];
+            
+            $userId = $this->userRepository->createUser($userData);
+            
+            if (!$userId) {
+                throw new Exception('Failed to create account');
+            }
+            
+            // Get created user and login
+            $user = $this->userRepository->find($userId);
+            Auth::login($user);
+            
+            // Redirect based on role
+            $this->redirect('/dashboard');
+            
+        } catch (ValidationException $e) {
+            $this->render('pages/auth/register', [
+                'errors' => $e->getErrors(),
+                'old' => $this->getPost()
+            ]);
+        } catch (Exception $e) {
+            $this->render('pages/auth/register', [
+                'error' => $e->getMessage(),
+                'old' => $this->getPost()
+            ]);
+        }
     }
     
     /**

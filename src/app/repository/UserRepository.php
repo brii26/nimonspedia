@@ -4,6 +4,13 @@ class UserRepository extends BaseRepository {
     protected $table = 'users';
     
     /**
+     * Override primary key for users table
+     */
+    protected function getPrimaryKey() {
+        return 'user_id';
+    }
+    
+    /**
      * Find user by email
      */
     public function findByEmail($email) {

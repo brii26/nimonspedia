@@ -9,7 +9,11 @@ class Auth {
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['name'];
         $_SESSION['email'] = $user['email'];
+        $_SESSION['balance'] = $user['balance'] ?? 0;
         $_SESSION['login_time'] = time();
+        
+        // Regenerate session ID for security
+        session_regenerate_id(true);
     }
     
     /**
@@ -36,7 +40,8 @@ class Auth {
             'user_id' => $_SESSION['user_id'],
             'role' => $_SESSION['role'],
             'name' => $_SESSION['name'],
-            'email' => $_SESSION['email']
+            'email' => $_SESSION['email'],
+            'balance' => $_SESSION['balance'] ?? 0
         ];
     }
     
