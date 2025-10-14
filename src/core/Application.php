@@ -22,18 +22,22 @@ class Application {
         // Autoloader untuk semua class
         spl_autoload_register(function ($class_name) {
             $directories = [
-                __DIR__ . '/',                          // core/
-                __DIR__ . '/../app/controllers/',       // controllers/
-                __DIR__ . '/../app/models/',            // models/
+                __DIR__ . '/',
+                __DIR__ . '/../app/controllers/',
+                __DIR__ . '/../app/models/',
+                __DIR__ . '/../app/repository/',
+                __DIR__ . '/../app/services/',
             ];
             
             foreach ($directories as $directory) {
                 $file = $directory . $class_name . '.php';
-                if (file_exists($file)) {
+                if (file_exists($directory) && file_exists($file)) {
                     require_once $file;
                     return;
                 }
             }
+            
+            error_log("Class not found: {$class_name}");
         });
     }
     
@@ -49,10 +53,11 @@ class Application {
         $this->router = new Router();
     }
     
+    // Tolong lengkapin cokkk
     private function setupRoutes() {
         $this->router->get('/', 'HomeController@index');
         
-        // Auth routes
+        // Auth routes (Track 1)
         $this->router->get('/login', 'AuthController@loginForm');
         $this->router->post('/login', 'AuthController@login');
         $this->router->get('/register', 'AuthController@registerForm');
@@ -64,32 +69,33 @@ class Application {
         $this->router->get('/profile', 'AuthController@profileForm');
         $this->router->post('/profile', 'AuthController@updateProfile');
         $this->router->post('/profile/password', 'AuthController@changePassword');
-        $this->router->post('/balance/topup', 'AuthController@topup');
+        $this->router->post('/balance/topup', 'AuthController@topUp');
         
-        // Product discovery routes
-        $this->router->get('/products', 'ProductController@index');
-        $this->router->get('/products/{id}', 'ProductController@show');
-        $this->router->get('/stores/{id}', 'StoreController@show');
+        // Product discovery routes (Track 2)
+        // $this->router->get('/products', 'ProductController@index');
+        // $this->router->get('/products/{id}', 'ProductController@show');
+        // $this->router->get('/stores/{id}', 'StoreController@show');
         
-        // Cart routes
-        $this->router->get('/cart', 'CartController@index');
-        $this->router->post('/cart/add', 'CartController@add');
-        $this->router->post('/cart/update', 'CartController@update');
-        $this->router->post('/cart/remove', 'CartController@remove');
+        // Cart routes (Track 2) 
+        // $this->router->get('/cart', 'CartController@index');
+        // $this->router->post('/cart/add', 'CartController@add');
+        // $this->router->post('/cart/update', 'CartController@update');
+        // $this->router->post('/cart/remove', 'CartController@remove');
         
-        // Order routes
-        $this->router->get('/orders', 'OrderController@index');
-        $this->router->post('/checkout', 'OrderController@checkout');
+        // Order routes (Track 2 & 3)
+        // $this->router->get('/orders', 'OrderController@index');
+        // $this->router->post('/checkout', 'OrderController@checkout');
         
-        // Seller routes
-        $this->router->get('/seller/products', 'SellerController@products');
-        $this->router->get('/seller/products/add', 'SellerController@addProductForm');
-        $this->router->post('/seller/products', 'SellerController@storeProduct');
-        $this->router->get('/seller/orders', 'SellerController@orders');
+        // Seller routes (Track 3 - TODO)
+        // $this->router->get('/seller/products', 'SellerController@products');
+        // $this->router->get('/seller/products/add', 'SellerController@addProductForm');
+        // $this->router->post('/seller/products', 'SellerController@storeProduct');
+        // $this->router->get('/seller/orders', 'SellerController@orders');
         
-        // API routes for AJAX
-        $this->router->post('/api/cart/update', 'CartController@updateQuantity');
-        $this->router->post('/api/balance/check', 'AuthController@checkBalance');
+        // API routes for AJAX (TODO)
+        // $this->router->get('/api/cart/count', 'CartController@count');
+        // $this->router->post('/api/cart/update', 'CartController@updateQuantity');
+        // $this->router->get('/api/balance/check', 'AuthController@checkBalance');
     }
     
     public function run() {
