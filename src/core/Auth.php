@@ -22,6 +22,17 @@ class Auth {
         
         session_regenerate_id(false);
     }
+
+    public static function updateSession($user) {
+        if (self::check()) {
+            $_SESSION['name'] = $user['name'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['address'] = $user['address'];
+            if (isset($user['balance'])) {
+                $_SESSION['balance'] = $user['balance'];
+            }
+        }
+    }
     
     /**
      * Logout user and destroy session

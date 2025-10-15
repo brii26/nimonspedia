@@ -12,11 +12,9 @@ class AuthController extends BaseController {
      * Show login form
      */
     public function loginForm() {
-        // Redirect if already logged in
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        
         $this->render('pages/auth/login');
     }
     
@@ -27,7 +25,6 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        
         $this->render('pages/auth/register');
     }
     
@@ -37,10 +34,17 @@ class AuthController extends BaseController {
     public function register() {
         try {
             $this->verifyCsrf();
-            
             $postData = $this->getPost();
+
+            $this->validate($postData, [
+                'name' => ['required', 'min:2', 'max:100'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'min:6'],
+                'password_confirmation' => 'required',
+                'role' => ['required', 'in:BUYER,SELLER'],
+                'address' => ['required', 'min:10']
+            ]);
             
-            $this->authService->validateRegistrationData($postData);
             $user = $this->authService->register($postData);
             
             Auth::login($user);
@@ -60,18 +64,13 @@ class AuthController extends BaseController {
     }
     
     /**
-     * Show dashboard (requires auth)
+     * Show dashboard
      */
     public function dashboard() {
         $this->requireAuth();
-        
         $user = Auth::user();
-        
-        if ($user['role'] === 'SELLER') {
-            $this->render('pages/dashboard/seller', ['user' => $user]);
-        } else {
-            $this->render('pages/dashboard/buyer', ['user' => $user]);
-        }
+        $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
+        $this->render($view, ['user' => $user]);
     }
     
     /**
@@ -80,10 +79,13 @@ class AuthController extends BaseController {
     public function login() {
         try {
             $this->verifyCsrf();
-            
             $postData = $this->getPost();
             
-            $this->authService->validateLoginData($postData);
+            $this->validate($postData, [
+                'email' => ['required', 'email'],
+                'password' => 'required'
+            ]);
+            
             $user = $this->authService->login($postData['email'], $postData['password']);
             
             Auth::login($user);
@@ -115,11 +117,8 @@ class AuthController extends BaseController {
      */
     public function profileForm() {
         $this->requireAuth();
-        
-        $user = Auth::user();
-        $userDetails = $this->authService->getUserById($user['user_id']);
-        
-        $this->render('pages/auth/profile', ['user' => $userDetails]);
+        $user = $this->authService->getUserById(Auth::id());
+        $this->render('pages/auth/profile', ['user' => $user]);
     }
     
     /**
@@ -130,11 +129,15 @@ class AuthController extends BaseController {
         
         try {
             $this->verifyCsrf();
-            
             $postData = $this->getPost();
-            $userId = Auth::user()['user_id'];
+            
+            $this->validate($postData, [
+                'name' => ['required', 'min:2', 'max:100'],
+                'email' => ['required', 'email'],
+                'address' => ['required', 'min:10']
+            ]);
 
-            $updatedUser = $this->authService->updateProfile($userId, $postData);
+            $updatedUser = $this->authService->updateProfile(Auth::id(), $postData);
             Auth::updateSession($updatedUser);
             
             $this->render('pages/auth/profile', [
@@ -145,8 +148,7 @@ class AuthController extends BaseController {
         } catch (Exception $e) {
             $this->render('pages/auth/profile', [
                 'error' => $e->getMessage(),
-                'old' => $this->getPost(),
-                'user' => $this->authService->getUserById(Auth::user()['user_id'])
+                'user' => $this->authService->getUserById(Auth::id())
             ]);
         }
     }
@@ -159,12 +161,16 @@ class AuthController extends BaseController {
         
         try {
             $this->verifyCsrf();
-            
             $postData = $this->getPost();
-            $userId = Auth::user()['user_id'];
+            
+            $this->validate($postData, [
+                'current_password' => 'required',
+                'new_password' => ['required', 'min:6'],
+                'confirm_password' => 'required'
+            ]);
             
             $this->authService->changePassword(
-                $userId,
+                Auth::id(),
                 $postData['current_password'],
                 $postData['new_password'],
                 $postData['confirm_password']
@@ -173,7 +179,7 @@ class AuthController extends BaseController {
             $this->json(['success' => true, 'message' => 'Password changed successfully']);
             
         } catch (Exception $e) {
-            $this->json(['success' => false, 'message' => $e->getMessage()]);
+            $this->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
     
@@ -182,20 +188,23 @@ class AuthController extends BaseController {
      */
     public function topUp() {
         $this->requireAuth();
+        $this->requireRole('BUYER');
         
         try {
             $this->verifyCsrf();
-            
             $postData = $this->getPost();
-            $userId = Auth::user()['user_id'];
             
-            $newBalance = $this->authService->topUpBalance($userId, $postData['amount']);
-            $_SESSION['balance'] = $newBalance;
+            $this->validate($postData, [
+                'amount' => ['required', 'numeric']
+            ]);
             
-            $this->json(['success' => true, 'new_balance' => $newBalance]);
+            $updatedUser = $this->authService->topUpBalance(Auth::id(), $postData['amount']);
+            Auth::updateSession($updatedUser);
+            
+            $this->json(['success' => true, 'new_balance' => $updatedUser['balance']]);
             
         } catch (Exception $e) {
-            $this->json(['success' => false, 'message' => $e->getMessage()]);
+            $this->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
 }
