@@ -64,7 +64,7 @@ class ProductRepository extends BaseRepository {
         }
         // Filter based on category id
         if (!empty($options['categoryId'])) {
-            $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_item WHERE category_id = ?)";
+            $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_items WHERE category_id = ?)";
             $params[] = $options['categoryId'];
         }
         // Filter minimum price
@@ -92,8 +92,8 @@ class ProductRepository extends BaseRepository {
     private function countFilteredProducts($whereSql, $params) {
         $sql = "
             SELECT COUNT(DISTINCT p.product_id) as total 
-            FROM product p
-            LEFT JOIN category_item ci ON p.product_id = ci.product_id
+            FROM products p
+            LEFT JOIN category_items ci ON p.product_id = ci.product_id
             {$whereSql}
         ";
         
@@ -113,9 +113,9 @@ class ProductRepository extends BaseRepository {
     private function getFilteredProductsPage($whereSql, $params, $limit, $offset) {
         $sql = "
             SELECT p.*, s.store_name
-            FROM product p
-            JOIN store s ON p.store_id = s.store_id
-            LEFT JOIN category_item ci ON p.product_id = ci.product_id
+            FROM products p
+            JOIN stores s ON p.store_id = s.store_id
+            LEFT JOIN category_items ci ON p.product_id = ci.product_id
             {$whereSql}
             GROUP BY p.product_id, s.store_name
             ORDER BY p.created_at DESC
@@ -138,13 +138,13 @@ class ProductRepository extends BaseRepository {
                 s.store_name,
                 GROUP_CONCAT(c.name SEPARATOR ', ') as categories
             FROM 
-                product p
+                products p
             JOIN 
-                store s ON p.store_id = s.store_id
+                stores s ON p.store_id = s.store_id
             LEFT JOIN 
-                category_item ci ON p.product_id = ci.product_id
+                category_items ci ON p.product_id = ci.product_id
             LEFT JOIN 
-                category c ON ci.category_id = c.category_id
+                categories c ON ci.category_id = c.category_id
             WHERE 
                 p.product_id = ? AND p.deleted_at IS NULL
             GROUP BY
