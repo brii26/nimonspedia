@@ -59,10 +59,41 @@ class Database {
     }
     
     /**
-     * Execute UPDATE/DELETE query and return affected rows
+     * Execute a query and return affected rows
      */
     public function execute($sql, $params = []) {
-        $stmt = $this->query($sql, $params);
-        return $stmt->rowCount();
+        try {
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount();
+        } catch (PDOException $e) {
+            throw new Exception("Database error: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Execute UPDATE query and return affected rows
+     */
+    public function update($sql, $params = []) {
+        try {
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount();
+        } catch (PDOException $e) {
+            throw new Exception("Database error: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Execute DELETE query and return affected rows
+     */
+    public function delete($sql, $params = []) {
+        try {
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->rowCount();
+        } catch (PDOException $e) {
+            throw new Exception("Database error: " . $e->getMessage());
+        }
     }
 }
