@@ -1,6 +1,5 @@
 <?php
 
-require_once 'app/repositories/BaseRepository.php';
 
 class ProductRepository extends BaseRepository {
     protected $table = 'products';

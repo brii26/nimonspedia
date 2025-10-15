@@ -1,8 +1,5 @@
 <?php
 
-require_once 'app/core/BaseController.php';
-require_once 'app/services/ProductService.php';
-
 class SellerController extends BaseController {
     private $productService;
 
@@ -26,7 +23,7 @@ class SellerController extends BaseController {
         
         $this->render('pages/seller/products/index', ['productsData' => $productsData]);
     }
-    
+
     public function storeProduct() {
         $postData = $this->getPost();
 
