@@ -1,7 +1,5 @@
 <?php
 
-require_once 'app/repositories/ProductRepository.php';
-
 class ProductService {
     private $productRepository;
 

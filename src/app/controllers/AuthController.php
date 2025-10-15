@@ -51,17 +51,17 @@ class AuthController extends BaseController {
             ]);
             
             $user = $this->authService->register($postData);
-            // If seller, create a store row immediately // added
-            if ($user['role'] === 'SELLER') { // added
-                $db = Database::getInstance(); // added
-                $storeName = ($postData['store_name'] ?? ($user['name'] . "'s Store")); // added
-                $storeDesc = ($postData['store_description'] ?? null); // added
-                $sql = "INSERT INTO stores (user_id, store_name, store_description) VALUES (?, ?, ?) RETURNING store_id"; // added
-                $row = $db->selectOne($sql, [$user['user_id'], $storeName, $storeDesc]); // added
-                if ($row && isset($row['store_id'])) { // added
-                    $_SESSION['store_id'] = (int)$row['store_id']; // added
-                } // added
-            } // added
+
+            if ($user['role'] === 'SELLER') {
+                $db = Database::getInstance();
+                $storeName = ($postData['store_name'] ?? ($user['name'] . "'s Store"));
+                $storeDesc = ($postData['store_description'] ?? null);
+                $sql = "INSERT INTO stores (user_id, store_name, store_description) VALUES (?, ?, ?) RETURNING store_id";
+                $row = $db->selectOne($sql, [$user['user_id'], $storeName, $storeDesc]);
+                if ($row && isset($row['store_id'])) {
+                    $_SESSION['store_id'] = (int)$row['store_id'];
+                }
+            }
 
             Auth::login($user);
             $this->redirect('/dashboard');
@@ -79,30 +79,30 @@ class AuthController extends BaseController {
         }
     }
 
-    // Role select form (Step 1) // added
-    public function roleSelectForm() { // added
-        if (Auth::check()) { // added
-            $this->redirect('/dashboard'); // added
-        } // added
-        $this->render('pages/auth/role_select'); // added
-    } // added
+    // Role select form 
+    public function roleSelectForm() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        $this->render('pages/auth/role_select'); 
+    } 
 
-    // Role select handler // added
-    public function roleSelect() { // added
-        if (Auth::check()) { // added
-            $this->redirect('/dashboard'); // added
-        } // added
-        try { // added
-            $this->verifyCsrf(); // added
-            $role = $this->getPost('role'); // added
-            if ($role !== 'BUYER' && $role !== 'SELLER') { // added
-                throw new Exception('Invalid role'); // added
-            } // added
-            $this->redirect('/register?role=' . urlencode($role)); // added
-        } catch (Exception $e) { // added
-            $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); // added
-        } // added
-    } // added
+    // Role select handler 
+    public function roleSelect() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        try { 
+            $this->verifyCsrf(); 
+            $role = $this->getPost('role'); 
+            if ($role !== 'BUYER' && $role !== 'SELLER') { 
+                throw new Exception('Invalid role'); 
+            } 
+            $this->redirect('/register?role=' . urlencode($role)); 
+        } catch (Exception $e) { 
+            $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); 
+        } 
+    } 
     
     /**
      * Show dashboard
@@ -111,7 +111,47 @@ class AuthController extends BaseController {
         $this->requireAuth();
         $user = Auth::user();
         $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $this->render($view, ['user' => $user]);
+        $data = ['user' => $user];
+
+        if ($user['role'] === 'SELLER') {
+            $db = Database::getInstance();
+            $row = $db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
+            if ($row && isset($row['store_id'])) {
+                $storeId = (int)$row['store_id'];
+
+                // Total products
+                $prod = $db->selectOne(
+                    "SELECT COUNT(*) AS total_products FROM products WHERE store_id = ? AND deleted_at IS NULL",
+                    [$storeId]
+                );
+
+                // Total orders for this store
+                $ord = $db->selectOne(
+                    "SELECT COUNT(*) AS total_orders FROM orders WHERE store_id = ?",
+                    [$storeId]
+                );
+
+                // Total revenue
+                $rev = $db->selectOne(
+                    "SELECT COALESCE(SUM(total_price), 0) AS revenue FROM orders WHERE store_id = ? AND status = 'received'",
+                    [$storeId]
+                );
+
+                $data['stats'] = [
+                    'total_products' => isset($prod['total_products']) ? (int)$prod['total_products'] : 0,
+                    'total_orders' => isset($ord['total_orders']) ? (int)$ord['total_orders'] : 0,
+                    'revenue' => isset($rev['revenue']) ? (int)$rev['revenue'] : 0,
+                ];
+            } else {
+                $data['stats'] = [
+                    'total_products' => 0,
+                    'total_orders' => 0,
+                    'revenue' => 0,
+                ];
+            }
+        }
+
+        $this->render($view, $data);
     }
     
     /**
