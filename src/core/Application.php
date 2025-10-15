@@ -63,10 +63,12 @@ class Application {
         $this->router->get('/', 'HomeController@index');
         
         // Auth routes (Track 1)
-        $this->router->get('/login', 'AuthController@loginForm');
+		$this->router->get('/login', 'AuthController@loginForm');
         $this->router->post('/login', 'AuthController@login');
-        $this->router->get('/register', 'AuthController@registerForm');
+		$this->router->get('/register', 'AuthController@registerForm');
         $this->router->post('/register', 'AuthController@register');
+		$this->router->get('/register/role', 'AuthController@roleSelectForm'); 
+		$this->router->post('/register/role', 'AuthController@roleSelect'); 
         $this->router->post('/logout', 'AuthController@logout');
         
         // Dashboard & profile (authenticated users)

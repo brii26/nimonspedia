@@ -25,7 +25,12 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        $this->render('pages/auth/register');
+        $role = $this->getQuery('role'); 
+        if ($role !== 'BUYER' && $role !== 'SELLER') { 
+            $this->redirect('/register/role');
+            return;
+        }
+        $this->render('pages/auth/register', ['role' => $role]);
     }
     
     /**
@@ -46,7 +51,18 @@ class AuthController extends BaseController {
             ]);
             
             $user = $this->authService->register($postData);
-            
+            // If seller, create a store row immediately // added
+            if ($user['role'] === 'SELLER') { // added
+                $db = Database::getInstance(); // added
+                $storeName = ($postData['store_name'] ?? ($user['name'] . "'s Store")); // added
+                $storeDesc = ($postData['store_description'] ?? null); // added
+                $sql = "INSERT INTO stores (user_id, store_name, store_description) VALUES (?, ?, ?) RETURNING store_id"; // added
+                $row = $db->selectOne($sql, [$user['user_id'], $storeName, $storeDesc]); // added
+                if ($row && isset($row['store_id'])) { // added
+                    $_SESSION['store_id'] = (int)$row['store_id']; // added
+                } // added
+            } // added
+
             Auth::login($user);
             $this->redirect('/dashboard');
             
@@ -62,6 +78,31 @@ class AuthController extends BaseController {
             ]);
         }
     }
+
+    // Role select form (Step 1) // added
+    public function roleSelectForm() { // added
+        if (Auth::check()) { // added
+            $this->redirect('/dashboard'); // added
+        } // added
+        $this->render('pages/auth/role_select'); // added
+    } // added
+
+    // Role select handler // added
+    public function roleSelect() { // added
+        if (Auth::check()) { // added
+            $this->redirect('/dashboard'); // added
+        } // added
+        try { // added
+            $this->verifyCsrf(); // added
+            $role = $this->getPost('role'); // added
+            if ($role !== 'BUYER' && $role !== 'SELLER') { // added
+                throw new Exception('Invalid role'); // added
+            } // added
+            $this->redirect('/register?role=' . urlencode($role)); // added
+        } catch (Exception $e) { // added
+            $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); // added
+        } // added
+    } // added
     
     /**
      * Show dashboard

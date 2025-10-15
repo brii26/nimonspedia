@@ -28,6 +28,7 @@
         
         <form method="POST" action="/register">
             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+            <input type="hidden" name="role" value="<?= View::escape(($role ?? ($old['role'] ?? ''))) ?>"> <!-- keep role passed in -->
             
             <div class="form-group">
                 <label for="name">Full Name:</label>
@@ -44,13 +45,13 @@
                 <textarea id="address" name="address" rows="3" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; font-family: inherit; box-sizing: border-box;" required><?= View::escape($old['address'] ?? '') ?></textarea>
             </div>
             
+            <?php $currentRole = $role ?? ($old['role'] ?? ''); ?>
             <div class="form-group">
-                <label for="role">Register as:</label>
-                <select id="role" name="role" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box;" required>
-                    <option value="">Choose your role...</option>
-                    <option value="BUYER" <?= (($old['role'] ?? '') === 'BUYER') ? 'selected' : '' ?>>Buyer - I want to shop</option>
-                    <option value="SELLER" <?= (($old['role'] ?? '') === 'SELLER') ? 'selected' : '' ?>>Seller - I want to sell products</option>
-                </select>
+                <label>Registering as:</label>
+                <div style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; background:#fafafa;">
+                    <strong><?= View::escape($currentRole) ?></strong>
+                    <a href="/register/role" style="margin-left:8px; font-size:14px;">Change</a>
+                </div>
             </div>
             
             <div class="form-group">
@@ -64,6 +65,19 @@
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
             </div>
             
+            <?php if ($currentRole === 'SELLER'): ?>
+            <div style="height:1px; background:#eee; margin:16px 0;"></div>
+            <h3>Store Information</h3>
+            <div class="form-group">
+                <label for="store_name">Store Name:</label>
+                <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="store_description">Store Description (optional):</label>
+                <textarea id="store_description" name="store_description" rows="3" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; font-family: inherit; box-sizing: border-box;"><?= View::escape($old['store_description'] ?? '') ?></textarea>
+            </div>
+            <?php endif; ?>
+
             <button type="submit">Create Account</button>
         </form>
         
