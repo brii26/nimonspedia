@@ -67,6 +67,12 @@ class ProductRepository extends BaseRepository {
             $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_items WHERE category_id = ?)";
             $params[] = $options['categoryId'];
         }
+
+        // Filter based on store id
+        if (!empty($options['store_id'])) {
+            $whereClauses[] = "p.store_id = ?";
+            $params[] = $options['store_id'];
+        }
         // Filter minimum price
         if (isset($options['minPrice']) && $options['minPrice'] !== '') {
             $whereClauses[] = "p.price >= ?";

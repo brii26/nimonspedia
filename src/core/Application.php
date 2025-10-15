@@ -77,8 +77,8 @@ class Application {
         $this->router->post('/balance/topup', 'AuthController@topUp');
         
         // Product discovery routes (Track 2)
-        // $this->router->get('/products', 'ProductController@index');
-        // $this->router->get('/products/{id}', 'ProductController@show');
+        $this->router->get('/products', 'ProductController@index');
+        $this->router->get('/products/{id}', 'ProductController@show');
         // $this->router->get('/stores/{id}', 'StoreController@show');
         
         // Cart routes (Track 2) 
@@ -92,9 +92,9 @@ class Application {
         // $this->router->post('/checkout', 'OrderController@checkout');
         
         // Seller routes (Track 3 - TODO)
-        // $this->router->get('/seller/products', 'SellerController@products');
-        // $this->router->get('/seller/products/add', 'SellerController@addProductForm');
-        // $this->router->post('/seller/products', 'SellerController@storeProduct');
+        $this->router->get('/seller/products', 'SellerController@listProducts');
+        $this->router->get('/seller/products/create', 'SellerController@createProductForm');
+        $this->router->post('/seller/products/store', 'SellerController@storeProduct');
         // $this->router->get('/seller/orders', 'SellerController@orders');
         
         // API routes for AJAX (TODO)
