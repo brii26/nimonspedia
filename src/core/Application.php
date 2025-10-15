@@ -78,7 +78,7 @@ class Application {
         
         // Product discovery routes (Track 2)
         $this->router->get('/products', 'ProductController@index');
-        $this->router->get('/products/{id}', 'ProductController@show');
+        $this->router->get('/product', 'ProductController@show');
         // $this->router->get('/stores/{id}', 'StoreController@show');
         
         // Cart routes (Track 2) 
