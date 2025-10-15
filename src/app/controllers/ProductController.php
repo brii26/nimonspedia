@@ -1,8 +1,5 @@
 <?php
 
-require_once 'app/controllers/BaseController.php';
-require_once 'app/services/ProductService.php';
-
 /**
  * ProductController handles HTTP requests for product-related actions.
  * It extends BaseController to leverage shared functionalities like rendering views and handling redirects.

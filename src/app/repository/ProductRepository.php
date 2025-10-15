@@ -1,6 +1,5 @@
 <?php
 
-require_once 'app/repositories/BaseRepository.php';
 
 class ProductRepository extends BaseRepository {
     protected $table = 'products';
@@ -138,24 +137,24 @@ class ProductRepository extends BaseRepository {
      * @return array|null An associative array of the product details, or null if not found.
      */
     public function findByIdWithDetails($productId) {
-        $sql = "
-            SELECT 
-                p.*, 
-                s.store_name,
-                GROUP_CONCAT(c.name SEPARATOR ', ') as categories
-            FROM 
-                products p
-            JOIN 
-                stores s ON p.store_id = s.store_id
-            LEFT JOIN 
-                category_items ci ON p.product_id = ci.product_id
-            LEFT JOIN 
-                categories c ON ci.category_id = c.category_id
-            WHERE 
-                p.product_id = ? AND p.deleted_at IS NULL
-            GROUP BY
-                p.product_id, s.store_name
-        ";
+		$sql = "
+			SELECT 
+				p.*,
+				s.store_name,
+				COALESCE(string_agg(c.name, ', ' ORDER BY c.name), '') AS categories
+			FROM 
+				products p
+			JOIN 
+				stores s ON p.store_id = s.store_id
+			LEFT JOIN 
+				category_items ci ON p.product_id = ci.product_id
+			LEFT JOIN 
+				categories c ON ci.category_id = c.category_id
+			WHERE 
+				p.product_id = ? AND p.deleted_at IS NULL
+			GROUP BY
+				p.product_id, s.store_name
+		";
         
         return $this->db->selectOne($sql, [$productId]);
     }

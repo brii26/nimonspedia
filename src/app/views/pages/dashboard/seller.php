@@ -33,7 +33,7 @@
                                 <div class="card">
                                     <div class="card-body text-center">
                                         <h5>Total Products</h5>
-                                        <h2>0</h2>
+                                        <h2><?= isset($stats['total_products']) ? (int)$stats['total_products'] : 0 ?></h2>
                                         <a href="/seller/products" class="btn btn-primary btn-sm">Manage Products</a>
                                     </div>
                                 </div>
@@ -42,7 +42,7 @@
                                 <div class="card">
                                     <div class="card-body text-center">
                                         <h5>Orders</h5>
-                                        <h2>0</h2>
+                                        <h2><?= isset($stats['total_orders']) ? (int)$stats['total_orders'] : 0 ?></h2>
                                         <a href="/seller/orders" class="btn btn-secondary btn-sm">View Orders</a>
                                     </div>
                                 </div>
@@ -51,7 +51,7 @@
                                 <div class="card">
                                     <div class="card-body text-center">
                                         <h5>Revenue</h5>
-                                        <h2><?= View::currency(0) ?></h2>
+                                        <h2><?= View::currency(isset($stats['revenue']) ? (int)$stats['revenue'] : 0) ?></h2>
                                         <a href="/seller/analytics" class="btn btn-secondary btn-sm">Analytics</a>
                                     </div>
                                 </div>
@@ -70,8 +70,6 @@
                         <div class="mt-4">
                             <h4>Quick Actions</h4>
                             <div class="mt-3">
-                                <a href="/seller/products/add" class="btn btn-success">Add New Product</a>
-                                <a href="/seller/products" class="btn btn-primary">Manage Products</a>
                                 <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
                                 <a href="/seller/store" class="btn btn-secondary">Store Settings</a>
                             </div>

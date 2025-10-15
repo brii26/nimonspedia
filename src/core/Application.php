@@ -97,7 +97,11 @@ class Application {
         $this->router->get('/seller/products', 'SellerController@listProducts');
         $this->router->get('/seller/products/create', 'SellerController@createProductForm');
         $this->router->post('/seller/products/store', 'SellerController@storeProduct');
-        // $this->router->get('/seller/orders', 'SellerController@orders');
+		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
+		$this->router->post('/seller/products/update', 'SellerController@updateProduct');
+		$this->router->post('/seller/products/delete', 'SellerController@deleteProduct');
+		$this->router->get('/seller/orders', 'SellerController@orders'); // added: seller orders page
+		// $this->router->get('/seller/orders', 'SellerController@orders');
         
         // API routes for AJAX (TODO)
         // $this->router->get('/api/cart/count', 'CartController@count');
