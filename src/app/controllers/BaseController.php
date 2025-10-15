@@ -180,9 +180,25 @@ abstract class BaseController {
      */
     protected function verifyCsrf() {
         $token = $this->getPost('csrf_token');
-        if (!Auth::verifyCsrf($token)) {
-            $this->json(['error' => 'Invalid CSRF token'], 403);
+        
+        if (!$token) {
+            throw new Exception('CSRF token is required');
         }
+        
+        // Ensure session has CSRF token
+        if (!isset($_SESSION['csrf_token'])) {
+            throw new Exception('CSRF session token missing');
+        }
+        
+        // Use simple string comparison for debugging
+        $sessionToken = $_SESSION['csrf_token'];
+        if ($token !== $sessionToken) {
+            // Log for debugging
+            error_log("CSRF Mismatch - Form: " . substr($token, 0, 8) . " Session: " . substr($sessionToken, 0, 8));
+            throw new Exception('CSRF token mismatch');
+        }
+        
+        return true;
     }
     
     /**

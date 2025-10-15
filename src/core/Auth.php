@@ -5,15 +5,22 @@ class Auth {
      * Login user and create session
      */
     public static function login($user) {
+        $sessionData = $_SESSION;
+        
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['name'];
         $_SESSION['email'] = $user['email'];
+        $_SESSION['address'] = $user['address'];
         $_SESSION['balance'] = $user['balance'] ?? 0;
         $_SESSION['login_time'] = time();
         
-        // Regenerate session ID for security
-        session_regenerate_id(true);
+        // Preserve CSRF token from previous session
+        if (isset($sessionData['csrf_token'])) {
+            $_SESSION['csrf_token'] = $sessionData['csrf_token'];
+        }
+        
+        session_regenerate_id(false);
     }
     
     /**
@@ -41,7 +48,8 @@ class Auth {
             'role' => $_SESSION['role'],
             'name' => $_SESSION['name'],
             'email' => $_SESSION['email'],
-            'balance' => $_SESSION['balance'] ?? 0
+            'balance' => $_SESSION['balance'] ?? 0,
+            'address' => $_SESSION['address'] ?? 0
         ];
     }
     

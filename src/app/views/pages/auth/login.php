@@ -26,14 +26,6 @@
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <div class="form-group">
-                <label for="role">Login as (for testing):</label>
-                <select id="role" name="role" class="form-control">
-                    <option value="BUYER">Buyer (Track 2 testing)</option>
-                    <option value="SELLER">Seller (Track 3 testing)</option>
-                </select>
-            </div>
-            
             <button type="submit">Login</button>
         </form>
         

@@ -16,6 +16,10 @@ class Application {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
     }
     
     private function setupAutoloader() {
@@ -27,6 +31,7 @@ class Application {
                 __DIR__ . '/../app/models/',
                 __DIR__ . '/../app/repository/',
                 __DIR__ . '/../app/services/',
+                __DIR__ . '/../lib/',
             ];
             
             foreach ($directories as $directory) {
