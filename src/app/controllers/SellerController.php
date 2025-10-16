@@ -2,10 +2,12 @@
 
 class SellerController extends BaseController {
     private $productService;
+	private $storeRepo;
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService();
+		$this->storeRepo = new StoreRepository();
         $this->requireRole('SELLER');
     }
 
@@ -19,10 +21,8 @@ class SellerController extends BaseController {
 		if (!$user || $user['role'] !== 'SELLER') {
 			$this->redirect('/login');
 		}
-		$row = $this->db->selectOne(
-			"SELECT store_id FROM stores WHERE user_id = ?",
-			[$user['user_id']]
-		);
+
+		$row = $this->storeRepo->findByUserId($user['user_id']);
 
 		if (!$row) {
 			$this->redirect('/dashboard?error=no_store');
@@ -158,46 +158,27 @@ class SellerController extends BaseController {
 		} 
 	} 
 
-	public function updateStore() {
-		$this->requireRole('SELLER');
-		$post = $this->getPost();
-	
-		try {
-			$this->verifyCsrf();
-			$this->validate($post, [
-				'store_name'        => ['required', 'min:3', 'max:255'],
-				'store_description' => ['max:1000'],
-			]);
-	
-			$storeId = $this->getSellerStoreId();
-			$name = $post['store_name'];
-			$desc = $post['store_description'] ?? '';
-	
-			$sql = "
-				UPDATE stores
-				   SET store_name = ?, 
-					store_description = ?
-				 WHERE store_id = ?
-			";
-	
-			$row = $this->db->selectOne($sql, [$name, $desc, $storeId]);
+    public function updateStore() {
+        $this->requireRole('SELLER');
+        $post = $this->getPost();
+        try {
+            $this->verifyCsrf();
+            $this->validate($post, [
+                'store_name'        => ['required', 'min:3', 'max:255'],
+                'store_description' => ['max:1000'],
+            ]);
 
-			if (!$row) {
-				$this->db->update("UPDATE stores SET store_name = store_name WHERE store_id = ?", [$storeId]);
-			}
-	
-			$this->redirect('/dashboard?status=store_updated');
-	
-		} catch (ValidationException $e) {
-			$this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
-		} catch (Exception $e) {
-			$this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
-		}
-	}
-	
+            $storeId = $this->getSellerStoreId();
+            $name = $post['store_name'];
+            $desc = $post['store_description'] ?? '';
+            $row = $this->storeRepo->updateStore($storeId, $name, $desc);
 
-	public function lowStocks() {
-		// ini redirect ke /seller/low_stocks, didalemnya udah ada index.php so no worries
-		// nah nanti didalemnya show table 
-	}
+            $this->redirect('/dashboard?status=store_updated'
+                . ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
+        } catch (ValidationException $e) {
+            $this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
+        } catch (Exception $e) {
+            $this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
+        }
+    }
 }
