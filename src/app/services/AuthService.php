@@ -110,7 +110,6 @@ class AuthService {
      * Top up user balance
      */
     public function topUpBalance($userId, $amount) {
-        // Validate amount
         if (!is_numeric($amount) || $amount <= 0) {
             throw new Exception('Invalid top-up amount');
         }
@@ -120,19 +119,17 @@ class AuthService {
             throw new Exception('User not found');
         }
         
-        // Only buyers can top up balance
         if ($user['role'] !== 'BUYER') {
             throw new Exception('Only buyers can top up balance');
         }
         
-        // Calculate new balance
         $newBalance = ($user['balance'] ?? 0) + $amount;
         
         if (!$this->userRepository->updateBalance($userId, $newBalance)) {
             throw new Exception('Failed to update balance');
         }
         
-        return $newBalance;
+        return $this->userRepository->find($userId);
     }
     
     /**

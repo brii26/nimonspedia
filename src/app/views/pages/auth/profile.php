@@ -147,60 +147,6 @@
         </div>
     </div>
     
-    <script>
-        // Top up balance AJAX
-        <?php if ($user['role'] === 'BUYER'): ?>
-        document.getElementById('topUpForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const resultDiv = document.getElementById('topUpResult');
-            
-            fetch('/balance/topup', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">Balance updated successfully! New balance: Rp ' + 
-                        new Intl.NumberFormat('id-ID').format(data.new_balance) + '</div>';
-                    // Update balance display in navbar
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
-                }
-            })
-            .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred</div>';
-            });
-        });
-        <?php endif; ?>
-        
-        // Change password AJAX
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const resultDiv = document.getElementById('passwordResult');
-            
-            fetch('/profile/password', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-                    this.reset();
-                } else {
-                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
-                }
-            })
-            .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred</div>';
-            });
-        });
-    </script>
+    <script src="./js/pages/auth/profile.js"></script> 
 </body>
 </html>

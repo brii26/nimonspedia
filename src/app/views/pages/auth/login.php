@@ -41,5 +41,7 @@
         <p><a href="/profile">Test Profile (requires login)</a></p>
         <p><a href="/register">Go to Register</a></p>
     </div>
+
+    <script src="/js/pages/auth/login.js"></script>
 </body>
 </html>

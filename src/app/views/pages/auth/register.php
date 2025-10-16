@@ -42,7 +42,7 @@
             
             <div class="form-group">
                 <label for="address">Address:</label>
-                <textarea id="address" name="address" rows="3" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; font-family: inherit; box-sizing: border-box;" required><?= View::escape($old['address'] ?? '') ?></textarea>
+                <textarea id="address" name="address" rows="3" required><?= View::escape($old['address'] ?? '') ?></textarea>
             </div>
             
             <?php $currentRole = $role ?? ($old['role'] ?? ''); ?>
@@ -57,7 +57,7 @@
             <div class="form-group">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
-                <small style="color: #666; font-size: 14px;">Minimum 6 characters</small>
+                <small>Minimum 6 characters</small>
             </div>
             
             <div class="form-group">
@@ -90,7 +90,7 @@
     <div class="debug-section">
         <h3>Testing Info</h3>
         <p><strong>Quick Test Users:</strong></p>
-        <div style="text-align: left; margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+        <div>
             <p><strong>Buyer Test:</strong><br>
             Name: Test Buyer<br>
             Email: buyer@test.com<br>
@@ -104,26 +104,6 @@
         <p>After registering, you'll be automatically logged in!</p>
     </div>
 
-    <script>
-        // Password confirmation validation
-        document.getElementById('password_confirmation').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirm = this.value;
-            
-            if (confirm && password !== confirm) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-        
-        // Real-time password validation
-        document.getElementById('password').addEventListener('input', function() {
-            const confirmField = document.getElementById('password_confirmation');
-            if (confirmField.value) {
-                confirmField.dispatchEvent(new Event('input'));
-            }
-        });
-    </script>
+    <script src="/js/pages/auth/register.js"></script>
 </body>
 </html>
