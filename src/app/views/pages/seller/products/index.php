@@ -43,6 +43,7 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+				<button type="button" class="btn go-back" onclick="window.location.href='/dashboard'">Back</button>
             </div>
         </div>
     </div>

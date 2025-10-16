@@ -25,7 +25,12 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        $this->render('pages/auth/register');
+        $role = $this->getQuery('role'); 
+        if ($role !== 'BUYER' && $role !== 'SELLER') { 
+            $this->redirect('/register/role');
+            return;
+        }
+        $this->render('pages/auth/register', ['role' => $role]);
     }
     
     /**
@@ -46,7 +51,18 @@ class AuthController extends BaseController {
             ]);
             
             $user = $this->authService->register($postData);
-            
+
+            if ($user['role'] === 'SELLER') {
+                $db = Database::getInstance();
+                $storeName = ($postData['store_name'] ?? ($user['name'] . "'s Store"));
+                $storeDesc = ($postData['store_description'] ?? null);
+                $sql = "INSERT INTO stores (user_id, store_name, store_description) VALUES (?, ?, ?) RETURNING store_id";
+                $row = $db->selectOne($sql, [$user['user_id'], $storeName, $storeDesc]);
+                if ($row && isset($row['store_id'])) {
+                    $_SESSION['store_id'] = (int)$row['store_id'];
+                }
+            }
+
             Auth::login($user);
             $this->redirect('/dashboard');
             
@@ -62,6 +78,31 @@ class AuthController extends BaseController {
             ]);
         }
     }
+
+    // Role select form 
+    public function roleSelectForm() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        $this->render('pages/auth/role_select'); 
+    } 
+
+    // Role select handler 
+    public function roleSelect() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        try { 
+            $this->verifyCsrf(); 
+            $role = $this->getPost('role'); 
+            if ($role !== 'BUYER' && $role !== 'SELLER') { 
+                throw new Exception('Invalid role'); 
+            } 
+            $this->redirect('/register?role=' . urlencode($role)); 
+        } catch (Exception $e) { 
+            $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); 
+        } 
+    } 
     
     /**
      * Show dashboard
@@ -70,7 +111,56 @@ class AuthController extends BaseController {
         $this->requireAuth();
         $user = Auth::user();
         $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $this->render($view, ['user' => $user]);
+        $data = ['user' => $user];
+
+        if ($user['role'] === 'SELLER') {
+            $db = Database::getInstance();
+            $row = $db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
+            if ($row && isset($row['store_id'])) {
+                $storeId = (int)$row['store_id'];
+
+                // Total products
+                $prod = $db->selectOne(
+                    "SELECT COUNT(*) AS total_products FROM products WHERE store_id = ? AND deleted_at IS NULL",
+                    [$storeId]
+                );
+
+                // Total orders for this store
+                $ord = $db->selectOne(
+                    "SELECT COUNT(*) AS total_orders FROM orders WHERE store_id = ?",
+                    [$storeId]
+                );
+
+                // Total revenue
+                $rev = $db->selectOne(
+                    "SELECT COALESCE(SUM(total_price), 0) AS revenue FROM orders WHERE store_id = ? AND status = 'received'",
+                    [$storeId]
+                );
+
+                // Get store information
+                $store = $db->selectOne("SELECT store_name, store_description, TO_CHAR(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS created_at, TO_CHAR(updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS updated_at FROM stores WHERE store_id = ?", [$storeId]);
+
+				// Get low stock information
+				$low_stock = $db->selectOne("SELECT COUNT(product_id) AS low_stocks FROM products WHERE store_id = ? AND stock > 0 AND stock < 10", [$storeId]);
+
+                $data['stats'] = [
+                    'total_products' => isset($prod['total_products']) ? (int)$prod['total_products'] : 0,
+                    'total_orders' => isset($ord['total_orders']) ? (int)$ord['total_orders'] : 0,
+                    'revenue' => isset($rev['revenue']) ? (int)$rev['revenue'] : 0,
+					'low_stocks' => isset($low_stock['low_stocks']) ? (int)$low_stock['low_stocks'] : 0
+                ];
+                $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
+            } else {
+                $data['stats'] = [
+                    'total_products' => 0,
+                    'total_orders' => 0,
+                    'revenue' => 0,
+					'low_stocks' => 0
+                ];
+            }
+        }
+
+        $this->render($view, $data);
     }
     
     /**

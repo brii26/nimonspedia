@@ -1,6 +1,5 @@
 <?php
 
-
 class ProductService {
     private $productRepository;
 
