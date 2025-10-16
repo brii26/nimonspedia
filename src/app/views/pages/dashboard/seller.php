@@ -8,7 +8,7 @@
 <body>
     <nav class="navbar">
         <div class="container d-flex justify-content-between align-items-center">
-            <h2>Nimonspedia - Seller Panel</h2>
+            <h2>Nimonspedia - Seller Dashboard</h2>
             <div>
                 <span>Welcome, <?= View::escape($user['name']) ?>!</span>
                 <a href="/profile" class="btn btn-sm btn-secondary">Profile</a>
@@ -26,8 +26,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3>Store Information</h3>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEditStore()">Edit Store</button>
+                        <h3>Header Info</h3>
                     </div>
                     <div class="card-body">
                         <!-- Display Mode -->
@@ -35,6 +34,7 @@
                             <h4><?= View::escape($store['store_name'] ?? 'My Store') ?></h4>
                             <p class="text-muted"><?= View::escape($store['store_description'] ?? 'No description available') ?></p>
                         </div>
+						<button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEditStore()">Edit Store</button>
                         
                         <!-- Edit Mode -->
                         <div id="store-edit" style="display: none;">
@@ -61,7 +61,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h3> Seller Dashboard</h3>
+                        <h3> Quick Stats Cards</h3>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -77,12 +77,21 @@
                             <div class="col-3">
                                 <div class="card">
                                     <div class="card-body text-center">
-                                        <h5>Orders</h5>
+                                        <h5>Pending Orders</h5>
                                         <h2><?= isset($stats['total_orders']) ? (int)$stats['total_orders'] : 0 ?></h2>
-                                        <a href="/seller/orders" class="btn btn-secondary btn-sm">View Orders</a>
+                                        <a href="/seller/orders" class="btn btn-secondary btn-sm">View Pending Orders</a>
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>Low Stock</h5>
+                                        <h2><?= isset($stats['low_stocks']) ? (int) $stats['low_stocks'] : 0 ?></h2>
+										<a href="/seller/low-stocks" class="btn btn-secondary btn-sm">View Low Stocks</a>
+									</div>
+								</div>
+							</div>
                             <div class="col-3">
                                 <div class="card">
                                     <div class="card-body text-center">

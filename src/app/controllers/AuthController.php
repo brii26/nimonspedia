@@ -140,10 +140,14 @@ class AuthController extends BaseController {
                 // Get store information
                 $store = $db->selectOne("SELECT store_name, store_description FROM stores WHERE store_id = ?", [$storeId]);
 
+				// Get low stock information
+				$low_stock = $db->selectOne("SELECT COUNT(product_id) AS low_stocks FROM products WHERE store_id = ? AND stock > 0 AND stock < 10", [$storeId]);
+
                 $data['stats'] = [
                     'total_products' => isset($prod['total_products']) ? (int)$prod['total_products'] : 0,
                     'total_orders' => isset($ord['total_orders']) ? (int)$ord['total_orders'] : 0,
                     'revenue' => isset($rev['revenue']) ? (int)$rev['revenue'] : 0,
+					'low_stocks' => isset($low_stock['low_stocks']) ? (int)$low_stock['low_stocks'] : 0
                 ];
                 $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
             } else {
@@ -151,6 +155,7 @@ class AuthController extends BaseController {
                     'total_products' => 0,
                     'total_orders' => 0,
                     'revenue' => 0,
+					'low_stocks' => 0
                 ];
             }
         }
