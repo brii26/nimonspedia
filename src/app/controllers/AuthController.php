@@ -39,7 +39,11 @@ class AuthController extends BaseController {
             $this->validate($postData, [
                 'name' => ['required', 'min:2', 'max:100'],
                 'email' => ['required', 'email'],
-                'password' => ['required', 'min:6'],
+                'password' => ['required', 'min:8', 
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+                    .'(?=.*(_|[^\w])).+$/'
+                    .'|Password must contain uppercase, lowercase, number, and symbol'
+                ],
                 'password_confirmation' => 'required',
                 'role' => ['required', 'in:BUYER,SELLER'],
                 'address' => ['required', 'min:10']

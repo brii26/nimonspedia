@@ -152,6 +152,17 @@ abstract class BaseController {
                     return "{$fieldName} must be at least {$min} characters";
                 }
             }
+
+            if (strpos($rule, 'regex:') === 0) {
+                $ruleContent = substr($rule, 6);
+
+                $parts = explode('|', $ruleContent, 2);
+                $regex = $parts[0];
+                $customMessage = $parts[1] ?? null;
+                if (!preg_match($regex, $value)) {
+                    return $customMessage ?: "{$fieldName} format is invalid.";
+            }
+            }
             
             if (strpos($rule, 'max:') === 0) {
                 $max = (int)substr($rule, 4);
