@@ -156,4 +156,36 @@ class SellerController extends BaseController {
 			$this->redirect('/seller/products?error=' . urlencode($e->getMessage())); 
 		} 
 	} 
+
+	public function updateStore() {
+		$this->requireRole('SELLER'); 
+		$postData = $this->getPost(); 
+
+		try {
+			$this->verifyCsrf();
+			$this->validate($postData, [
+				'store_name' => ['required', 'min:3', 'max:255'],
+				'store_description' => ['max:1000']
+			]);
+
+			$storeId = $this->getSellerStoreId(); 
+			$updateData = [ 
+				'store_name' => htmlspecialchars($postData['store_name']),
+				'store_description' => htmlspecialchars($postData['store_description'] ?? '')
+			];
+
+			$sql = "UPDATE stores SET store_name = ?, store_description = ?, updated_at = CURRENT_TIMESTAMP WHERE store_id = ?";
+			$result = $this->db->update($sql, [$updateData['store_name'], $updateData['store_description'], $storeId]);
+
+			if ($result > 0) {
+				$this->redirect('/dashboard?status=store_updated');
+			} else {
+				throw new Exception('Failed to update store information');
+			}
+		} catch (ValidationException $e) {
+			$this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
+		} catch (Exception $e) {
+			$this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
+		}
+	}
 }

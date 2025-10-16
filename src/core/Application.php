@@ -100,7 +100,8 @@ class Application {
 		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
 		$this->router->post('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/delete', 'SellerController@deleteProduct');
-		$this->router->get('/seller/orders', 'SellerController@orders'); // added: seller orders page
+		$this->router->get('/seller/orders', 'SellerController@orders');
+		$this->router->post('/seller/store/update', 'SellerController@updateStore'); 
 		// $this->router->get('/seller/orders', 'SellerController@orders');
         
         // API routes for AJAX (TODO)

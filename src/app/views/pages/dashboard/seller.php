@@ -21,6 +21,42 @@
     </nav>
 
     <div class="container mt-4">
+        <!-- Store Information Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Store Information</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEditStore()">Edit Store</button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Display Mode -->
+                        <div id="store-display">
+                            <h4><?= View::escape($store['store_name'] ?? 'My Store') ?></h4>
+                            <p class="text-muted"><?= View::escape($store['store_description'] ?? 'No description available') ?></p>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div id="store-edit" style="display: none;">
+                            <form method="POST" action="/seller/store/update">
+                                <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                <div class="form-group mb-3">
+                                    <label for="store_name">Store Name</label>
+                                    <input type="text" id="store_name" name="store_name" class="form-control" value="<?= View::escape($store['store_name'] ?? '') ?>" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="store_description">Store Description</label>
+                                    <textarea id="store_description" name="store_description" class="form-control" rows="3"><?= View::escape($store['store_description'] ?? '') ?></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleEditStore()">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col">
                 <div class="card">
@@ -88,11 +124,6 @@
                             <h4> Track 3 Development Area</h4>
                             <p><strong>TOLONG BUATIN:</strong></p>
                             <ul>
-                                <li>User authentication is working</li>
-                                <li>Seller user data available in <code>$user</code> variable</li>
-                                <li>User role validation working (<code>Auth::requireRole('SELLER')</code>)</li>
-                                <li>TODO: Implement SellerController</li>
-                                <li>TODO: Implement product CRUD (create, read, update, delete)</li>
                                 <li>TODO: Implement file upload for product images</li>
                                 <li>TODO: Implement order management for sellers</li>
                                 <li>TODO: Implement store profile management</li>
@@ -103,5 +134,21 @@
             </div>
         </div>
     </div>
+
+	// NTAR DI JAVASCRIPT TERPISAH
+    <script>
+        function toggleEditStore() {
+            const display = document.getElementById('store-display');
+            const edit = document.getElementById('store-edit');
+            
+            if (display.style.display === 'none') {
+                display.style.display = 'block';
+                edit.style.display = 'none';
+            } else {
+                display.style.display = 'none';
+                edit.style.display = 'block';
+            }
+        }
+    </script>
 </body>
 </html>

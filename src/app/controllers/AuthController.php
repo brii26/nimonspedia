@@ -137,11 +137,15 @@ class AuthController extends BaseController {
                     [$storeId]
                 );
 
+                // Get store information
+                $store = $db->selectOne("SELECT store_name, store_description FROM stores WHERE store_id = ?", [$storeId]);
+
                 $data['stats'] = [
                     'total_products' => isset($prod['total_products']) ? (int)$prod['total_products'] : 0,
                     'total_orders' => isset($ord['total_orders']) ? (int)$ord['total_orders'] : 0,
                     'revenue' => isset($rev['revenue']) ? (int)$rev['revenue'] : 0,
                 ];
+                $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
             } else {
                 $data['stats'] = [
                     'total_products' => 0,
