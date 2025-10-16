@@ -156,7 +156,7 @@ abstract class BaseController {
             if (strpos($rule, 'regex:') === 0) {
                 $ruleContent = substr($rule, 6);
 
-                $parts = explode('|', $ruleContent, 2);
+                $parts = explode('`', $ruleContent, 2);
                 $regex = $parts[0];
                 $customMessage = $parts[1] ?? null;
                 if (!preg_match($regex, $value)) {

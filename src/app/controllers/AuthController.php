@@ -42,7 +42,7 @@ class AuthController extends BaseController {
                 'password' => ['required', 'min:8', 
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
                     .'(?=.*(_|[^\w])).+$/'
-                    .'|Password must contain uppercase, lowercase, number, and symbol'
+                    .'`Password must contain uppercase, lowercase, number, and symbol'
                 ],
                 'password_confirmation' => 'required',
                 'role' => ['required', 'in:BUYER,SELLER'],
