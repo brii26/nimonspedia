@@ -73,26 +73,27 @@ class SellerController extends BaseController {
         }
 	}
 
-	public function orders() { 
-		$this->requireRole('SELLER');
-		$user = Auth::user(); 
-		$row = $this->db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
-		if (!$row) { 
-			$this->redirect('/dashboard?error=no_store'); 
-			return; 
-		} 
-		$storeId = (int)$row['store_id']; 
+	// OTW
+	// public function orders() { 
+	// 	$this->requireRole('SELLER');
+	// 	$user = Auth::user(); 
+	// 	$row = $this->db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
+	// 	if (!$row) { 
+	// 		$this->redirect('/dashboard?error=no_store'); 
+	// 		return; 
+	// 	} 
+	// 	$storeId = (int)$row['store_id']; 
 
-		$orders = $this->db->select(  
-			"SELECT order_id, total_price, status, created_at FROM orders WHERE store_id = ? ORDER BY created_at DESC",
-			[$storeId]
-		); 
+	// 	$orders = $this->db->select(  
+	// 		"SELECT order_id, total_price, status, created_at FROM orders WHERE store_id = ? ORDER BY created_at DESC",
+	// 		[$storeId]
+	// 	); 
 
-		$this->render('pages/seller/orders/index', [ 
-			'orders' => $orders,
-			'user' => $user
-		]); 
-	} 
+	// 	$this->render('pages/seller/orders/index', [ 
+	// 		'orders' => $orders,
+	// 		'user' => $user
+	// 	]); 
+	// } 
 	public function editProduct()
 	{
 		$productId = (int) $this->getQuery('id', 0);
@@ -158,34 +159,45 @@ class SellerController extends BaseController {
 	} 
 
 	public function updateStore() {
-		$this->requireRole('SELLER'); 
-		$postData = $this->getPost(); 
-
+		$this->requireRole('SELLER');
+		$post = $this->getPost();
+	
 		try {
 			$this->verifyCsrf();
-			$this->validate($postData, [
-				'store_name' => ['required', 'min:3', 'max:255'],
-				'store_description' => ['max:1000']
+			$this->validate($post, [
+				'store_name'        => ['required', 'min:3', 'max:255'],
+				'store_description' => ['max:1000'],
 			]);
+	
+			$storeId = $this->getSellerStoreId();
+			$name = $post['store_name'];
+			$desc = $post['store_description'] ?? '';
+	
+			$sql = "
+				UPDATE stores
+				   SET store_name = ?, 
+					store_description = ?
+				 WHERE store_id = ?
+			";
+	
+			$row = $this->db->selectOne($sql, [$name, $desc, $storeId]);
 
-			$storeId = $this->getSellerStoreId(); 
-			$updateData = [ 
-				'store_name' => htmlspecialchars($postData['store_name']),
-				'store_description' => htmlspecialchars($postData['store_description'] ?? '')
-			];
-
-			$sql = "UPDATE stores SET store_name = ?, store_description = ?, updated_at = CURRENT_TIMESTAMP WHERE store_id = ?";
-			$result = $this->db->update($sql, [$updateData['store_name'], $updateData['store_description'], $storeId]);
-
-			if ($result > 0) {
-				$this->redirect('/dashboard?status=store_updated');
-			} else {
-				throw new Exception('Failed to update store information');
+			if (!$row) {
+				$this->db->update("UPDATE stores SET store_name = store_name WHERE store_id = ?", [$storeId]);
 			}
+	
+			$this->redirect('/dashboard?status=store_updated');
+	
 		} catch (ValidationException $e) {
 			$this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
 		} catch (Exception $e) {
 			$this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
 		}
+	}
+	
+
+	public function lowStocks() {
+		// ini redirect ke /seller/low_stocks, didalemnya udah ada index.php so no worries
+		// nah nanti didalemnya show table 
 	}
 }
