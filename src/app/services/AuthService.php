@@ -2,9 +2,11 @@
 
 class AuthService {
     private $userRepository;
+	private $storeRepository;
     
     public function __construct() {
         $this->userRepository = new UserRepository();
+		$this->storeRepository = new StoreRepository();
     }
     
     /**
@@ -13,7 +15,7 @@ class AuthService {
     public function register($data) {
         if ($data['password'] !== $data['password_confirmation']) {
             throw new Exception('Password confirmation does not match');
-        }
+        } 
         
         if ($this->userRepository->emailExists($data['email'])) {
             throw new Exception('Email already registered');
@@ -28,8 +30,14 @@ class AuthService {
         ];
 
         $userId = $this->userRepository->createUser($userData);
-        
-        if (!$userId) {
+
+		if ($data['role'] === 'SELLER') {
+			$storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
+			$storeDesc = $data['store_description'] ?? null;
+			$this->storeRepository->createStore($userId, $storeName, $storeDesc);
+		}
+
+		if (!$userId) {
             throw new Exception('Failed to create account');
         }
         

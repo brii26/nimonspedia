@@ -1,9 +1,38 @@
 <?php
 class StoreRepository extends BaseRepository {
     protected $table = 'stores';
-    protected function getPrimaryKey() { return 'store_id'; }
 
-    public function findByUserId($userId) {
+	public function createStore($userId, $name, $desc = null) {
+		$sql = "INSERT INTO stores (user_id, store_name, store_description, created_at, updated_at)
+				VALUES (?, ?, ?, NOW(), NOW())
+				RETURNING store_id, store_name, store_description, created_at, updated_at";
+	
+		$row = $this->db->selectOne($sql, [$userId, $name, $desc]);
+		if ($row) {
+			return $row;
+		}
+
+		$createdId = $this->create([
+			'user_id' => $userId,
+			'store_name' => $name,
+			'store_description' => $desc,
+			'created_at' => date('Y-m-d H:i:s'),
+			'updated_at' => date('Y-m-d H:i:s')
+		]);
+
+		if ($createdId) {
+			return $this->getByIdForDisplay($createdId);
+		}
+		
+		return null;
+	}
+
+	protected function getPrimaryKey()
+	{
+		return 'store_id';
+	}
+
+	public function findByUserId($userId) {
         $sql = "SELECT store_id, user_id, store_name, store_description,
                        created_at, updated_at
                   FROM stores
@@ -27,15 +56,5 @@ class StoreRepository extends BaseRepository {
                   FROM stores
                  WHERE store_id = ?";
         return $this->db->selectOne($sql, [$storeId]);
-    }
-
-    public function findProducts($storeId, $limit = 12, $offset = 0) {
-        $limit  = max(0, (int)$limit); 
-        $offset = max(0, (int)$offset);
-        $sql = "SELECT * FROM products
-                 WHERE store_id = ? AND deleted_at IS NULL
-                 ORDER BY created_at DESC
-                 LIMIT {$limit} OFFSET {$offset}";
-        return $this->db->select($sql, [$storeId]);
     }
 }

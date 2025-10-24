@@ -41,31 +41,25 @@ class AuthController extends BaseController {
             $this->verifyCsrf();
             $postData = $this->getPost();
 
-            $this->validate($postData, [
-                'name' => ['required', 'min:2', 'max:100'],
-                'email' => ['required', 'email'],
-                'password' => ['required', 'min:8', 
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
-                    .'(?=.*(_|[^\w])).+$/'
-                    .'`Password must contain uppercase, lowercase, number, and symbol'
-                ],
-                'password_confirmation' => 'required',
-                'role' => ['required', 'in:BUYER,SELLER'],
-                'address' => ['required', 'min:10']
-            ]);
-            
-            $user = $this->authService->register($postData);
+			$rules = [
+				'name' => ['required', 'min:2', 'max:100'],
+				'email' => ['required', 'email'],
+				'password' => [
+					'required',
+					'min:8',
+					'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/'
+				],
+				'password_confirmation' => ['required'],
+				'role' => ['required', 'in:BUYER,SELLER'],
+				'address' => ['required', 'min:10'],
+			];
 
-            if ($user['role'] === 'SELLER') {
-                $db = Database::getInstance();
-                $storeName = ($postData['store_name'] ?? ($user['name'] . "'s Store"));
-                $storeDesc = ($postData['store_description'] ?? null);
-                $sql = "INSERT INTO stores (user_id, store_name, store_description) VALUES (?, ?, ?) RETURNING store_id";
-                $row = $db->selectOne($sql, [$user['user_id'], $storeName, $storeDesc]);
-                if ($row && isset($row['store_id'])) {
-                    $_SESSION['store_id'] = (int)$row['store_id'];
-                }
-            }
+			$rules['store_name'] = (isset($postData['role']) && $postData['role'] === 'SELLER')
+				? ['required', 'max:100']
+				: ['max:100'];
+
+			$this->validate($postData, $rules);
+			$user = $this->authService->register($postData);
 
             Auth::login($user);
             $this->redirect('/dashboard');
