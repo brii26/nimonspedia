@@ -32,7 +32,7 @@
                         <!-- Display Mode -->
 					<div id="store-display">
 						<h4><?= View::escape($store['store_name'] ?? 'My Store') ?></h4>
-						<p class="text-muted"><?= View::escape($store['store_description'] ?? 'No description available') ?></p>
+						<p class="text-muted"><?= ($store['store_description'] ?? 'No description available') ?></p>
 
 						<p class="small text-muted mb-1">
 							<strong>Created:</strong> <?= View::escape($store['created_at'] ?? '-') ?>

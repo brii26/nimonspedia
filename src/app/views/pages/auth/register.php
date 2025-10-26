@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Nimonspedia</title>
+	<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
@@ -73,8 +74,9 @@
                 <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>" required>
             </div>
             <div class="form-group">
-                <label for="store_description">Store Description (optional):</label>
-                <textarea id="store_description" name="store_description" rows="3" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; font-family: inherit; box-sizing: border-box;"><?= View::escape($old['store_description'] ?? '') ?></textarea>
+                <label for="store_description">Store Description :</label>
+				<div id="editor"><?= $old['store_description'] ?? '' ?></div>
+                <input type="hidden" name="store_description" id="store_description">
             </div>
             <?php endif; ?>
 
@@ -104,6 +106,8 @@
         <p>After registering, you'll be automatically logged in!</p>
     </div>
 
-    <script src="/js/pages/auth/register.js"></script>
+	<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+	<script src="/js/utils/quill-setup.js"></script>
+	<script src="/js/pages/auth/register.js"></script>
 </body>
 </html>
