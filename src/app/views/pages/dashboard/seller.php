@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard - Nimonspedia</title>
+	<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+	<link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
     <nav class="navbar">
@@ -41,13 +43,11 @@
 							<strong>Last Updated:</strong> <?= View::escape($store['updated_at'] ?? '-') ?>
 						</p>
 
-						<button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEditStore()">Edit Store</button>
+						<button type="button" id="edit-store-button">Edit Store</button>
 					</div>
-
-						
                         
                         <!-- Edit Mode -->
-                        <div id="store-edit" style="display: none;">
+                        <div id="store-edit">
                             <form method="POST" action="/seller/store/update">
                                 <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                                 <div class="form-group mb-3">
@@ -56,10 +56,11 @@
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="store_description">Store Description</label>
-                                    <textarea id="store_description" name="store_description" class="form-control" rows="3"><?= View::escape($store['store_description'] ?? '') ?></textarea>
+									<div id="editor"><?= $store['store_description'] ?? '' ?></div>
+									<input type="hidden" name="store_description" id="store_description">
                                 </div>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                                <button type="button" class="btn btn-secondary" onclick="toggleEditStore()">Cancel</button>
+                                <button type="submit" id="save-button">Save Changes</button>
+                                <button type="button" id="cancel-button">Cancel</button>
                             </form>
                         </div>
                     </div>
@@ -133,20 +134,8 @@
         </div>
     </div>
 
-	<!--NTAR DI JAVASCRIPT TERPISAH-->
-    <script>
-        function toggleEditStore() {
-            const display = document.getElementById('store-display');
-            const edit = document.getElementById('store-edit');
-            
-            if (display.style.display === 'none') {
-                display.style.display = 'block';
-                edit.style.display = 'none';
-            } else {
-                display.style.display = 'none';
-                edit.style.display = 'block';
-            }
-        }
-    </script>
-</body>
+	<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+	<script src ="/js/utils/quill-setup.js"></script>
+    <script src ="/js/pages/dashboard/seller.js"></script>
+	</body>
 </html>
