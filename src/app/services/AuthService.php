@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../services/FileService.php';
+
 class AuthService {
     private $userRepository;
 	private $storeRepository;
@@ -20,6 +22,11 @@ class AuthService {
         if ($this->userRepository->emailExists($data['email'])) {
             throw new Exception('Email already registered');
         }
+
+		$userContextData = [
+			'user' => null,
+			'store' => null
+		];
         
         $userData = [
             'name' => $data['name'],
@@ -30,19 +37,26 @@ class AuthService {
         ];
 
         $userId = $this->userRepository->createUser($userData);
+		$userData = $this->userRepository->find($userId);
 
 		if ($data['role'] === 'SELLER') {
-			$storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
-			$storeDesc = $data['store_description'] ?? null;
-			$this->storeRepository->createStore($userId, $storeName, $storeDesc);
+			$storeData =[
+				'user_id' => $userId,
+				'store_name' => $data['store_name'],
+				'store_description' => $data['store_description'],
+				'store_logo_path' => FileService::saveUploadedImage($_FILES['store_logo_path'], 'store_logo')
+			];
+			$storeId = $this->storeRepository->createStore($storeData);
+			$storeData = $this->storeRepository->find($storeId);
+			$userContextData['store'] = $storeData;
 		}
 
+		$userContextData['user'] = $userData;
 		if (!$userId) {
             throw new Exception('Failed to create account');
         }
         
-        // Return created user
-        return $this->userRepository->find($userId);
+        return $userContextData;
     }
     
     /**
@@ -51,8 +65,8 @@ class AuthService {
     public function login($email, $password) {
         // Find user by email
         $user = $this->userRepository->findByEmail($email);
-        
-        if (!$user) {
+
+		if (!$user) {
             throw new Exception('Invalid email or password');
         }
         
@@ -60,8 +74,14 @@ class AuthService {
         if (!password_verify($password, $user['password'])) {
             throw new Exception('Invalid email or password');
         }
-        
-        return $user;
+
+		$store = $this->storeRepository->findByUserId($user['user_id']);
+
+		$userContext = [
+			'user' => $user,
+			'store' => $store
+		];
+        return $userContext;
     }
     
     /**

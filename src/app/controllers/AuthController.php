@@ -59,9 +59,9 @@ class AuthController extends BaseController {
 				: ['max:100'];
 
 			$this->validate($postData, $rules);
-			$user = $this->authService->register($postData);
+			$userContext = $this->authService->register($postData);
 
-            Auth::login($user);
+			Auth::login($userContext);
             $this->redirect('/dashboard');
             
         } catch (ValidationException $e) {
@@ -108,55 +108,12 @@ class AuthController extends BaseController {
     public function dashboard() {
         $this->requireAuth();
         $user = Auth::user();
+		$store = Auth::store();
         $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $data = ['user' => $user];
-
-        if ($user['role'] === 'SELLER') {
-            $db = Database::getInstance();
-            $row = $db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
-            if ($row && isset($row['store_id'])) {
-                $storeId = (int)$row['store_id'];
-
-                // Total products
-                $prod = $db->selectOne(
-                    "SELECT COUNT(*) AS total_products FROM products WHERE store_id = ? AND deleted_at IS NULL",
-                    [$storeId]
-                );
-
-                // Total orders for this store
-                $ord = $db->selectOne(
-                    "SELECT COUNT(*) AS total_orders FROM orders WHERE store_id = ?",
-                    [$storeId]
-                );
-
-                // Total revenue
-                $rev = $db->selectOne(
-                    "SELECT COALESCE(SUM(total_price), 0) AS revenue FROM orders WHERE store_id = ? AND status = 'received'",
-                    [$storeId]
-                );
-
-                // Get store information
-                $store = $db->selectOne("SELECT store_name, store_description, TO_CHAR(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS created_at, TO_CHAR(updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS updated_at FROM stores WHERE store_id = ?", [$storeId]);
-
-				// Get low stock information
-				$low_stock = $db->selectOne("SELECT COUNT(product_id) AS low_stocks FROM products WHERE store_id = ? AND stock > 0 AND stock < 10", [$storeId]);
-
-                $data['stats'] = [
-                    'total_products' => isset($prod['total_products']) ? (int)$prod['total_products'] : 0,
-                    'total_orders' => isset($ord['total_orders']) ? (int)$ord['total_orders'] : 0,
-                    'revenue' => isset($rev['revenue']) ? (int)$rev['revenue'] : 0,
-					'low_stocks' => isset($low_stock['low_stocks']) ? (int)$low_stock['low_stocks'] : 0
-                ];
-                $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
-            } else {
-                $data['stats'] = [
-                    'total_products' => 0,
-                    'total_orders' => 0,
-                    'revenue' => 0,
-					'low_stocks' => 0
-                ];
-            }
-        }
+        $data = [
+			'user' => $user,
+			'store' => $store
+		];
 
         $this->render($view, $data);
     }
@@ -174,9 +131,9 @@ class AuthController extends BaseController {
                 'password' => 'required'
             ]);
             
-            $user = $this->authService->login($postData['email'], $postData['password']);
+            $userContext = $this->authService->login($postData['email'], $postData['password']);
             
-            Auth::login($user);
+            Auth::login($userContext);
             $this->redirect('/dashboard');
             
         } catch (ValidationException $e) {

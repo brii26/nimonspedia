@@ -14,6 +14,7 @@ abstract class BaseController {
         // Add global data available to all templates
         $data = array_merge($data, [
             'user' => Auth::user(),
+			'store' => Auth::store(),
             'csrf_token' => Auth::csrfToken(),
             'is_authenticated' => Auth::check(),
             'is_buyer' => Auth::isBuyer(),
