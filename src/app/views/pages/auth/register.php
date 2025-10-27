@@ -27,9 +27,9 @@
             </div>
         <?php endif; ?>
         
-        <form method="POST" action="/register">
+        <form method="POST" action="/register" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-            <input type="hidden" name="role" value="<?= View::escape(($role ?? ($old['role'] ?? ''))) ?>"> <!-- keep role passed in -->
+            <input type="hidden" name="role" value="<?= View::escape($role ?? ($old['role'] ?? '')) ?>">
             
             <div class="form-group">
                 <label for="name">Full Name:</label>
@@ -73,6 +73,10 @@
                 <label for="store_name">Store Name:</label>
                 <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>" required>
             </div>
+            <div class="form-group" style ="margin-bottom: 15px;">
+				<label for="input_file">Input Logo:</label>
+				<input type="file" id="input_file" name="store_logo_path" accept="image/*">
+			</div>
             <div class="form-group">
                 <label for="store_description">Store Description :</label>
 				<div id="editor"><?= $old['store_description'] ?? '' ?></div>
