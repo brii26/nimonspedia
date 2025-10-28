@@ -19,8 +19,14 @@ class SellerService {
         return (int) $row['store_id'];
     }
 
-    public function updateStore($storeId, $name, $desc, $logo) {
-        return $this->storeRepo->updateStore($storeId, $name, $desc, $logo);
+    public function updateStore($post, $storeId) {
+		$name = $post['store_name'];
+		$desc = $post['store_description'] ?? '';
+		$logo = $_FILES['store_logo'];
+		$old_logo = $this->getLogoPath($storeId);
+		$updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
+		$this->removeLogoPath($storeId);
+        return $this->storeRepo->updateStore($storeId, $name, $desc, $updatedLogoPath);
     }
 
     public function getLogoPath($storeId) {

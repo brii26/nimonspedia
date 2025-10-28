@@ -97,7 +97,7 @@ class SellerController extends BaseController {
 			$this->validate($postData, [ 
 				'product_name' => ['required', 'min:3'], 
 				'price' => ['required', 'numeric'], 
-				'stock' => ['required', 'numeric'] 
+				'stock' => ['required', 'numeric']
 			]); 
 
 			$storeId = $this->getSellerStoreId(); 
@@ -143,13 +143,7 @@ class SellerController extends BaseController {
             ]);
 
 			$storeId = $this->getSellerStoreId();
-			$name = $post['store_name'];
-			$desc = $post['store_description'] ?? '';
-			$logo = $_FILES['store_logo'];
-			$old_logo = $this->sellerService->getLogoPath($storeId);
-			$updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
-			$this->sellerService->removeLogoPath($storeId);
-			$row = $this->sellerService->updateStore($storeId, $name, $desc, $updatedLogoPath);
+			$row = $this->sellerService->updateStore($post, $storeId);
 
             $this->redirect('/dashboard?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
         } catch (ValidationException $e) {

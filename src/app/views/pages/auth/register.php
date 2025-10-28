@@ -92,23 +92,6 @@
             <p><a href="/">← Back to Home</a></p>
         </div>
     </div>
-    
-    <div class="debug-section">
-        <h3>Testing Info</h3>
-        <p><strong>Quick Test Users:</strong></p>
-        <div>
-            <p><strong>Buyer Test:</strong><br>
-            Name: Test Buyer<br>
-            Email: buyer@test.com<br>
-            Role: Buyer</p>
-            
-            <p><strong>Seller Test:</strong><br>
-            Name: Test Seller<br>
-            Email: seller@test.com<br>
-            Role: Seller</p>
-        </div>
-        <p>After registering, you'll be automatically logged in!</p>
-    </div>
 
 	<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 	<script src="/js/utils/quill-setup.js"></script>

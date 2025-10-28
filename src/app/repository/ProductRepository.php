@@ -2,7 +2,21 @@
 
 
 class ProductRepository extends BaseRepository {
+
     protected $table = 'products';
+	
+    public function update($id, $data) {
+        if (empty($data)) {
+            return false;
+        }
+        $fields = array_keys($data);
+        $setClause = implode(' = ?, ', $fields) . ' = ?';
+        $primaryKey = $this->getPrimaryKey();
+        $sql = "UPDATE {$this->table} SET {$setClause} WHERE {$primaryKey} = ?";
+        $params = array_values($data);
+        $params[] = $id;
+        return $this->db->update($sql, $params) > 0;
+    }
     
     /**
      * Override primary key for users table
@@ -129,6 +143,20 @@ class ProductRepository extends BaseRepository {
         
         return $this->db->select($sql, $params);
     }
+
+	/**
+     * Retrieves only the main image path of a product.
+     *
+     * @param int $productId The product ID.
+     * @return string|null The image path if found, otherwise null.
+     */
+    public function getImagePath(int $productId): ?string
+    {
+        $sql = "SELECT main_image_path FROM {$this->table} WHERE product_id = ? AND deleted_at IS NULL";
+        $result = $this->db->selectOne($sql, [$productId]);
+        return $result ? $result['main_image_path'] : null;
+    }
+
     
     /**
      * Finds a single product by its ID, joining with stores and categories to get full details.

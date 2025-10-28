@@ -22,7 +22,7 @@
 							<div class="alert alert-danger"><?= View::escape($error) ?></div>
 						<?php endif; ?>
 
-						<form action="/seller/products/update?id=<?= View::escape($product['product_id']) ?>" method="POST">
+						<form action="/seller/products/update?id=<?= View::escape($product['product_id']) ?>" method="POST" enctype="multipart/form-data">
 							<input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
 							<input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
 
@@ -47,6 +47,14 @@
 								<input type="number" id="stock" name="stock" class="form-control" value="<?= View::escape($old['stock'] ?? $product['stock'] ?? '') ?>">
 								<?php if (isset($errors['stock'])): ?>
 									<small class="text-danger"><?= View::escape($errors['stock']) ?></small>
+								<?php endif; ?>
+							</div>
+
+							<div class="form-group mb-3">
+								<label for="product_image">Edit Product Image:  </label>
+								<input type="file" id="product_image" name="product_image" class="form-control" accept="image/*">
+								<?php if (isset($errors['product_image'])): ?>
+									<small class="text-danger"><?= View::escape($errors['product_image']) ?></small>
 								<?php endif; ?>
 							</div>
 

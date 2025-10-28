@@ -19,6 +19,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+							<th>Path</th>
                             <th>Name</th>
                             <th>Price</th>
                             <th>Stock</th>
@@ -28,6 +29,7 @@
                     <tbody>
                         <?php foreach ($productsData['data'] as $product): ?>
                             <tr>
+								<td><strong><?= View::escape($product['main_image_path']) ?></strong></td>
                                 <td><?= View::escape($product['product_name']) ?></td>
                                 <td><?= View::currency($product['price']) ?></td>
                                 <td><?= View::escape($product['stock']) ?></td>

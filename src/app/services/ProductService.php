@@ -79,16 +79,23 @@ class ProductService {
             throw new Exception("You are not authorized to edit this product.");
         }
         
+		$product_image = $_FILES['product_image'];
+		$product_image_path = FileService::saveUploadedImage($product_image, 'product_image');
+
         $updateData = [
             'product_name' => htmlspecialchars($data['product_name']),
             'description' => $data['description'] ?? '',
             'price' => (float)$data['price'],
-            'stock' => (int)$data['stock']
+            'stock' => (int)$data['stock'],
+			'main_image_path' => $product_image_path
         ];
+
+		$oldPath = $this->productRepository->getImagePath($productId);
 
         if (!$this->productRepository->update($productId, $updateData)) {
             throw new Exception("Failed to update product.");
         }
+		FileService::deleteFile($oldPath);
 
         return true;
     }
