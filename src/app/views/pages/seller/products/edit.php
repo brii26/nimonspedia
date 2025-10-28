@@ -4,6 +4,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Edit Product - Nimonspedia</title>
+	<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+	<link href="/css/products.css" rel="stylesheet">
 </head>
 <body>
 	<?php // View::render('partials/seller_navbar'); ?>
@@ -50,7 +52,8 @@
 
 							<div class="form-group mb-3">
 								<label for="description">Description</label>
-								<textarea id="description" name="description" class="form-control" rows="5"><?= View::escape($old['description'] ?? $product['description'] ?? '') ?></textarea>
+								<div id="editor"><?= $product['description'] ?? '' ?></div>
+								<input type="hidden" name="description" id="description">
 							</div>
 
 							<button type="submit" class="btn btn-primary">Update Product</button>
@@ -61,6 +64,10 @@
 			</div>
 		</div>
 	</div>
+
+	<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+	<script src="/js/utils/quill-setup.js"></script>
+	<script src="/js/pages/seller/products.js"></script>
 </body>
 </html>
 

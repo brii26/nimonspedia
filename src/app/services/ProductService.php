@@ -50,12 +50,16 @@ class ProductService {
             throw new Exception("Price must be a non-negative number.");
         }
 
+		$product_image = $_FILES['product_image'];
+		$product_image_path = FileService::saveUploadedImage($product_image, 'product_image');
+
         $productData = [
             'product_name' => htmlspecialchars($data['product_name']),
-            'description' => htmlspecialchars($data['description'] ?? ''),
+            'description' => $data['description'] ?? '',
             'price' => (float)$data['price'],
             'stock' => (int)$data['stock'],
-            'store_id' => $storeId
+            'store_id' => $storeId,
+			'main_image_path' => $product_image_path
         ];
 
         return $this->productRepository->create($productData);
@@ -77,7 +81,7 @@ class ProductService {
         
         $updateData = [
             'product_name' => htmlspecialchars($data['product_name']),
-            'description' => htmlspecialchars($data['description'] ?? ''),
+            'description' => $data['description'] ?? '',
             'price' => (float)$data['price'],
             'stock' => (int)$data['stock']
         ];

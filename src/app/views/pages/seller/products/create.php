@@ -22,7 +22,7 @@
                             <div class="alert alert-danger"><?= View::escape($error) ?></div>
                         <?php endif; ?>
 
-                        <form action="/seller/products/store" method="POST">
+                        <form action="/seller/products/store" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                             
                             <div class="form-group mb-3">
@@ -48,6 +48,11 @@
                                     <small class="text-danger"><?= View::escape($errors['stock']) ?></small>
                                 <?php endif; ?>
                             </div>
+
+							<div class="form-group" style ="margin-bottom: 15px;">
+								<label for="input_file">Input Logo:</label>
+								<input type="file" id="input_file" name="product_image" accept="image/*">
+							</div>
 
                             <div class="form-group mb-3">
                                 <label for="description">Description</label>
