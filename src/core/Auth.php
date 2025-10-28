@@ -4,33 +4,22 @@ class Auth {
     /**
      * Login user and create session
      */
-    public static function login($userContext) {
-		$user = $userContext['user'] ?? null;
-		$store = $userContext['store'] ?? null;
+    public static function login($user) {
+        $sessionData = $_SESSION;
         
-		$sessionData = $_SESSION;
-
-		$_SESSION['user_id'] = $user['user_id'] ?? null;
-		$_SESSION['role'] = $user['role'] ?? null;
-		$_SESSION['name'] = $user['name'] ?? null;
-		$_SESSION['email'] = $user['email'] ?? null;
-		$_SESSION['address'] = $user['address'] ?? null;
-		$_SESSION['balance'] = $user['balance'] ?? 0;
-		$_SESSION['login_time'] = time();
-
-		if (!empty($store) && is_array($store)) {
-			$_SESSION['store_id'] = $store['store_id'] ?? null;
-			$_SESSION['store_name'] = $store['store_name'] ?? null;
-			$_SESSION['store_logo_path'] = $store['store_logo_path'] ?? null;
-			$_SESSION['store_description'] = $store['store_description'] ?? null;
-		} else {
-			$_SESSION['store_id'] = $_SESSION['store_name'] = $_SESSION['store_logo_path'] = $_SESSION['store_description'] = null;
-		}
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['name'] = $user['name'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['address'] = $user['address'];
+        $_SESSION['balance'] = $user['balance'] ?? 0;
+        $_SESSION['login_time'] = time();
         
         // Preserve CSRF token from previous session
         if (isset($sessionData['csrf_token'])) {
             $_SESSION['csrf_token'] = $sessionData['csrf_token'];
         }
+        
         session_regenerate_id(false);
     }
 
@@ -74,19 +63,6 @@ class Auth {
             'address' => $_SESSION['address'] ?? 0
         ];
     }
-	public static function store() {
-		if (empty($_SESSION['store_id'])) {
-			return null;
-		}
-
-		return [
-			'store_id' => $_SESSION['store_id'],
-			'store_name' => $_SESSION['store_name'] ?? null,
-			'store_logo_path' => $_SESSION['store_logo_path'] ?? null,
-			'store_description' => $_SESSION['store_description'] ?? null
-		];
-	}
-	
     
     /**
      * Get current user ID
