@@ -4,16 +4,25 @@
 class SellerController extends BaseController {
     private $productService;
     private $storeService;
+	private $categoryService;
+
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService();
         $this->storeService = new StoreService();
+		$this->categoryService = new CategoryService();
+
         $this->requireRole('SELLER');
     }
 
     public function createProductForm() {
-        $this->render('pages/seller/products/create');
+		$categories = $this->categoryService->getForDropdown();
+		$this->render('pages/seller/products/create', [
+			'categories' => $categories,
+			'old' => $_SESSION['old'] ?? [],
+			'errors' => $_SESSION['errors'] ?? []
+		]);
     }
 
     private function getSellerStoreId()
@@ -52,7 +61,14 @@ class SellerController extends BaseController {
             ]);
 
 			$storeId = $this->getSellerStoreId();
-            $this->productService->createProduct($postData, $storeId);
+
+			$productId = $this->productService->createProduct($postData, $storeId);
+			$categoryId = $postData['category_id'] ?? null;
+			$categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
+
+			if (!empty($productId)) {
+				$this->categoryService->updateForProduct((int)$productId, $categoryIds);
+			}
             
             $this->redirect('/seller/products?status=product_created');
 
@@ -86,7 +102,17 @@ class SellerController extends BaseController {
 			return;
 		}
 
-		$this->render('pages/seller/products/edit', ['product' => $product]);
+		$categories = $this->categoryService->getForDropdown();
+		$assigned = $this->categoryService->getForProduct($productId);
+		$assignedIds = array_column($assigned, 'category_id');
+
+		$this->render('pages/seller/products/edit', [
+			'product' => $product,
+			'categories' => $categories,
+			'assigned_category_ids' => $assignedIds,
+			'old' => $_SESSION['old'] ?? [],
+			'errors' => $_SESSION['errors'] ?? []
+		]);
 	}
 
 	public function updateProduct() { 
@@ -103,6 +129,11 @@ class SellerController extends BaseController {
 
 			$storeId = $this->getSellerStoreId(); 
 			$this->productService->updateProduct($productId, $postData, $storeId); 
+
+			$categoryId = $postData['category_id'] ?? null;
+			$categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
+			$this->categoryService->updateForProduct((int)$productId, $categoryIds);
+
 
 			$this->redirect('/seller/products?status=product_updated');
 		} catch (ValidationException $e) { 

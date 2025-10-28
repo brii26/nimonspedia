@@ -12,10 +12,11 @@ class ProductRepository extends BaseRepository {
         $fields = array_keys($data);
         $setClause = implode(' = ?, ', $fields) . ' = ?';
         $primaryKey = $this->getPrimaryKey();
-        $sql = "UPDATE {$this->table} SET {$setClause} WHERE {$primaryKey} = ?";
+        $sql = "UPDATE {$this->table} SET {$setClause} WHERE {$primaryKey} = ? RETURNING {$primaryKey}";
         $params = array_values($data);
         $params[] = $id;
-        return $this->db->update($sql, $params) > 0;
+        $result = $this->db->selectOne($sql, $params);
+        return $result ? $result[$primaryKey] : false;
     }
     
     /**

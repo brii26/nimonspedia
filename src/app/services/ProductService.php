@@ -2,9 +2,11 @@
 
 class ProductService {
     private $productRepository;
+	private $categoryService;
 
     public function __construct() {
         $this->productRepository = new ProductRepository();
+		$this->categoryService = new CategoryService();
     }
 
     /**
@@ -32,74 +34,87 @@ class ProductService {
         return $this->productRepository->findByIdWithDetails($productId);
     }
 
-    /**
-     * Creates a new product for a specific seller.
-     * This method contains the business logic for validating and sanitizing
-     * the input data before passing it to the repository for creation.
-     *
-     * @param array $data The product data submitted from a form (e.g., $_POST).
-     * @param int $storeId The ID of the seller's store, typically retrieved from the session.
-     * @return int The ID of the newly created product upon successful insertion.
-     * @throws Exception if required data is missing or invalid.
-     */
-    public function createProduct($data, $storeId) {
-        if (empty($data['product_name']) || !isset($data['price']) || !isset($data['stock'])) {
-            throw new Exception("Product name, price, and stock are required.");
-        }
-        if (!is_numeric($data['price']) || $data['price'] < 0) {
-            throw new Exception("Price must be a non-negative number.");
-        }
+	public function createProduct($data, $storeId) {
+		// validation
+		if (empty($data['product_name']) || !isset($data['price']) || !isset($data['stock'])) {
+			throw new Exception("Product name, price, and stock are required.");
+		}
+		if (!is_numeric($data['price']) || $data['price'] < 0) {
+			throw new Exception("Price must be a non-negative number.");
+		}
+	
+		// Handle uploaded image 
+		$product_image_path = null;
+		if (!empty($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+			$product_image_path = FileService::saveUploadedImage($_FILES['product_image'], 'product_image');
+		}
+	
+		$now = date('Y-m-d H:i:s');
+		$productData = [
+			'product_name' => htmlspecialchars($data['product_name']),
+			'description' => $data['description'] ?? '',
+			'price' => (float)$data['price'],
+			'stock' => (int)$data['stock'],
+			'store_id' => $storeId,
+			'main_image_path' => $product_image_path,
+			'created_at' => $now,
+			'updated_at' => $now
+		];
+	
+		$productId = $this->productRepository->create($productData);
 
-		$product_image = $_FILES['product_image'];
-		$product_image_path = FileService::saveUploadedImage($product_image, 'product_image');
-
-        $productData = [
-            'product_name' => htmlspecialchars($data['product_name']),
-            'description' => $data['description'] ?? '',
-            'price' => (float)$data['price'],
-            'stock' => (int)$data['stock'],
-            'store_id' => $storeId,
-			'main_image_path' => $product_image_path
-        ];
-
-        return $this->productRepository->create($productData);
-    }
+		if (!$productId) {
+			throw new Exception('Failed to create product (DB insert returned no id).');
+		}
+	
+		return (int)$productId;
+	}
+	
 
     /**
      * Update an existing product after verifying ownership.
      * @throws Exception if validation or ownership check fails.
      */
-    public function updateProduct($productId, $data, $storeId) {
-        $product = $this->productRepository->find($productId);
-        if (!$product) {
-            throw new Exception("Product not found.");
-        }
-
-        if ($product['store_id'] != $storeId) {
-            throw new Exception("You are not authorized to edit this product.");
-        }
-        
-		$productImage = $_FILES['product_image'];
+	public function updateProduct($productId, $data, $storeId) {
+		$product = $this->productRepository->find($productId);
+		if (!$product) {
+			throw new Exception("Product not found.");
+		}
+	
+		if ($product['store_id'] != $storeId) {
+			throw new Exception("You are not authorized to edit this product.");
+		}
+	
+		// handle image
+		$productImage = $_FILES['product_image'] ?? null;
 		$oldProductImage = $this->productRepository->getImagePath($productId);
 		$productImagePath = FileService::saveUploadedImage($productImage, 'product_image', $oldProductImage);
-
-        $updateData = [
-            'product_name' => htmlspecialchars($data['product_name']),
-            'description' => $data['description'] ?? '',
-            'price' => (float)$data['price'],
-            'stock' => (int)$data['stock'],
+	
+		$updateData = [
+			'product_name' => htmlspecialchars($data['product_name']),
+			'description' => $data['description'] ?? '',
+			'price' => (float)$data['price'],
+			'stock' => (int)$data['stock'],
 			'main_image_path' => $productImagePath
-        ];
-
+		];
+	
 		$oldPath = $this->productRepository->getImagePath($productId);
-
-        if (!$this->productRepository->update($productId, $updateData)) {
-            throw new Exception("Failed to update product.");
-        }
+	
+		if (!$this->productRepository->update($productId, $updateData)) {
+			throw new Exception("Failed to update product.");
+		}
+	
 		FileService::deleteFile($oldPath);
-
-        return true;
-    }
+	
+		$categoryId = $data['category_id'] ?? null;
+		$categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
+	
+		$this->categoryService->updateForProduct($productId, $categoryIds);
+	
+		return true;
+	}
+	
+	
     
     /**
      * Soft delete a product after verifying ownership.

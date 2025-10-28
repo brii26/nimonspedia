@@ -54,6 +54,24 @@
 								<input type="file" id="input_file" name="product_image" accept="image/*">
 							</div>
 
+							<div class="form-group mb-3">
+							<label for="category_id">Category: </label>
+							<select id="category_id" name="category_id" class="form-control" style="max-width:420px;">
+								<option value="">Select Category</option>
+								<?php
+									$selectedValue = (string)($old['category_id']
+										?? (isset($assigned_category_ids) ? (string)($assigned_category_ids[0] ?? '') : '')
+										?? '');
+									foreach ($categories as $cat):
+								?>
+									<option value="<?= View::escape($cat['category_id']) ?>"
+										<?= $selectedValue === (string)$cat['category_id'] ? 'selected' : '' ?>>
+										<?= View::escape($cat['name']) ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							</div>
+
                             <div class="form-group mb-3">
                                 <label for="description">Description</label>
 								<div id="editor">
