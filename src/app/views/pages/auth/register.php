@@ -75,7 +75,7 @@
             </div>
             <div class="form-group" style ="margin-bottom: 15px;">
 				<label for="input_file">Input Logo:</label>
-				<input type="file" id="input_file" name="store_logo_path" accept="image/*">
+				<input type="file" id="input_file" name="store_logo" accept="image/*">
 			</div>
             <div class="form-group">
                 <label for="store_description">Store Description :</label>

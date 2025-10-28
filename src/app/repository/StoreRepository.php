@@ -42,12 +42,12 @@ class StoreRepository extends BaseRepository {
         return $this->db->selectOne($sql, [$userId]);
     }
 
-    public function updateStore($storeId, $name, $desc) {
+    public function updateStore($storeId, $name, $desc, $logo) {
         $sql = "UPDATE stores
-                   SET store_name = ?, store_description = ?
+                   SET store_name = ?, store_description = ?, store_logo_path = ?
                  WHERE store_id = ?
              RETURNING TO_CHAR(updated_at AT TIME ZONE 'Asia/Jakarta','HH24:MI DD-MM-YYYY') AS last_updated";
-        return $this->db->selectOne($sql, [$name, $desc, $storeId]);
+        return $this->db->selectOne($sql, [$name, $desc, $logo, $storeId]);
     }
 
     public function getByIdForDisplay($storeId) {
@@ -58,4 +58,20 @@ class StoreRepository extends BaseRepository {
                  WHERE store_id = ?";
         return $this->db->selectOne($sql, [$storeId]);
     }
+
+    public function removeLogoPath($storeId) {
+        $sql = "SELECT store_logo_path FROM stores WHERE store_id = ?";
+        $store = $this->db->selectOne($sql, [$storeId]);
+        
+        if ($store && $store['store_logo_path']) {
+            FileService::deleteFile($store['store_logo_path']);
+            $sql = "UPDATE stores SET store_logo_path = NULL WHERE store_id = ?";
+            $this->db->execute($sql, [$storeId]);
+        }
+    }
+	public function getLogoPath($storeId) {
+		$sql = "SELECT store_logo_path FROM stores WHERE store_id = ?";
+		$row = $this->db->selectOne($sql, [$storeId]);
+		return $row ? $row['store_logo_path'] : null;
+	}
 }

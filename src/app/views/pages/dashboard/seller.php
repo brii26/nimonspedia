@@ -45,12 +45,16 @@
                         
                         <!-- Edit Mode -->
                         <div id="store-edit">
-                            <form method="POST" action="/seller/store/update">
+                            <form method="POST" action="/seller/store/update" enctype="multipart/form-data">
                                 <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                                 <div class="form-group mb-3">
                                     <label for="store_name">Store Name</label>
                                     <input type="text" id="store_name" name="store_name" class="form-control" value="<?= View::escape($store['store_name'] ?? '') ?>" required>
                                 </div>
+								<div class="form-group mb-3">
+									<label for="edit_file">Edit Logo:</label>
+									<input type="file" id="edit_file" name="store_logo" accept="image/*">
+								</div>
                                 <div class="form-group mb-3">
                                     <label for="store_description">Store Description</label>
 									<div id="editor"><?= $store['store_description'] ?? '' ?></div>

@@ -1,15 +1,15 @@
 <?php
 
 class SellerController extends BaseController {
-    private $productService;
-	private $storeRepo;
+	private $productService;
+	private $sellerService;
 
-    public function __construct() {
-        parent::__construct();
-        $this->productService = new ProductService();
-		$this->storeRepo = new StoreRepository();
-        $this->requireRole('SELLER');
-    }
+	public function __construct() {
+		parent::__construct();
+		$this->productService = new ProductService();
+		$this->sellerService = new SellerService();
+		$this->requireRole('SELLER');
+	}
 
     public function createProductForm() {
         $this->render('pages/seller/products/create');
@@ -17,17 +17,12 @@ class SellerController extends BaseController {
 
 	private function getSellerStoreId()
 	{
-		$user = Auth::user();
-		if (!$user || $user['role'] !== 'SELLER') {
-			$this->redirect('/login');
-		}
-
-		$row = $this->storeRepo->findByUserId($user['user_id']);
-
-		if (!$row) {
+		$storeId = $this->sellerService->getSellerStoreId();
+		if (!$storeId) {
 			$this->redirect('/dashboard?error=no_store');
+			return null;
 		}
-		return (int) $row['store_id'];
+		return $storeId;
 	}
 
     public function listProducts() {
@@ -147,13 +142,16 @@ class SellerController extends BaseController {
                 'store_description' => ['max:1000'],
             ]);
 
-            $storeId = $this->getSellerStoreId();
-            $name = $post['store_name'];
-            $desc = $post['store_description'] ?? '';
-            $row = $this->storeRepo->updateStore($storeId, $name, $desc);
+			$storeId = $this->getSellerStoreId();
+			$name = $post['store_name'];
+			$desc = $post['store_description'] ?? '';
+			$logo = $_FILES['store_logo'];
+			$old_logo = $this->sellerService->getLogoPath($storeId);
+			$updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
+			$this->sellerService->removeLogoPath($storeId);
+			$row = $this->sellerService->updateStore($storeId, $name, $desc, $updatedLogoPath);
 
-            $this->redirect('/dashboard?status=store_updated'
-                . ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
+            $this->redirect('/dashboard?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
         } catch (ValidationException $e) {
             $this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
         } catch (Exception $e) {
