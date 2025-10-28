@@ -135,6 +135,9 @@ class SellerController extends BaseController {
     public function updateStore() {
         $this->requireRole('SELLER');
         $post = $this->getPost();
+        $isAjax = !empty($_SERVER['HTTP_XML_REQUEST']) && 
+                  strtolower($_SERVER['HTTP_XML_REQUEST']) == 'xmlhttprequest';
+
         try {
             $this->verifyCsrf();
             $this->validate($post, [
@@ -143,13 +146,50 @@ class SellerController extends BaseController {
             ]);
 
 			$storeId = $this->getSellerStoreId();
+			if (!$storeId) {
+                throw new Exception('Store not found');
+            }
+
 			$row = $this->sellerService->updateStore($post, $storeId);
 
-            $this->redirect('/dashboard?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                $response = [
+                    'success' => true,
+                    'data' => [
+                        'store_name' => $post['store_name'],
+                        'store_description' => $post['store_description'],
+                        'store_logo_path' => $row['store_logo_path'] ?? null,
+                        'last_updated' => $row['last_updated'] ?? null
+                    ]
+                ];
+                echo json_encode($response);
+                exit;
+            } else {
+                $this->redirect('/dashboard?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
+            }
         } catch (ValidationException $e) {
-            $this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getFirstError()
+                ]);
+                exit;
+            } else {
+                $this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
+            }
         } catch (Exception $e) {
-            $this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ]);
+                exit;
+            } else {
+                $this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
+            }
         }
     }
 }

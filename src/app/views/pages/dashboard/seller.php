@@ -33,19 +33,19 @@
                     <div class="card-body">
                         <!-- Display Mode -->
 					<div id="store-display">
-						<h4><?= View::escape($store['store_name'] ?? 'My Store') ?></h4>
-						<p class="text-muted"><?= $store['store_description'] ?? 'No description available' ?></p>
+						<p id='store-name-display'><?= View::escape($store['store_name'] ?? 'My Store') ?></p>
+						<div id="store-description-display"><?= $store['store_description'] ?? 'No description available' ?></div>
 
-						<p class="small text-muted mb-1">
-							<strong>path: </strong> <?= View::escape($store['store_logo_path'] ?? '-') ?>
-						</p>
+						<div id="store-logo-path-container">
+							<strong>path: </strong> <span id="store-logo-path"><?= View::escape($store['store_logo_path'] ?? '-') ?></span>
+						</div>
 
 						<button type="button" id="edit-store-button">Edit Store</button>
 					</div>
                         
                         <!-- Edit Mode -->
                         <div id="store-edit">
-                            <form method="POST" action="/seller/store/update" enctype="multipart/form-data">
+                            <form>
                                 <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                                 <div class="form-group mb-3">
                                     <label for="store_name">Store Name</label>

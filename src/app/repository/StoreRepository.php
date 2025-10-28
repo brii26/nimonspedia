@@ -46,7 +46,7 @@ class StoreRepository extends BaseRepository {
         $sql = "UPDATE stores
                    SET store_name = ?, store_description = ?, store_logo_path = ?
                  WHERE store_id = ?
-             RETURNING TO_CHAR(updated_at AT TIME ZONE 'Asia/Jakarta','HH24:MI DD-MM-YYYY') AS last_updated";
+             RETURNING store_logo_path, TO_CHAR(updated_at AT TIME ZONE 'Asia/Jakarta','HH24:MI DD-MM-YYYY') AS last_updated";
         return $this->db->selectOne($sql, [$name, $desc, $logo, $storeId]);
     }
 
