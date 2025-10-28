@@ -34,7 +34,7 @@ class StoreRepository extends BaseRepository {
 	}
 
 	public function findByUserId($userId) {
-        $sql = "SELECT store_id, user_id, store_name, store_description,
+        $sql = "SELECT store_id, user_id, store_name, store_description, store_logo_path,
                        created_at, updated_at
                   FROM stores
                  WHERE user_id = ?

@@ -1,29 +1,30 @@
 <?php
 
-class SellerController extends BaseController {
-	private $productService;
-	private $sellerService;
 
-	public function __construct() {
-		parent::__construct();
-		$this->productService = new ProductService();
-		$this->sellerService = new SellerService();
-		$this->requireRole('SELLER');
-	}
+class SellerController extends BaseController {
+    private $productService;
+    private $storeService;
+
+    public function __construct() {
+        parent::__construct();
+        $this->productService = new ProductService();
+        $this->storeService = new StoreService();
+        $this->requireRole('SELLER');
+    }
 
     public function createProductForm() {
         $this->render('pages/seller/products/create');
     }
 
-	private function getSellerStoreId()
-	{
-		$storeId = $this->sellerService->getSellerStoreId();
-		if (!$storeId) {
-			$this->redirect('/dashboard?error=no_store');
-			return null;
-		}
-		return $storeId;
-	}
+    private function getSellerStoreId()
+    {
+        $storeId = $this->storeService->getSellerStoreId();
+        if (!$storeId) {
+            $this->redirect('/dashboard?error=no_store');
+            return null;
+        }
+        return $storeId;
+    }
 
     public function listProducts() {
 		if (isset($_GET['status']) && $_GET['status'] === 'product_created') {
@@ -150,7 +151,7 @@ class SellerController extends BaseController {
                 throw new Exception('Store not found');
             }
 
-			$row = $this->sellerService->updateStore($post, $storeId);
+            $row = $this->storeService->updateStore($post, $storeId);
 
             if ($isAjax) {
                 header('Content-Type: application/json');

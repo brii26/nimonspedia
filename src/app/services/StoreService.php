@@ -1,6 +1,6 @@
 <?php
 
-class SellerService {
+class StoreService {
     private $storeRepo;
 
     public function __construct() {
@@ -20,12 +20,12 @@ class SellerService {
     }
 
     public function updateStore($post, $storeId) {
-		$name = $post['store_name'];
-		$desc = $post['store_description'] ?? '';
-		$logo = $_FILES['store_logo'];
-		$old_logo = $this->getLogoPath($storeId);
-		$updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
-		$this->removeLogoPath($storeId);
+        $name = $post['store_name'];
+        $desc = $post['store_description'] ?? '';
+        $logo = $_FILES['store_logo'] ?? null;
+        $old_logo = $this->getLogoPath($storeId);
+        $updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
+        $this->removeLogoPath($storeId);
         return $this->storeRepo->updateStore($storeId, $name, $desc, $updatedLogoPath);
     }
 
@@ -35,5 +35,9 @@ class SellerService {
 
     public function removeLogoPath($storeId) {
         return $this->storeRepo->removeLogoPath($storeId);
+    }
+
+    public function getStoreForUser($userId) {
+        return $this->storeRepo->findByUserId($userId);
     }
 }

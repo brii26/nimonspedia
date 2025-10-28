@@ -4,7 +4,7 @@
 class ProductRepository extends BaseRepository {
 
     protected $table = 'products';
-	
+
     public function update($id, $data) {
         if (empty($data)) {
             return false;
@@ -155,6 +155,18 @@ class ProductRepository extends BaseRepository {
         $sql = "SELECT main_image_path FROM {$this->table} WHERE product_id = ? AND deleted_at IS NULL";
         $result = $this->db->selectOne($sql, [$productId]);
         return $result ? $result['main_image_path'] : null;
+    }
+
+	public function getLowStocks($storeId) {
+        $sql = "SELECT COUNT(product_id) AS low_stocks FROM {$this->table} WHERE store_id = ? AND stock > 0 AND stock < 10";
+        $row = $this->db->selectOne($sql, [$storeId]);
+        return isset($row['low_stocks']) ? (int)$row['low_stocks'] : 0;
+    }
+
+	public function getTotalProducts($storeId) {
+        $sql = "SELECT COUNT(*) AS total_products FROM {$this->table} WHERE store_id = ? AND deleted_at IS NULL";
+        $row = $this->db->selectOne($sql, [$storeId]);
+        return isset($row['total_products']) ? (int)$row['total_products'] : 0;
     }
 
     
