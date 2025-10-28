@@ -73,27 +73,6 @@ class SellerController extends BaseController {
         }
 	}
 
-	// OTW
-	// public function orders() { 
-	// 	$this->requireRole('SELLER');
-	// 	$user = Auth::user(); 
-	// 	$row = $this->db->selectOne("SELECT store_id FROM stores WHERE user_id = ? LIMIT 1", [$user['user_id']]);
-	// 	if (!$row) { 
-	// 		$this->redirect('/dashboard?error=no_store'); 
-	// 		return; 
-	// 	} 
-	// 	$storeId = (int)$row['store_id']; 
-
-	// 	$orders = $this->db->select(  
-	// 		"SELECT order_id, total_price, status, created_at FROM orders WHERE store_id = ? ORDER BY created_at DESC",
-	// 		[$storeId]
-	// 	); 
-
-	// 	$this->render('pages/seller/orders/index', [ 
-	// 		'orders' => $orders,
-	// 		'user' => $user
-	// 	]); 
-	// } 
 	public function editProduct()
 	{
 		$productId = (int) $this->getQuery('id', 0);

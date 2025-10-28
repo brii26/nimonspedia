@@ -2,12 +2,12 @@
 class StoreRepository extends BaseRepository {
     protected $table = 'stores';
 
-	public function createStore($userId, $name, $desc = null) {
-		$sql = "INSERT INTO stores (user_id, store_name, store_description, created_at, updated_at)
-				VALUES (?, ?, ?, NOW(), NOW())
-				RETURNING store_id, store_name, store_description, created_at, updated_at";
+	public function createStore($userId, $name, $desc = null, $storeLogoPath=null) {
+		$sql = "INSERT INTO stores (user_id, store_name, store_description, store_logo_path, created_at, updated_at)
+				VALUES (?, ?, ?, ?, NOW(), NOW())
+				RETURNING store_id, store_name, store_description, store_logo_path, created_at, updated_at";
 	
-		$row = $this->db->selectOne($sql, [$userId, $name, $desc]);
+		$row = $this->db->selectOne($sql, [$userId, $name, $desc, $storeLogoPath]);
 		if ($row) {
 			return $row;
 		}
@@ -16,6 +16,7 @@ class StoreRepository extends BaseRepository {
 			'user_id' => $userId,
 			'store_name' => $name,
 			'store_description' => $desc,
+			'store_logo_path' => $storeLogoPath,
 			'created_at' => date('Y-m-d H:i:s'),
 			'updated_at' => date('Y-m-d H:i:s')
 		]);

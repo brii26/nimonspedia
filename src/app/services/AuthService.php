@@ -34,7 +34,9 @@ class AuthService {
 		if ($data['role'] === 'SELLER') {
 			$storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
 			$storeDesc = $data['store_description'] ?? null;
-			$this->storeRepository->createStore($userId, $storeName, $storeDesc);
+			$storeLogo = $_FILES['store_logo_path'];
+			$storeLogoPath = FileService::saveUploadedImage($storeLogo,'store_logo');
+			$this->storeRepository->createStore($userId, $storeName, $storeDesc, $storeLogoPath);
 		}
 
 		if (!$userId) {

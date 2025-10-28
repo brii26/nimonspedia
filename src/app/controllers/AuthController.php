@@ -136,7 +136,7 @@ class AuthController extends BaseController {
                 );
 
                 // Get store information
-                $store = $db->selectOne("SELECT store_name, store_description, TO_CHAR(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS created_at, TO_CHAR(updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS updated_at FROM stores WHERE store_id = ?", [$storeId]);
+                $store = $db->selectOne("SELECT store_name, store_description, store_logo_path, TO_CHAR(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS created_at, TO_CHAR(updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'HH24:MI DD-MM-YYYY') AS updated_at FROM stores WHERE store_id = ?", [$storeId]);
 
 				// Get low stock information
 				$low_stock = $db->selectOne("SELECT COUNT(product_id) AS low_stocks FROM products WHERE store_id = ? AND stock > 0 AND stock < 10", [$storeId]);
