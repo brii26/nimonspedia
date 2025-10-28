@@ -125,7 +125,6 @@
                             <h4> Track 3 Development Area</h4>
                             <p><strong>TOLONG BUATIN:</strong></p>
                             <ul>
-                                <li>TODO: Implement file upload for product images</li>
                                 <li>TODO: Implement order management for sellers</li>
                             </ul>
                         </div>
