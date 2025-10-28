@@ -34,10 +34,13 @@
                         <!-- Display Mode -->
 					<div id="store-display">
 						<h4><?= View::escape($store['store_name'] ?? 'My Store') ?></h4>
-						<p class="text-muted"><?= $store['store_description'] ?? 'No description available' ?></p>
+						<p class="text-muted"><?= ($store['store_description'] ?? 'No description available') ?></p>
 
 						<p class="small text-muted mb-1">
-							<strong>path: </strong> <?= View::escape($store['store_logo_path'] ?? '-') ?>
+							<strong>Created:</strong> <?= View::escape($store['created_at'] ?? '-') ?>
+						</p>
+						<p class="small text-muted mb-3">
+							<strong>Last Updated:</strong> <?= View::escape($store['updated_at'] ?? '-') ?>
 						</p>
 
 						<button type="button" id="edit-store-button">Edit Store</button>
