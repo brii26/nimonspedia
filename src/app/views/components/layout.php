@@ -23,7 +23,7 @@ $currentPage = $currentPage ?? '';
     <meta property="og:url" content="<?= $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ?>">
     
     <!-- CSRF Token for JavaScript -->
-    <meta name="csrf-token" content="<?= Csrf::getToken() ?>">
+    <meta name="csrf-token" content="<?= Auth::csrfToken() ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
@@ -43,10 +43,7 @@ $currentPage = $currentPage ?? '';
     <!-- Global JavaScript -->
     <script src="/js/app.js" defer></script>
 </head>
-<body class="<?= $bodyClass ?? '' ?>">
-    <!-- Skip Navigation for Accessibility -->
-    <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
-    
+<body class="<?= $bodyClass ?? '' ?>">    
     <!-- Navigation -->
     <?php include __DIR__ . '/navbar.php'; ?>
     

@@ -146,7 +146,7 @@ $activePage = $currentPage ?? '';
                                 <div class="dropdown-divider"></div>
                                 
                                 <form method="POST" action="/logout" class="logout-form">
-                                    <input type="hidden" name="csrf_token" value="<?= Csrf::getToken() ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= Auth::csrfToken() ?>">
                                     <button type="submit" class="dropdown-item dropdown-item-logout">
                                         <span class="dropdown-icon">🚪</span>
                                         <span class="dropdown-text">Logout</span>

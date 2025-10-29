@@ -15,7 +15,11 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        $this->render('pages/auth/login');
+        $this->render('pages/auth/login', [
+            'pageTitle' => 'Login',
+            'cssFiles' => ['/css/pages/auth.css'],
+            'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/login.js']
+        ]);
     }
     
     /**
@@ -25,7 +29,11 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        $this->render('pages/auth/register');
+        $this->render('pages/auth/register', [
+            'pageTitle' => 'Register',
+            'cssFiles' => ['/css/pages/auth.css'],
+            'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
+        ]);;
     }
     
     /**
@@ -57,12 +65,18 @@ class AuthController extends BaseController {
         } catch (ValidationException $e) {
             $this->render('pages/auth/register', [
                 'errors' => $e->getErrors(),
-                'old' => $this->getPost()
+                'old' => $this->getPost(),
+                'pageTitle' => 'Register',
+                'cssFiles' => ['/css/pages/auth.css'],
+                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
             ]);
         } catch (Exception $e) {
             $this->render('pages/auth/register', [
                 'error' => $e->getMessage(),
-                'old' => $this->getPost()
+                'old' => $this->getPost(),
+                'pageTitle' => 'Register',
+                'cssFiles' => ['/css/pages/auth.css'],
+                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
             ]);
         }
     }
@@ -74,7 +88,11 @@ class AuthController extends BaseController {
         $this->requireAuth();
         $user = Auth::user();
         $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $this->render($view, ['user' => $user]);
+        $this->render($view, [
+            'user' => $user,
+            'pageTitle' => 'Dashboard',
+            'cssFiles' => ['/css/pages/dashboard.css']
+        ]);
     }
     
     /**
@@ -98,12 +116,18 @@ class AuthController extends BaseController {
         } catch (ValidationException $e) {
             $this->render('pages/auth/login', [
                 'errors' => $e->getErrors(),
-                'old' => $this->getPost()
+                'old' => $this->getPost(),
+                'pageTitle' => 'Login',
+                'cssFiles' => ['/css/pages/auth.css'],
+                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/login.js']
             ]);
         } catch (Exception $e) {
             $this->render('pages/auth/login', [
-                'error' => $e->getMessage(),
-                'old' => $this->getPost()
+                'errors' => $e->getErrors(),
+                'old' => $this->getPost(),
+                'pageTitle' => 'Login',
+                'cssFiles' => ['/css/pages/auth.css'],
+                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/login.js']
             ]);
         }
     }
@@ -112,7 +136,19 @@ class AuthController extends BaseController {
      * Process logout
      */
     public function logout() {
-        Auth::logout();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $this->verifyCsrf();
+                Auth::logout();
+            } catch (Exception $e) {
+                // Handle CSRF error, maybe log it or show a message
+                // For simplicity, just redirecting
+                error_log("Logout CSRF failed: " . $e->getMessage());
+             }
+        } else {
+            // Allow GET logout too for simplicity, though POST is safer
+            Auth::logout();
+        }
         $this->redirect('/login');
     }
     
@@ -122,7 +158,15 @@ class AuthController extends BaseController {
     public function profileForm() {
         $this->requireAuth();
         $user = $this->authService->getUserById(Auth::id());
-        $this->render('pages/auth/profile', ['user' => $user]);
+        $this->render('pages/auth/profile', [
+            'user' => $user,
+            'pageTitle' => 'Profile Settings',
+            'cssFiles' => ['/css/pages/profile.css'], // CSS profile
+            'jsFiles' => [ // JS profile
+                '/js/components/password-toggle.js',
+                '/js/pages/auth/profile.js'
+            ]
+        ]);
     }
     
     /**
