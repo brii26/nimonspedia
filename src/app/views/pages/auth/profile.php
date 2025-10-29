@@ -144,21 +144,39 @@
                                 
                                 <div class="form-group">
                                     <label for="current_password">Current Password</label>
-                                    <input type="password" id="current_password" name="current_password" 
-                                           required aria-describedby="current-password-error">
+                                    <div class="password-input-container">
+                                        <input type="password" id="current_password" name="current_password" 
+                                               required aria-describedby="current-password-error">
+                                        <button type="button" class="password-toggle" aria-label="Toggle current password visibility" data-target="current_password">
+                                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="new_password">New Password</label>
-                                    <input type="password" id="new_password" name="new_password" 
-                                           minlength="6" required aria-describedby="password-help new-password-error">
+                                    <div class="password-input-container">
+                                        <input type="password" id="new_password" name="new_password" 
+                                               minlength="6" required aria-describedby="password-help new-password-error">
+                                        <button type="button" class="password-toggle" aria-label="Toggle new password visibility" data-target="new_password">
+                                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                                        </button>
+                                    </div>
                                     <small id="password-help">Minimum 6 characters</small>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="confirm_password">Confirm New Password</label>
-                                    <input type="password" id="confirm_password" name="confirm_password" 
-                                           minlength="6" required aria-describedby="confirm-password-error">
+                                    <div class="password-input-container">
+                                        <input type="password" id="confirm_password" name="confirm_password" 
+                                               minlength="6" required aria-describedby="confirm-password-error">
+                                        <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" data-target="confirm_password">
+                                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <button type="submit" class="btn btn-warning">Change Password</button>
@@ -172,6 +190,9 @@
         </div>
     </main>
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="/js/components/password-toggle.js"></script>
     <script src="/js/pages/auth/profile.js"></script>
 </body>
 </html>

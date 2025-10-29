@@ -34,8 +34,14 @@
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" 
-                           required aria-describedby="password-error">
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" 
+                               required aria-describedby="password-error">
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="password">
+                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                        </button>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">
@@ -50,6 +56,7 @@
         </section>
     </main>
 
+    <script src="/js/components/password-toggle.js"></script>
     <script src="/js/pages/auth/login.js"></script>
 </body>
 </html>

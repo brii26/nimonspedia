@@ -165,6 +165,58 @@
     min-height: 80px;
 }
 
+/* Password Input Container */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 3rem; /* Space for toggle button */
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--text-muted, #6c757d);
+    transition: all 0.2s ease;
+}
+
+.password-toggle .icon-eye-off {
+    display: none;
+}
+
+.password-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-dark, #2c3e50);
+}
+
+.password-toggle:focus {
+    outline: 2px solid var(--primary-color, #667eea);
+    outline-offset: 1px;
+}
+
+.password-toggle.toggled {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.password-toggle svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
 /* Sidebar Sections */
 .profile-sidebar {
     display: flex;

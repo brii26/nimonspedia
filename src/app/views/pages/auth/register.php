@@ -72,15 +72,27 @@
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" 
-                           required aria-describedby="password-help password-error">
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" 
+                               required aria-describedby="password-help password-error">
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="password">
+                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                        </button>
+                    </div>
                     <small id="password-help">Minimum 8 characters with uppercase, lowercase, number and symbol</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="password_confirmation">Confirm Password</label>
-                    <input type="password" id="password_confirmation" name="password_confirmation" 
-                           required aria-describedby="password-confirmation-error">
+                    <div class="password-input-container">
+                        <input type="password" id="password_confirmation" name="password_confirmation" 
+                               required aria-describedby="password-confirmation-error">
+                        <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" data-target="password_confirmation">
+                            <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                            <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                        </button>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">
@@ -95,6 +107,9 @@
         </section>
     </main>
     
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="/js/components/password-toggle.js"></script>
     <script src="/js/pages/auth/register.js"></script>
 </body>
 </html>
