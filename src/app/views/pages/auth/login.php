@@ -1,4 +1,4 @@
-<main class="auth-container">
+<div class="auth-container">
     <section class="auth-card">
         <header class="auth-header">
             <h1>Login to Nimonspedia</h1>
@@ -43,4 +43,4 @@
             <p><a href="/" class="btn-link">← Back to Home</a></p>
         </nav>
     </section>
-</main>
+</div>

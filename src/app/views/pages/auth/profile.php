@@ -1,4 +1,4 @@
-<main class="profile-main">
+<div class="profile-main">
     <div class="container">
         <header class="page-header">
             <h1>Profile Settings</h1>
@@ -158,4 +158,4 @@
             </aside>
         </div>
     </div>
-</main>
+</div>

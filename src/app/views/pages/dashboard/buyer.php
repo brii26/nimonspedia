@@ -1,4 +1,4 @@
-<main class="dashboard-main">
+<div class="dashboard-main">
     <div class="container">
         <header class="page-header">
             <h1>Buyer Dashboard</h1>
@@ -61,4 +61,4 @@
             </div>
         </section>
     </div>
-</main>
+</div>
