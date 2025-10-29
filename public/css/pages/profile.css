@@ -293,8 +293,6 @@
 .btn-secondary {
     background-color: #6c757d;
     color: white;
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
 }
 
 .btn-secondary:hover {
