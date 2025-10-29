@@ -4,149 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Nimonspedia</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/pages/profile.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h2><a href="/dashboard">Nimonspedia</a></h2>
-            <div>
-                <span>Welcome, <?= View::escape($user['name']) ?>!</span>
-                <?php if ($user['role'] === 'BUYER'): ?>
-                    <span>Balance: <?= View::currency($user['balance']) ?></span>
-                <?php endif; ?>
-                <a href="/dashboard" class="btn btn-sm btn-secondary">Dashboard</a>
-                <form method="POST" action="/logout" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                    <button type="submit" class="btn btn-sm btn-danger">Logout</button>
-                </form>
+    <header class="navbar">
+        <div class="container navbar-content">
+            <div class="brand">
+                <h1><a href="/dashboard">Nimonspedia</a></h1>
             </div>
+            <nav class="user-nav">
+                <span class="user-info">Welcome, <?= View::escape($user['name']) ?>!</span>
+                <?php if ($user['role'] === 'BUYER'): ?>
+                    <span class="balance">Balance: <?= View::currency($user['balance']) ?></span>
+                <?php endif; ?>
+                <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+                <form method="POST" action="/logout" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Profile Information</h3>
-                    </div>
-                    <div class="card-body">
+    <main class="profile-main">
+        <div class="container">
+            <header class="page-header">
+                <h1>Profile Settings</h1>
+                <p>Manage your account information and preferences</p>
+            </header>
+            
+            <div class="profile-grid">
+                <section class="profile-section">
+                    <header class="section-header">
+                        <h2>Profile Information</h2>
+                    </header>
+                    
+                    <div class="section-content">
                         <?php if (isset($success)): ?>
-                            <div class="alert alert-success"><?= View::escape($success) ?></div>
+                            <div class="alert alert-success" role="alert" aria-live="polite">
+                                <?= View::escape($success) ?>
+                            </div>
                         <?php endif; ?>
                         
                         <?php if (isset($error)): ?>
-                            <div class="alert alert-danger"><?= View::escape($error) ?></div>
-                        <?php endif; ?>
-                        
-                        <form method="POST" action="/profile">
+                            <div class="alert alert-error" role="alert" aria-live="polite">
+                                <?= View::escape($error) ?>
+                            </div>
+                        <?php endif; ?>                        <form method="POST" action="/profile" class="profile-form">
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                             
                             <div class="form-group">
-                                <label for="name">Full Name:</label>
-                                <input type="text" id="name" name="name" class="form-control" 
-                                       value="<?= View::escape($old['name'] ?? $user['name']) ?>" required>
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" 
+                                       value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
+                                       required aria-describedby="name-error">
                                 <?php if (isset($errors['name'])): ?>
-                                    <div class="error"><?= View::escape($errors['name']) ?></div>
+                                    <div class="error" id="name-error" role="alert"><?= View::escape($errors['name']) ?></div>
                                 <?php endif; ?>
                             </div>
                             
                             <div class="form-group">
-                                <label for="email">Email:</label>
-                                <input type="email" id="email" name="email" class="form-control" 
-                                       value="<?= View::escape($old['email'] ?? $user['email']) ?>" required>
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" 
+                                       value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
+                                       required aria-describedby="email-error">
                                 <?php if (isset($errors['email'])): ?>
-                                    <div class="error"><?= View::escape($errors['email']) ?></div>
+                                    <div class="error" id="email-error" role="alert"><?= View::escape($errors['email']) ?></div>
                                 <?php endif; ?>
                             </div>
                             
                             <div class="form-group">
-                                <label for="address">Address:</label>
-                                <textarea id="address" name="address" class="form-control" rows="3" required><?= View::escape($old['address'] ?? $user['address']) ?></textarea>
+                                <label for="address">Address</label>
+                                <textarea id="address" name="address" rows="3" 
+                                          required aria-describedby="address-error"><?= View::escape($old['address'] ?? $user['address']) ?></textarea>
                                 <?php if (isset($errors['address'])): ?>
-                                    <div class="error"><?= View::escape($errors['address']) ?></div>
+                                    <div class="error" id="address-error" role="alert"><?= View::escape($errors['address']) ?></div>
                                 <?php endif; ?>
                             </div>
                             
                             <div class="form-group">
-                                <label>Role:</label>
-                                <input type="text" class="form-control" value="<?= View::escape($user['role']) ?>" readonly>
-                                <small class="text-muted">Role cannot be changed</small>
+                                <label for="role-display">Role</label>
+                                <input type="text" id="role-display" value="<?= View::escape($user['role']) ?>" readonly>
+                                <small>Role cannot be changed</small>
                             </div>
                             
                             <?php if ($user['role'] === 'BUYER'): ?>
                             <div class="form-group">
-                                <label>Balance:</label>
-                                <input type="text" class="form-control" value="<?= View::currency($user['balance']) ?>" readonly>
-                                <small class="text-muted">Use top-up feature to add balance</small>
+                                <label for="balance-display">Current Balance</label>
+                                <input type="text" id="balance-display" value="<?= View::currency($user['balance']) ?>" readonly>
+                                <small>Use top-up feature to add balance</small>
                             </div>
                             <?php endif; ?>
                             
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                         </form>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-6">
-                <?php if ($user['role'] === 'BUYER'): ?>
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h3>Top Up Balance</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="topUpForm">
-                            <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                            
-                            <div class="form-group">
-                                <label for="amount">Amount:</label>
-                                <input type="number" id="amount" name="amount" class="form-control" 
-                                       min="10000" step="10000" placeholder="Minimum Rp 10.000" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-success">Top Up</button>
-                        </form>
-                        
-                        <div id="topUpResult" class="mt-3"></div>
-                    </div>
-                </div>
-                <?php endif; ?>
+                </section>
                 
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Change Password</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="changePasswordForm">
-                            <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                            
-                            <div class="form-group">
-                                <label for="current_password">Current Password:</label>
-                                <input type="password" id="current_password" name="current_password" class="form-control" required>
+                <aside class="profile-sidebar">
+                    <?php if ($user['role'] === 'BUYER'): ?>
+                    <section class="balance-section">
+                        <header class="section-header">
+                            <h2>Top Up Balance</h2>
+                        </header>
+                        <div class="section-content">
+                            <div class="balance-display">
+                                <strong>Current Balance: <?= View::currency($user['balance'] ?? 0) ?></strong>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="new_password">New Password:</label>
-                                <input type="password" id="new_password" name="new_password" class="form-control" 
-                                       minlength="6" required>
-                            </div>
+                            <form id="topUpForm" class="topup-form">
+                                <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                
+                                <div class="form-group">
+                                    <label for="amount">Amount</label>
+                                    <input type="number" id="amount" name="amount" 
+                                           min="10000" step="10000" 
+                                           placeholder="Minimum Rp 10.000" 
+                                           required aria-describedby="amount-help">
+                                    <small id="amount-help">Minimum amount is Rp 10.000</small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success">Top Up Balance</button>
+                            </form>
                             
-                            <div class="form-group">
-                                <label for="confirm_password">Confirm New Password:</label>
-                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" 
-                                       minlength="6" required>
-                            </div>
+                            <div id="topUpResult" aria-live="polite"></div>
+                        </div>
+                    </section>
+                    <?php endif; ?>
+                    
+                    <section class="password-section">
+                        <header class="section-header">
+                            <h2>Change Password</h2>
+                        </header>
+                        <div class="section-content">
+                            <form id="changePasswordForm" class="password-form">
+                                <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                
+                                <div class="form-group">
+                                    <label for="current_password">Current Password</label>
+                                    <input type="password" id="current_password" name="current_password" 
+                                           required aria-describedby="current-password-error">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="new_password">New Password</label>
+                                    <input type="password" id="new_password" name="new_password" 
+                                           minlength="6" required aria-describedby="password-help new-password-error">
+                                    <small id="password-help">Minimum 6 characters</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirm_password">Confirm New Password</label>
+                                    <input type="password" id="confirm_password" name="confirm_password" 
+                                           minlength="6" required aria-describedby="confirm-password-error">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-warning">Change Password</button>
+                            </form>
                             
-                            <button type="submit" class="btn btn-warning">Change Password</button>
-                        </form>
-                        
-                        <div id="passwordResult" class="mt-3"></div>
-                    </div>
-                </div>
+                            <div id="passwordResult" aria-live="polite"></div>
+                        </div>
+                    </section>
+                </aside>
             </div>
         </div>
-    </div>
-    
-    <script src="./js/pages/auth/profile.js"></script> 
+    </main>
+
+    <script src="/js/pages/auth/profile.js"></script>
 </body>
 </html>

@@ -4,106 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard - Nimonspedia</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/pages/dashboard.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h2>Nimonspedia - Seller Panel</h2>
-            <div>
-                <span>Welcome, <?= View::escape($user['name']) ?>!</span>
-                <a href="/profile" class="btn btn-sm btn-secondary">Profile</a>
-                <form method="POST" action="/logout" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                    <button type="submit" class="btn btn-sm btn-danger">Logout</button>
-                </form>
+    <header class="navbar">
+        <div class="container navbar-content">
+            <div class="brand">
+                <h1><a href="/dashboard">Nimonspedia - Seller Panel</a></h1>
             </div>
+            <nav class="user-nav">
+                <span class="user-info">Welcome, <?= View::escape($user['name']) ?>!</span>
+                <a href="/profile" class="btn btn-secondary">Profile</a>
+                <form method="POST" action="/logout" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header">
-                        <h3> Seller Dashboard</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h5>Total Products</h5>
-                                        <h2>0</h2>
-                                        <a href="/seller/products" class="btn btn-primary btn-sm">Manage Products</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h5>Orders</h5>
-                                        <h2>0</h2>
-                                        <a href="/seller/orders" class="btn btn-secondary btn-sm">View Orders</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h5>Revenue</h5>
-                                        <h2><?= View::currency(0) ?></h2>
-                                        <a href="/seller/analytics" class="btn btn-secondary btn-sm">Analytics</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="card">
-                                    <div class="card-body text-center">
-                                        <h5>Store Rating</h5>
-                                        <h2>-</h2>
-                                        <a href="/seller/store" class="btn btn-secondary btn-sm">Store Profile</a>
-                                    </div>
-                                </div>
-                            </div>
+    <main class="dashboard-main">
+        <div class="container">
+            <header class="page-header">
+                <h1>Seller Dashboard</h1>
+                <p>Manage your products, orders, and store</p>
+            </header>
+
+            <section class="dashboard-stats">
+                <h2 class="sr-only">Store Overview</h2>
+                <div class="stats-grid stats-grid-4">
+                    <article class="stat-card">
+                        <header class="stat-header">
+                            <h3>Total Products</h3>
+                        </header>
+                        <div class="stat-content">
+                            <div class="stat-value">0</div>
+                            <a href="/seller/products" class="btn btn-primary">Manage Products</a>
                         </div>
-                        
-                        <div class="mt-4">
-                            <h4>Quick Actions</h4>
-                            <div class="mt-3">
-                                <a href="/seller/products/add" class="btn btn-success">Add New Product</a>
-                                <a href="/seller/products" class="btn btn-primary">Manage Products</a>
-                                <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
-                                <a href="/seller/store" class="btn btn-secondary">Store Settings</a>
-                            </div>
+                    </article>
+                    
+                    <article class="stat-card">
+                        <header class="stat-header">
+                            <h3>Orders</h3>
+                        </header>
+                        <div class="stat-content">
+                            <div class="stat-value">0</div>
+                            <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
                         </div>
-                        
-                        <!-- Recent Activity -->
-                        <div class="mt-4">
-                            <h4>Recent Activity</h4>
-                            <div class="alert alert-info">
-                                <p>No recent activity. Start by adding your first product!</p>
-                            </div>
+                    </article>
+                    
+                    <article class="stat-card">
+                        <header class="stat-header">
+                            <h3>Revenue</h3>
+                        </header>
+                        <div class="stat-content">
+                            <div class="stat-value"><?= View::currency(0) ?></div>
+                            <a href="/seller/analytics" class="btn btn-secondary">Analytics</a>
                         </div>
-                        
-                        <!-- Track 3 Development Area -->
-                        <div class="mt-5" style="border: 2px dashed #28a745; padding: 20px;">
-                            <h4> Track 3 Development Area</h4>
-                            <p><strong>TOLONG BUATIN:</strong></p>
-                            <ul>
-                                <li>User authentication is working</li>
-                                <li>Seller user data available in <code>$user</code> variable</li>
-                                <li>User role validation working (<code>Auth::requireRole('SELLER')</code>)</li>
-                                <li>TODO: Implement SellerController</li>
-                                <li>TODO: Implement product CRUD (create, read, update, delete)</li>
-                                <li>TODO: Implement file upload for product images</li>
-                                <li>TODO: Implement order management for sellers</li>
-                                <li>TODO: Implement store profile management</li>
-                            </ul>
+                    </article>
+                    
+                    <article class="stat-card">
+                        <header class="stat-header">
+                            <h3>Store Rating</h3>
+                        </header>
+                        <div class="stat-content">
+                            <div class="stat-value">-</div>
+                            <a href="/seller/store" class="btn btn-secondary">Store Profile</a>
                         </div>
+                    </article>
+                </div>
+            </section>
+            
+            <section class="quick-actions">
+                <header class="section-header">
+                    <h2>Quick Actions</h2>
+                </header>
+                <nav class="actions-nav">
+                    <a href="/seller/products/add" class="btn btn-success">Add New Product</a>
+                    <a href="/seller/products" class="btn btn-primary">Manage Products</a>
+                    <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
+                    <a href="/seller/store" class="btn btn-secondary">Store Settings</a>
+                </nav>
+            </section>
+            
+            <section class="recent-activity">
+                <header class="section-header">
+                    <h2>Recent Activity</h2>
+                </header>
+                <div class="activity-content">
+                    <div class="alert alert-info" role="status">
+                        <p>No recent activity. Start by adding your first product!</p>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- Track 3 Development Area -->
+            <section class="development-area">
+                <header class="development-header">
+                    <h2>Track 3 Development Area</h2>
+                </header>
+                <div class="development-content">
+                    <p><strong>TOLONG BUATIN:</strong></p>
+                    <ul>
+                        <li>User authentication is working</li>
+                        <li>Seller user data available in <code>$user</code> variable</li>
+                        <li>User role validation working (<code>Auth::requireRole('SELLER')</code>)</li>
+                        <li>TODO: Implement SellerController</li>
+                        <li>TODO: Implement product CRUD (create, read, update, delete)</li>
+                        <li>TODO: Implement file upload for product images</li>
+                        <li>TODO: Implement order management for sellers</li>
+                        <li>TODO: Implement store profile management</li>
+                    </ul>
+                </div>
+            </section>
         </div>
-    </div>
+    </main>
 </body>
 </html>
