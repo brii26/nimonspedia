@@ -33,16 +33,15 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
-        $role = $this->getQuery('role'); 
-        if ($role !== 'BUYER' && $role !== 'SELLER') { 
-            $this->redirect('/register/role');
-            return;
-        }
         $this->render('pages/auth/register', [
             'pageTitle' => 'Register',
-            'cssFiles' => ['/css/pages/auth.css'],
-            'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js'],
-            'role' => $role
+            'cssFiles' => ['/css/pages/auth.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+            'jsFiles' => [
+                '/js/components/password-toggle.js', 
+                '/js/pages/auth/register.js',
+                'https://cdn.quilljs.com/1.3.6/quill.js',
+                '/js/utils/quill-setup.js',
+            ],
         ]);
     }
     

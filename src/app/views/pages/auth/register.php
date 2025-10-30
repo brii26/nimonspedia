@@ -85,23 +85,23 @@
                 </div>
             </div>
             
-            <?php if ($currentRole === 'SELLER'): ?>
-            <div style="height:1px; background:#eee; margin:16px 0;"></div>
-            <h3>Store Information</h3>
-            <div class="form-group">
-                <label for="store_name">Store Name:</label>
-                <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>" required>
+            <div id="seller-fields" style="display: none;">
+                <div style="height:1px; background:#eee; margin:16px 0;"></div>
+                <h3>Store Information</h3>
+                <div class="form-group">
+                    <label for="store_name">Store Name:</label>
+                    <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>">
+                </div>
+                <div class="form-group" style ="margin-bottom: 15px;">
+                    <label for="input_file">Input Logo:</label>
+                    <input type="file" id="input_file" name="store_logo" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="store_description">Store Description :</label>
+                    <div id="editor"><?= $old['store_description'] ?? '' ?></div>
+                    <input type="hidden" name="store_description" id="store_description">
+                </div>
             </div>
-            <div class="form-group" style ="margin-bottom: 15px;">
-				<label for="input_file">Input Logo:</label>
-				<input type="file" id="input_file" name="store_logo" accept="image/*">
-			</div>
-            <div class="form-group">
-                <label for="store_description">Store Description :</label>
-				<div id="editor"><?= $old['store_description'] ?? '' ?></div>
-                <input type="hidden" name="store_description" id="store_description">
-            </div>
-            <?php endif; ?>
 
             <button type="submit" class="btn btn-primary btn-block">Create Account</button>
         </form>
