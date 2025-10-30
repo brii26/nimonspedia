@@ -1,5 +1,4 @@
 <?php
-// $cart is expected: ['items' => [...], 'total' => int]
 $items = $cart['items'] ?? [];
 $total = $cart['total'] ?? 0;
 ?>
