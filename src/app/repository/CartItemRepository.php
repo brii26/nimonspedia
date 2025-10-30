@@ -128,9 +128,17 @@ class CartItemRepository extends BaseRepository
      */
     public function countByBuyer(int $buyerId): int
     {
-        $sql = "SELECT COUNT(quantity) as cnt FROM {$this->table} WHERE buyer_id = ?";
+        $sql = "SELECT COUNT({$this->getPrimaryKey()}) as cnt FROM {$this->table} WHERE buyer_id = ?";
         $row = $this->db->selectOne($sql, [$buyerId]);
         
         return $row && $row['cnt'] ? (int)$row['cnt'] : 0;
+    }
+    
+    public function sumQuantityByBuyer(int $buyerId): int
+    {
+        $sql = "SELECT SUM(quantity) as total_units FROM {$this->table} WHERE buyer_id = ?";
+        $row = $this->db->selectOne($sql, [$buyerId]);
+        
+        return $row && $row['total_units'] ? (int)$row['total_units'] : 0;
     }
 }
