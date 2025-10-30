@@ -125,28 +125,35 @@
                                 <label for="new_password">New Password</label>
                                 <div class="password-input-container">
                                     <input type="password" id="new_password" name="new_password" 
-                                            minlength="6" required aria-describedby="password-help new-password-error">
+                                            minlength="8" required aria-describedby="password-help new-password-error">
                                     <button type="button" class="password-toggle" aria-label="Toggle new password visibility" data-target="new_password">
                                         <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
                                         <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
                                     </button>
                                 </div>
-                                <small id="password-help">Minimum 6 characters</small>
+                                <div id="password-criteria">
+                                    <small class="criteria-item" id="criteria-length">Minimum 8 characters</small>
+                                    <small class="criteria-item" id="criteria-lower">At least one lowercase letter</small>
+                                    <small class="criteria-item" id="criteria-upper">At least one uppercase letter</small>
+                                    <small class="criteria-item" id="criteria-number">At least one number</small>
+                                    <small class="criteria-item" id="criteria-symbol">At least one symbol (e.g., _ or !)</small>
+                                </div>
                             </div>
                             
                             <div class="form-group">
                                 <label for="confirm_password">Confirm New Password</label>
                                 <div class="password-input-container">
                                     <input type="password" id="confirm_password" name="confirm_password" 
-                                            minlength="6" required aria-describedby="confirm-password-error">
+                                        required aria-describedby="confirm-password-error">
                                     <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" data-target="confirm_password">
                                         <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
                                         <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
                                     </button>
                                 </div>
+                                <small class="error-message" id="confirm_password-error" hidden></small>
                             </div>
                             
-                            <button type="submit" class="btn btn-warning">Change Password</button>
+                            <button type="submit" class="btn btn-warning" id="changePasswordButton">Change Password</button>
                         </form>
                         
                         <div id="passwordResult" aria-live="polite"></div>

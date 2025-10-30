@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!isNameValid || !isEmailValid || !isAddressValid) {
                 console.log('Validasi FE gagal, submit dibatalkan.');
-                if (submitButton) App.hideLoading(submitButton); 
+                reset(submitButton, resultDiv); 
                 return;
             }
             console.log('Validasi FE berhasil, kirim AJAX');
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(response => response.json())
             .then(data => {
-                if (submitButton) App.hideLoading(submitButton);
+                reset(submitButton, resultDiv);
 
                 if (data.success) {
                     resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('AJAX Error:', error);
-                if (submitButton) App.hideLoading(submitButton);
                 resultDiv.innerHTML = `<div class="alert alert-error">A network error occurred. Please try again.</div>`;
+                reset(submitButton, resultDiv);
             })
         });
     }
@@ -169,41 +169,108 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
-                } if (submitButton) App.hideLoading(submitButton);
+                } reset(submitButton, resultDiv);
             })
             .catch(error => {
                 resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred : ' + error + '</div>';
-                if (submitButton) App.hideLoading(submitButton);
+                reset(submitButton, resultDiv);
             });
 
         })
     }
 
     const changePassword = document.getElementById("changePasswordForm");
-    changePassword.addEventListener("submit", (e) => {
-        e.preventDefault();
+    if (changePassword) {
+        const newPasswordInput = document.getElementById('new_password');
+        const criteriaLength = document.getElementById('criteria-length');
+        const criteriaLower = document.getElementById('criteria-lower');
+        const criteriaUpper = document.getElementById('criteria-upper');
+        const criteriaNumber = document.getElementById('criteria-number');
+        const criteriaSymbol = document.getElementById('criteria-symbol');
+        
+        const validatePasswordLive = () => {
+            const password = newPasswordInput.value;
+            
+            // Regex
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSymbol = /[^A-Za-z0-9]/.test(password); // [^\w] berarti "non-word", _ adalah pengecualian
+            const hasLength = password.length >= 8;
+            
+            // Update UI Checklist
+            criteriaLength.classList.toggle('valid', hasLength);
+            criteriaLower.classList.toggle('valid', hasLower);
+            criteriaUpper.classList.toggle('valid', hasUpper);
+            criteriaNumber.classList.toggle('valid', hasNumber);
+            criteriaSymbol.classList.toggle('valid', hasSymbol);
+            
+            return hasLength && hasLower && hasUpper && hasNumber && hasSymbol;
+        };
 
-        const formData = new FormData(changePassword);
-        const resultDiv = document.getElementById("passwordResult");
+        if (newPasswordInput) {
+            newPasswordInput.addEventListener('input', validatePasswordLive);
+        }
 
-        formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
+        changePassword.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(changePassword);
+            const resultDiv = document.getElementById("passwordResult");
+            const submitButton = document.getElementById('changePasswordButton');
+            
+            resultDiv.innerHTML = '';
+            
+            const isPasswordValid = validatePasswordLive();
+            const newPass = formData.get('new_password');
+            const confirmPass = formData.get('confirm_password');
 
-        fetchXhr("profile/password", {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-                changePassword.reset();
-            } else {
-                resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+            if (!isPasswordValid) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Password baru tidak memenuhi semua kriteria.</div>';
+                if (submitButton) App.hideLoading(submitButton);
+                return;
             }
-        })
-        .catch(error => {
-            resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred: '+ error +'</div>';
-        });
-    })
+            
+            if (newPass !== confirmPass) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Konfirmasi password baru tidak cocok.</div>';
+                if (submitButton) App.hideLoading(submitButton);
+                return; 
+            }
 
+            formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
+
+            fetchXhr("profile/password", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + ' Halaman akan di-reload...</div>';
+                    changePassword.reset();
+                    
+                    setTimeout(() => {
+                        window.location.reload(); 
+                    }, 2000);
+
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    reset(submitButton, resultDiv);
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred: '+ error +'</div>';
+                reset(submitButton, resultDiv);2
+            });
+        });
+    }
+
+    const reset = (submitButton, resultDiv) => {
+        if (submitButton) { 
+            App.hideLoading(submitButton)
+            setTimeout(() => {
+                resultDiv.innerHTML = '';
+            }, 5000)
+        }
+    };
 })

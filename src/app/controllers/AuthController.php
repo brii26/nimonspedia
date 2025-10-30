@@ -297,7 +297,11 @@ class AuthController extends BaseController {
             
             $this->validate($postData, [
                 'current_password' => 'required',
-                'new_password' => ['required', 'min:6'],
+                'new_password' => [
+					'required',
+					'min:8',
+					'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/'
+				],
                 'confirm_password' => 'required'
             ]);
             

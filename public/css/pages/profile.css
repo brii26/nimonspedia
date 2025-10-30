@@ -210,6 +210,36 @@
     font-weight: 600;
 }
 
+/* -- Password Criteria Checklist -- */
+#password-criteria {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.criteria-item {
+    font-size: 0.875rem;
+    color: #dc3545; /* Default: Merah (invalid) */
+    transition: all 0.2s ease;
+}
+
+.criteria-item::before {
+    content: '✖'; /* Ikon 'X' */
+    margin-right: 0.5rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Style untuk kriteria yang valid */
+.criteria-item.valid {
+    color: #28a745; /* Hijau (valid) */
+}
+
+.criteria-item.valid::before {
+    content: '✔'; /* Ikon 'check' */
+}
+
 /* Alert Styles */
 .alert {
     border-radius: 6px;
