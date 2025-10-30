@@ -276,6 +276,30 @@
     background-color: #c82333;
 }
 
+
+/* buat header store */
+#store-edit {
+	display: none;
+}
+
+/* edit toko same page ui manipulation */
+body.edit-mode #store-display {
+	display: none;
+}
+body.edit-mode #store-edit {
+	display : block;
+}
+
+#editor { 
+	width: 400px;
+	border: 1px solid #ccc; 
+	border-radius: 4px; 
+	background: #fff; 
+	font-family: Arial, sans-serif;
+}
+
+/* =========================================== */
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .stats-grid {

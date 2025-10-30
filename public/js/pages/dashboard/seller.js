@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const editBtn = document.getElementById('edit-store-button');
 	const cancelBtn = document.getElementById('cancel-button');
 	const storeForm = document.querySelector('#store-edit form');
+	const saveBtn = document.querySelector('#save-button');
 
 	let editor = createEditor('#editor','store_description');
   
@@ -9,49 +10,47 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.body.classList.toggle('edit-mode');
 	});
 
-	storeForm.addEventListener('submit', (e) => {
+	cancelBtn.addEventListener('click', () => {
+		document.body.classList.toggle('edit-mode');
+	});
+
+	storeForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const formData = new FormData(storeForm);
 		formData.set('store_description', editor.root.innerHTML);
+		App.showLoading(saveBtn, 'Saving...');
+	
+		try {
+		  const res = await fetchXhr('/seller/store/update', {
+			method: 'POST',
+			body: formData,
+			headers: {
+			  'xml-request': 'XMLHttpRequest' 
+			},
+		  });
+			
+		const payload = await res.json();
 
-		const xhr = new XMLHttpRequest();
-		xhr.open('POST', '/seller/store/update', true);
-		xhr.setRequestHeader('xml-request', 'XMLHttpRequest');
-		
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4) {
-				if (xhr.status === 200) {
-					try {
-						const response = JSON.parse(xhr.responseText);
-						console.log('Server response:', response); // Debug log
+		if (res.ok && payload && payload.success) {
+			const nameEl = document.querySelector('#store-name-display');
+			const descEl = document.querySelector('#store-description-display');
+			if (nameEl) nameEl.textContent = payload.data.store_name;
+			if (descEl) descEl.innerHTML = payload.data.store_description;
 
-						if (response.success) {
-							document.querySelector('#store-name-display').textContent = response.data.store_name;
-							document.querySelector('#store-description-display').innerHTML = response.data.store_description;
-							
-							if (response.data.store_logo_path) {
-								document.querySelector('#store-logo-path').innerHTML = ' ' + response.data.store_logo_path;
-							}
-							
-							document.body.classList.toggle('edit-mode');
-						} else {
-							alert(response.message || 'Update failed');
-						}
-					} catch (e) {
-						console.error('Parse error:', e, 'Response text:', xhr.responseText);
-						alert('Error processing response');
-					}
-				} else {
-					console.error('HTTP Error:', xhr.status, xhr.statusText);
-					alert('Error updating store');
-				}
+			if (payload.data.store_logo_path) {
+			const logoPathEl = document.querySelector('#store-logo-path');
+			if (logoPathEl) logoPathEl.innerHTML = ' ' + payload.data.store_logo_path;
 			}
-		};
-
-		xhr.send(formData);
-	});
-
-	cancelBtn.addEventListener('click', () => {
-		document.body.classList.toggle('edit-mode');
+			App.hideLoading(saveBtn);
+			document.body.classList.toggle('edit-mode');
+			App.showAlert('Store updated', 'success');
+		} else {
+			App.showAlert(payload?.message || 'Update failed', 'error');
+		}
+	  } catch (err) {
+		App.hideLoading(saveBtn);
+		console.error('Request error:', err);
+		App.showAlert('Error updating store', 'error');
+	  }
 	});
 });
