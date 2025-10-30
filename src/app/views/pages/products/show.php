@@ -30,15 +30,65 @@
                     <div class="card-body">
                         <p><strong>Stock:</strong> <?= View::escape($product['stock']) ?></p>
                         <hr>
-                        <form action="/cart/add" method="POST">
-                            <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
-                            <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                            <div class="form-group mb-2">
-                                <label for="quantity">Quantity</label>
-                                <input type="number" name="quantity" class="form-control" value="1" min="1" max="<?= View::escape($product['stock']) ?>">
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Add to Cart</button>
-                        </form>
+                            <form id="addToCartForm" class="add-to-cart-form">
+                                <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
+                                <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                <div class="form-group mb-2">
+                                    <label for="quantity">Quantity</label>
+                                    <input type="number" name="quantity" class="form-control" value="1" min="1" 
+                                        max="<?= View::escape($product['stock']) ?>" 
+                                        <?= ($product['stock'] <= 0) ? 'disabled' : '' ?>>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?>>
+                                    <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
+                                </button>
+                            </form>
+
+                            <script>
+                            document.getElementById('addToCartForm').addEventListener('submit', async function(e) {
+                                e.preventDefault();
+                                const form = this;
+                                const button = form.querySelector('button[type="submit"]');
+                                const originalText = button.textContent;
+                            
+                                try {
+                                    button.disabled = true;
+                                    button.textContent = 'Adding...';
+
+                                    const response = await fetch('/cart/add', {
+                                        method: 'POST',
+                                        credentials: 'same-origin',
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                        },
+                                        body: new URLSearchParams(new FormData(form))
+                                    });
+
+                                    const result = await response.json();
+
+                                    if (!response.ok) {
+                                        throw new Error(result.error || 'Failed to add to cart');
+                                    }
+
+                                    // Update cart badge if it exists
+                                    const badge = document.querySelector('.cart-badge');
+                                    if (badge && result.data?.uniqueCount) {
+                                        badge.textContent = result.data.uniqueCount;
+                                        badge.style.display = 'flex';
+                                    }
+
+                                    // Show success message
+                                    alert('Item added to cart successfully!');
+                                
+                                } catch (error) {
+                                    console.error('Error:', error);
+                                    alert(error.message || 'Failed to add item to cart');
+                                } finally {
+                                    button.disabled = false;
+                                    button.textContent = originalText;
+                                }
+                            });
+                            </script>
                     </div>
                 </div>
             </div>

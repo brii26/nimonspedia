@@ -37,7 +37,14 @@
                                 </p>
                             </div>
                             <div class="card-footer">
-                                <a href="#" class="btn btn-primary btn-sm w-100">Add to Cart</a>
+                                <form class="add-to-cart-listing" data-product-id="<?= View::escape($product['product_id']) ?>">
+                                    <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
+                                        <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -55,5 +62,50 @@
             </nav>
         <?php endif; ?>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.add-to-cart-listing').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                try {
+                    btn.disabled = true;
+                    btn.textContent = 'Adding...';
+
+                    const response = await fetch('/cart/add', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams(new FormData(form))
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to add to cart');
+                    }
+
+                    // update cart badge
+                    const badge = document.querySelector('.cart-badge');
+                    if (badge && result.data?.uniqueCount) {
+                        badge.textContent = result.data.uniqueCount;
+                        badge.style.display = 'flex';
+                    }
+
+                    // lightweight feedback
+                    btn.textContent = 'Added';
+                    setTimeout(() => btn.textContent = originalText, 900);
+                } catch (err) {
+                    console.error(err);
+                    alert(err.message || 'Gagal menambahkan ke keranjang');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
