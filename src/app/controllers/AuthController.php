@@ -81,16 +81,25 @@ class AuthController extends BaseController {
                 'errors' => $e->getErrors(),
                 'old' => $this->getPost(),
                 'pageTitle' => 'Register',
-                'cssFiles' => ['/css/pages/auth.css'],
-                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
+                'cssFiles' => ['/css/pages/auth.css',  'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    '/js/components/password-toggle.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
+                    '/js/pages/auth/register.js']
             ]);
         } catch (Exception $e) {
             $this->render('pages/auth/register', [
                 'error' => $e->getMessage(),
                 'old' => $this->getPost(),
                 'pageTitle' => 'Register',
-                'cssFiles' => ['/css/pages/auth.css'],
-                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
+                'cssFiles' => ['/css/pages/auth.css',  'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    '/js/components/password-toggle.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
+                    '/js/pages/auth/register.js'
+                    ]
             ]);
         }
     }

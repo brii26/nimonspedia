@@ -150,6 +150,7 @@
     padding: 0.875rem 1rem;
     font-size: 1rem;
     font-weight: 600;
+    margin-top: 1.5rem;
 }
 
 .auth-nav {
@@ -269,6 +270,53 @@
 
 .btn-danger:hover {
     background-color: #c82333;
+}
+
+.form-group input.is-invalid,
+.form-group textarea.is-invalid,
+.form-group select.is-invalid {
+    border-color: #dc3545; /* Merah */
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Style untuk pesan error */
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+.error-message:not([hidden]) {
+    display: block;
+}
+
+/* Style untuk checklist kriteria password */
+#password-criteria {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.criteria-item {
+    font-size: 0.875rem;
+    color: #dc3545; /* Default: Merah (invalid) */
+    transition: all 0.2s ease;
+}
+
+.criteria-item::before {
+    content: '✖'; /* Ikon 'X' */
+    margin-right: 0.5rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Style untuk kriteria yang valid */
+.criteria-item.valid {
+    color: #28a745; /* Hijau (valid) */
+}
+
+.criteria-item.valid::before {
+    content: '✔'; /* Ikon 'check' */
 }
 
 /* Responsive Design */
