@@ -62,6 +62,8 @@
                             <small>Use top-up feature to add balance</small>
                         </div>
                         <?php endif; ?>
+
+                        <div id="profileUpdateResult" aria-live="polite"></div>
                         
                         <button type="submit" class="btn btn-primary" id="updateProfileButton">Update Profile</button>
                     </form>

@@ -221,7 +221,8 @@ class AuthController extends BaseController {
             'cssFiles' => ['/css/pages/profile.css'],
             'jsFiles' => [
                 '/js/components/password-toggle.js',
-                '/js/pages/auth/profile.js'
+                '/js/pages/auth/profile.js',
+                '/js/utils/fetchXhr.js'
             ]
         ]);
     }
@@ -245,36 +246,21 @@ class AuthController extends BaseController {
             $updatedUser = $this->authService->updateProfile(Auth::id(), $postData);
             Auth::updateSession($updatedUser);
             
-            $this->render('pages/auth/profile', [
-                'success' => 'Profile updated successfully',
-                'user' => $updatedUser,
-                'pageTitle' => 'Profile Settings',
-                'cssFiles' => ['/css/pages/profile.css'],
-                'jsFiles' => [
-                    '/js/components/password-toggle.js',
-                    '/js/pages/auth/profile.js'
+            $this->json([
+                'success' => true, 
+                'message' => 'Profile updated successfully!',
+                'user' => [
+                    'name' => $updatedUser['name'],
+                    'email' => $updatedUser['email'],
+                    'address' => $updatedUser['address']
                 ]
             ]);
-        } catch (ValidationException $e) {
-            $currentUser = $this->authService->getUserById(Auth::id());
-            $oldData = $this->getPost();
 
-            $this->render('pages/auth/profile', [
-                'errors' => $e->getErrors(),
-                'old' => $oldData,
-                'user' => $currentUser,
-                'pageTitle' => 'Profile Settings',
-                'cssFiles' => ['/css/pages/profile.css'],
-                'jsFiles' => ['/js/components/password-toggle.js','/js/pages/auth/profile.js']
-            ]);
+        } catch (ValidationException $e) {
+            $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
+
         } catch (Exception $e) {
-            $this->render('pages/auth/profile', [
-                'error' => $e->getMessage(),
-                'user' => $this->authService->getUserById(Auth::id()),
-                'pageTitle' => 'Profile Settings',
-                'cssFiles' => ['/css/pages/profile.css'],
-                'jsFiles' => ['/js/components/password-toggle.js','/js/pages/auth/profile.js']
-            ]);
+            $this->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
     }
     

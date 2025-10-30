@@ -82,23 +82,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listener 'submit' buat validasi akhir
         profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
             const isNameValid = validateNameField();
             const isEmailValid = validateEmailField();
             const isAddressValid = validateAddressField();
 
-            if (!isNameValid || !isEmailValid || !isAddressValid) {
-                e.preventDefault();
-                console.log('Validasi FE gagal, submit dibatalkan.');
-                // (Nanti di langkah berikutnya, kita tidak akan preventDefault,
-                // tapi kita akan menjalankan AJAX di sini)
+            const resultDiv = document.getElementById('profileUpdateResult');
+            resultDiv.innerHTML = ''
 
-                if (submitButton) {
-                    App.hideLoading(submitButton); 
-                }
-            } else {
-                // (Di sinilah nanti logika AJAX akan masuk)
-                console.log('Validasi FE lolos.');
+            if (!isNameValid || !isEmailValid || !isAddressValid) {
+                console.log('Validasi FE gagal, submit dibatalkan.');
+                if (submitButton) App.hideLoading(submitButton); 
+                return;
             }
+            console.log('Validasi FE berhasil, kirim AJAX');
+            const formData = new FormData(profileForm);
+            fetchXhr('/profile', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (submitButton) App.hideLoading(submitButton);
+
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    
+                    const navUserName = document.querySelector('.user-name');
+                    if (navUserName && data.user && data.user.name) {
+                        navUserName.textContent = data.user.name;
+                    }
+                }
+
+                else if (data.errors) {
+                    console.log('Validasi BE gagal:', data.errors);
+                    Object.keys(data.errors).forEach(key => {
+                        const input = document.getElementById(key); // cth: 'email'
+                        const message = data.errors[key];
+                        if (input) {
+                            showError(input, message);
+                        }
+                    });
+                    resultDiv.innerHTML = `<div class="alert alert-error">Please fix the errors below.</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">${data.message || 'An unknown error occurred.'}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                if (submitButton) App.hideLoading(submitButton);
+                resultDiv.innerHTML = `<div class="alert alert-error">A network error occurred. Please try again.</div>`;
+            })
         });
     }
 
