@@ -1,0 +1,211 @@
+/* --- Toggling Mode --- */
+#store-edit { 
+    display: none; 
+    background-color: #f9f9f9; 
+    border-radius: 8px;
+    padding: 2rem;
+}
+body.edit-mode #store-display { display: none; }
+body.edit-mode #store-edit { display: block; }
+
+
+/* ===================================
+   DISPLAY MODE
+   =================================== */
+
+.display-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 2.5rem; 
+    align-items: center;
+}
+
+/* --- Kolom Kiri: Logo Display --- */
+.store-logo-container {
+    width: 220px;
+    height: 220px;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+    overflow: hidden; /* Pastikan gambar membulat */
+}
+.store-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Kolom Kanan: Info Display --- */
+.display-col-details {
+    padding-left: 1rem;
+}
+.store-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background-color: #e6f7ff;
+    color: #0056b3;
+    border: 1px solid #b3e0ff;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+#store-name-display {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0 0 0.75rem 0;
+}
+#store-description-display {
+    font-size: 1.05rem;
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+.btn-edit-custom {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+.btn-edit-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.35);
+}
+
+.edit-layout-simple {
+    display: grid;
+    grid-template-columns: 200px 1fr; 
+    gap: 0 1.5rem; 
+}
+
+/* --- Kolom Kiri (Logo & Preview) --- */
+.edit-col-image-simple .form-group label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 8px;
+    display: block; 
+}
+
+input[type="file"]#edit_file { display: none; }
+#store-edit .file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: fit-content;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background-color: #e9ecef; 
+    color: #343a40;
+}
+.file-upload-label:hover {
+    background-color: #dde1e4;
+}
+
+/* --- preview image --- */
+#preview-wrapper {
+    display: none; 
+    margin-top: 1rem;
+	justify-content: center;
+}
+.preview-label {
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    color: #6c757d !important;
+    margin-bottom: 6px !important;
+}
+#image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+
+/* --- Kolom Kanan (Teks) --- */
+.edit-col-details-simple .form-group label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+/* Input Teks */
+.form-control-custom {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: border-color 0.2s ease;
+}
+.form-control-custom:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+/* Editor Teks */
+#editor {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    min-height: 150px;
+    background-color: #fff;
+    padding: 10px;
+}
+#editor:focus-within, #editor.focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+
+/* --- Action tombol --- */
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+.btn-cancel, .btn-save {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-cancel {
+    background-color: transparent;
+    color: #6c757d;
+}
+.btn-cancel:hover { background-color: #f1f3f5; }
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+}
+.btn-save:hover { background-color: #218838; }
+.btn-save:disabled {
+    background-color: #218838;
+    opacity: 0.7;
+    cursor: not-allowed;
+}

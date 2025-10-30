@@ -9,7 +9,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Path</th>
+                        <th>Pict</th>
                         <th>Name</th>
                         <th>Price</th>
                         <th>Stock</th>
@@ -19,7 +19,14 @@
                 <tbody>
                     <?php foreach ($productsData['data'] as $product): ?>
                         <tr>
-                            <td><strong><?= View::escape($product['main_image_path']) ?></strong></td>
+							<td>
+							<?php 
+							$imagePath = View::escape($product['main_image_path'] ?? '/images/product_placeholder.png'); 
+							?>
+							<img src="<?= '/storage/' . $imagePath ?>"
+								alt="<?= View::escape($product['product_name']) ?> Image" 
+								class="product-thumb">
+							</td>
                             <td><?= View::escape($product['product_name']) ?></td>
                             <td><?= View::currency($product['price']) ?></td>
                             <td><?= View::escape($product['stock']) ?></td>

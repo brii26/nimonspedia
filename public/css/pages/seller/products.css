@@ -1,0 +1,36 @@
+#editor { 
+	width: 400px;
+	border: 1px solid #ccc; 
+	border-radius: 4px; 
+	background: #fff; 
+	font-family: Arial, sans-serif;
+}
+
+#preview-wrapper {
+	display: none;
+    margin-top: 15px; 
+	margin-bottom: 15px;
+	padding: 8px;
+}
+
+#image-preview {
+    width: 60px;
+    height: 60px;
+    object-fit: cover; 
+    border-radius: 6px; 
+    border: 1px solid #ddd;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover; 
+    border-radius: 6px; 
+    border: 1px solid #ddd;
+}
+
+.table td:nth-child(1) {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    vertical-align: middle;
+}

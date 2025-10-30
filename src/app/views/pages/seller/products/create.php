@@ -42,6 +42,10 @@
                             <input type="file" id="input_file" name="product_image" accept="image/*">
                         </div>
 
+						<div class="form-group mb-3" id="preview-wrapper">
+							<img id="image-preview" src="#" alt="Image preview">
+						</div>
+
                         <div class="form-group mb-3">
                         <label for="category_id">Category: </label>
                         <select id="category_id" name="category_id" class="form-control" style="max-width:420px;">
