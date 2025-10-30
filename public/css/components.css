@@ -720,7 +720,6 @@
     background: var(--text-dark, #2c3e50); /* Warna gelap untuk kontras */
     color: var(--gray-300, #adb5bd); /* Teks abu-abu terang */
     padding: 3rem 0 0 0; /* Padding atas, tanpa padding bawah */
-    margin-top: 2rem; /* Beri jarak dari konten utama */
     border-top: 4px solid var(--primary-color, #667eea); /* Aksen warna primer */
 }
 
@@ -819,15 +818,43 @@
     /* Mobile Navbar */
     .navbar-toggle {
         display: flex;
+        background-color: var(--primary, #667eea);
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        order: 1;
+    }
+
+    .navbar-brand {
+        order: 2;
+    }
+
+    .navbar-content {
+        flex-direction: row;
+    }
+
+    .navbar-toggle-icon span {
+        background: var(--white, #fff);
+    }
+    
+    .navbar-toggle:hover {
+        background: var(--primary-dark, #5a67d8);
     }
     
     .navbar-menu {
         position: fixed;
-        top: 64px;
+        top: 0;
         left: 0;
-        width: 100%;
-        height: calc(100vh - 64px);
-        background: var(--white);
+        width: 75%;
+        max-width: 320px;
+
+        height: 100%;
+        overflow-y: auto;
+
+        background: linear-gradient(180deg, var(--primary, #667eea) 0%, var(--primary-dark, #5a67d8) 100%);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Tambahkan shadow */
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+
         flex-direction: column;
         align-items: flex-start;
         padding: 2rem;
@@ -857,6 +884,13 @@
         padding: 1rem;
         border-radius: 8px;
         justify-content: flex-start;
+        color: var(--white, #fff);
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--white, #fff);
     }
     
     .navbar-user {
@@ -866,7 +900,20 @@
         gap: 1rem;
         margin-top: 2rem;
         padding-top: 2rem;
-        border-top: 1px solid var(--border-light);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .navbar-menu .user-balance {
+        width: 100%; 
+        justify-content: center;
+        margin-top: 0.5rem; /* Beri jarak */
+        margin-bottom: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--white, #fff);
+    }
+
+    .navbar-menu .user-dropdown-toggle .dropdown-arrow {
+        display: none;
     }
     
     .user-balance {
@@ -882,17 +929,27 @@
         width: 100%;
         justify-content: flex-start;
         padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        margin-top: 0.5rem; /* Beri jarak */
+        margin-bottom: 1.5rem;
+    }
+
+    .avatar-text, .user-name, .user-role {
+        color: var(--white, #fff);
     }
     
     .user-dropdown-menu {
         position: static;
-        width: 100%;
+        width: auto;
+        margin: 0 1rem 1rem 1rem;
         box-shadow: none;
-        border: 1px solid var(--border-light);
+        border: none;
         border-radius: 8px;
         opacity: 1;
         visibility: visible;
         transform: none;
+        
+        z-index: 1002; 
     }
     
     body.navbar-open {
