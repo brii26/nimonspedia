@@ -97,18 +97,6 @@ class CartItemRepository extends BaseRepository
     }
 
     /**
-     * Menghapus item keranjang tertentu.
-     *
-     * @param int $cartItemId
-     * @return bool
-     */
-    public function delete(int $cartItemId): bool
-    {
-        $sql = "DELETE FROM {$this->table} WHERE {$this->getPrimaryKey()} = ?";
-        return $this->db->execute($sql, [$cartItemId]);
-    }
-
-    /**
      * Menghapus semua item keranjang milik pembeli.
      *
      * @param int $buyerId

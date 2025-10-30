@@ -82,10 +82,12 @@ class Application {
         // $this->router->get('/stores/{id}', 'StoreController@show');
         
         // Cart routes (Track 2) 
-        // $this->router->get('/cart', 'CartController@index');
-        // $this->router->post('/cart/add', 'CartController@add');
-        // $this->router->post('/cart/update', 'CartController@update');
-        // $this->router->post('/cart/remove', 'CartController@remove');
+        // Cart routes (Track 2)
+        $this->router->get('/cart', 'CartController@index');
+        $this->router->post('/cart/add', 'CartController@add');
+        $this->router->post('/cart/update', 'CartController@update');
+        $this->router->post('/cart/remove', 'CartController@remove');
+        $this->router->get('/api/cart/count', 'CartController@count');
         
         // Order routes (Track 2 & 3)
         // $this->router->get('/orders', 'OrderController@index');
