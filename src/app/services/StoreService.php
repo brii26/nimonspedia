@@ -22,10 +22,23 @@ class StoreService {
     public function updateStore($post, $storeId) {
         $name = $post['store_name'];
         $desc = $post['store_description'] ?? '';
-        $logo = $_FILES['store_logo'] ?? null;
-        $old_logo = $this->getLogoPath($storeId);
-        $updatedLogoPath = FileService::saveUploadedImage($logo, 'store_logo', $old_logo);
-        $this->removeLogoPath($storeId);
+        $logoFile = $_FILES['store_logo'] ?? null;
+
+        $old_logo = $this->getLogoPath($storeId) ?? ''; 
+        $updatedLogoPath = $old_logo;
+
+        if (isset($logoFile) && $logoFile['error'] === UPLOAD_ERR_OK) {
+            $updatedLogoPath = FileService::saveUploadedImage($logoFile, 'store_logo', $old_logo);
+            
+            if ($old_logo && $old_logo !== $updatedLogoPath) {
+                FileService::deleteFile($old_logo);
+            }
+
+        } else if (isset($logoFile) && $logoFile['error'] !== UPLOAD_ERR_NO_FILE) {
+            // Jika ada error upload (misal file kegedean), lempar error
+            throw new Exception("File upload error code: " . $logoFile['error']);
+        }
+        
         return $this->storeRepo->updateStore($storeId, $name, $desc, $updatedLogoPath);
     }
 

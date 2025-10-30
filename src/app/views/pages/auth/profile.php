@@ -22,36 +22,31 @@
                         <div class="alert alert-error" role="alert" aria-live="polite">
                             <?= View::escape($error) ?>
                         </div>
-                    <?php endif; ?>                        <form method="POST" action="/profile" class="profile-form">
+                    <?php endif; ?>                        
+                    <form method="POST" action="/profile" class="profile-form" id = "profileUpdateForm">
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                         
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" 
-                                    value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
-                                    required aria-describedby="name-error">
-                            <?php if (isset($errors['name'])): ?>
-                                <div class="error" id="name-error" role="alert"><?= View::escape($errors['name']) ?></div>
-                            <?php endif; ?>
+                                value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
+                                required aria-describedby="name-error">
+                            <small class="error-message" id="name-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email Address</label>
                             <input type="email" id="email" name="email" 
-                                    value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
-                                    required aria-describedby="email-error">
-                            <?php if (isset($errors['email'])): ?>
-                                <div class="error" id="email-error" role="alert"><?= View::escape($errors['email']) ?></div>
-                            <?php endif; ?>
+                                value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
+                                required aria-describedby="email-error">
+                            <small class="error-message" id="email-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
                             <label for="address">Address</label>
                             <textarea id="address" name="address" rows="3" 
                                         required aria-describedby="address-error"><?= View::escape($old['address'] ?? $user['address']) ?></textarea>
-                            <?php if (isset($errors['address'])): ?>
-                                <div class="error" id="address-error" role="alert"><?= View::escape($errors['address']) ?></div>
-                            <?php endif; ?>
+                            <small class="error-message" id="address-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
@@ -67,8 +62,10 @@
                             <small>Use top-up feature to add balance</small>
                         </div>
                         <?php endif; ?>
+
+                        <div id="profileUpdateResult" aria-live="polite"></div>
                         
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="submit" class="btn btn-primary" id="updateProfileButton">Update Profile</button>
                     </form>
                 </div>
             </section>
@@ -81,7 +78,7 @@
                     </header>
                     <div class="section-content">
                         <div class="balance-display">
-                            <strong>Current Balance: <?= View::currency($user['balance'] ?? 0) ?></strong>
+                            <strong>Current Balance: <span id="sidebar-balance-amount"><?= View::currency($user['balance'] ?? 0) ?></span></strong>
                         </div>
                         
                         <form id="topUpForm" class="topup-form">
@@ -96,7 +93,7 @@
                                 <small id="amount-help">Minimum amount is Rp 10.000</small>
                             </div>
                             
-                            <button type="submit" class="btn btn-success">Top Up Balance</button>
+                            <button type="submit" class="btn btn-success" id ="topUpButton">Top Up Balance</button>
                         </form>
                         
                         <div id="topUpResult" aria-live="polite"></div>
@@ -128,28 +125,35 @@
                                 <label for="new_password">New Password</label>
                                 <div class="password-input-container">
                                     <input type="password" id="new_password" name="new_password" 
-                                            minlength="6" required aria-describedby="password-help new-password-error">
+                                            minlength="8" required aria-describedby="password-help new-password-error">
                                     <button type="button" class="password-toggle" aria-label="Toggle new password visibility" data-target="new_password">
                                         <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
                                         <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
                                     </button>
                                 </div>
-                                <small id="password-help">Minimum 6 characters</small>
+                                <div id="password-criteria">
+                                    <small class="criteria-item" id="criteria-length">Minimum 8 characters</small>
+                                    <small class="criteria-item" id="criteria-lower">At least one lowercase letter</small>
+                                    <small class="criteria-item" id="criteria-upper">At least one uppercase letter</small>
+                                    <small class="criteria-item" id="criteria-number">At least one number</small>
+                                    <small class="criteria-item" id="criteria-symbol">At least one symbol (e.g., _ or !)</small>
+                                </div>
                             </div>
                             
                             <div class="form-group">
                                 <label for="confirm_password">Confirm New Password</label>
                                 <div class="password-input-container">
                                     <input type="password" id="confirm_password" name="confirm_password" 
-                                            minlength="6" required aria-describedby="confirm-password-error">
+                                        required aria-describedby="confirm-password-error">
                                     <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" data-target="confirm_password">
                                         <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
                                         <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
                                     </button>
                                 </div>
+                                <small class="error-message" id="confirm_password-error" hidden></small>
                             </div>
                             
-                            <button type="submit" class="btn btn-warning">Change Password</button>
+                            <button type="submit" class="btn btn-warning" id="changePasswordButton">Change Password</button>
                         </form>
                         
                         <div id="passwordResult" aria-live="polite"></div>

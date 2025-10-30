@@ -276,8 +276,6 @@
     background-color: #c82333;
 }
 
-/* =========================================== */
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .stats-grid {

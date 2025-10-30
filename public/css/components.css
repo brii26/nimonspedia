@@ -671,6 +671,48 @@
 }
 
 /* ==========================================================================
+   QUILL EDITOR COMPONENT
+   ========================================================================== */
+
+/*
+ * Kita buat agar dia menyatu dengan form group.
+ */
+#editor {
+    min-height: 150px; /* Beri tinggi minimal */
+    background: #fff;
+    font-size: 1rem; /* Samakan dengan input */
+}
+
+/* * Style untuk Toolbar Quill (B, I, U, dll.)
+ * Kita buat agar terlihat seperti 'header' dari input.
+ */
+.ql-toolbar.ql-snow {
+    background: #f8f9fa; /* Warna abu-abu muda */
+    border: 1px solid #ddd;
+    border-bottom: 0; /* Hapus border bawah */
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 8px;
+}
+
+/* * Style untuk Container Teks (tempat mengetik)
+ * Kita buat agar terlihat seperti <textarea>
+ */
+.ql-container.ql-snow {
+    border: 1px solid #ddd;
+    border-top: 0; /* Hapus border atas (sudah ada di toolbar) */
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 1rem; /* Samakan dengan input */
+}
+
+/* Beri style 'focus' seperti input lainnya */
+.ql-container.ql-snow:focus-within {
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 

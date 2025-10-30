@@ -226,8 +226,8 @@ class SellerController extends BaseController {
     public function updateStore() {
         $this->requireRole('SELLER');
         $post = $this->getPost();
-        $isAjax = !empty($_SERVER['HTTP_XML_REQUEST']) && 
-                  strtolower($_SERVER['HTTP_XML_REQUEST']) == 'xmlhttprequest';
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
         try {
             $this->verifyCsrf();

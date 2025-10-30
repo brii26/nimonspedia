@@ -81,16 +81,25 @@ class AuthController extends BaseController {
                 'errors' => $e->getErrors(),
                 'old' => $this->getPost(),
                 'pageTitle' => 'Register',
-                'cssFiles' => ['/css/pages/auth.css'],
-                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
+                'cssFiles' => ['/css/pages/auth.css',  'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    '/js/components/password-toggle.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
+                    '/js/pages/auth/register.js']
             ]);
         } catch (Exception $e) {
             $this->render('pages/auth/register', [
                 'error' => $e->getMessage(),
                 'old' => $this->getPost(),
                 'pageTitle' => 'Register',
-                'cssFiles' => ['/css/pages/auth.css'],
-                'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
+                'cssFiles' => ['/css/pages/auth.css',  'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    '/js/components/password-toggle.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
+                    '/js/pages/auth/register.js'
+                    ]
             ]);
         }
     }
@@ -240,10 +249,11 @@ class AuthController extends BaseController {
         $this->render('pages/auth/profile', [
             'user' => $user,
             'pageTitle' => 'Profile Settings',
-            'cssFiles' => ['/css/pages/profile.css'], // CSS profile
-            'jsFiles' => [ // JS profile
+            'cssFiles' => ['/css/pages/profile.css'],
+            'jsFiles' => [
                 '/js/components/password-toggle.js',
-                '/js/pages/auth/profile.js'
+                '/js/pages/auth/profile.js',
+                '/js/utils/fetchXhr.js'
             ]
         ]);
     }
@@ -267,16 +277,21 @@ class AuthController extends BaseController {
             $updatedUser = $this->authService->updateProfile(Auth::id(), $postData);
             Auth::updateSession($updatedUser);
             
-            $this->render('pages/auth/profile', [
-                'success' => 'Profile updated successfully',
-                'user' => $updatedUser
+            $this->json([
+                'success' => true, 
+                'message' => 'Profile updated successfully!',
+                'user' => [
+                    'name' => $updatedUser['name'],
+                    'email' => $updatedUser['email'],
+                    'address' => $updatedUser['address']
+                ]
             ]);
-            
+
+        } catch (ValidationException $e) {
+            $this->json(['success' => false, 'errors' => $e->getErrors()], 422);
+
         } catch (Exception $e) {
-            $this->render('pages/auth/profile', [
-                'error' => $e->getMessage(),
-                'user' => $this->authService->getUserById(Auth::id())
-            ]);
+            $this->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
     }
     
@@ -292,7 +307,11 @@ class AuthController extends BaseController {
             
             $this->validate($postData, [
                 'current_password' => 'required',
-                'new_password' => ['required', 'min:6'],
+                'new_password' => [
+					'required',
+					'min:8',
+					'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/'
+				],
                 'confirm_password' => 'required'
             ]);
             

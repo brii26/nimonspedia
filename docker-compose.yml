@@ -9,6 +9,7 @@ services:
     volumes:
       - .:/var/www/html
       - ./storage:/var/www/html/storage
+    command: sh -c "chmod -R 777 /var/www/html/storage && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
     depends_on:
       - db
     environment:

@@ -105,8 +105,8 @@ class AuthService {
             throw new Exception('New password confirmation does not match');
         }
         
-        if (strlen($newPassword) < 6) {
-            throw new Exception('New password must be at least 6 characters');
+        if (strlen($newPassword) < 8) {
+            throw new Exception('New password must be at least 8 characters');
         }
         
         if (!$this->userRepository->changePassword($userId, $newPassword)) {

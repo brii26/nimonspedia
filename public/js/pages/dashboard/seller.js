@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			method: 'POST',
 			body: formData,
 			headers: {
-			  'xml-request': 'XMLHttpRequest' 
+			  'X-Requested-With': 'XMLHttpRequest' 
 			},
 		  });
 			
