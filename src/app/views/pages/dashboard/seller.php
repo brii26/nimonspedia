@@ -118,16 +118,6 @@
                     </div>
                 </article>
 
-				<article class="stat-card">
-                    <header class="stat-header">
-                        <h3>Revenue</h3>
-                    </header>
-                    <div class="stat-content">
-                        <div class="stat-value"><?= View::currency(isset($stats['revenue']) ? (int)$stats['revenue'] : 0) ?></div>
-                        <a href="/seller/products?stock=low" class="btn btn-secondary">View Analytics</a>
-                    </div>
-                </article>
-
             </section>
             
             </div> </div> <section class="quick-actions">
