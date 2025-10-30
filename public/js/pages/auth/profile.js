@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(topUpForm);
             const resultDiv = document.getElementById("topUpResult");
+            const submitButton = document.getElementById('topUpButton');
 
             formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
 
@@ -156,13 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     resultDiv.innerHTML = '<div class="alert alert-success">Balance updated successfully! New balance: Rp ' 
                     + new Intl.NumberFormat('id-ID').format(data.new_balance) + '</div>';
-                    setTimeout(() => location.reload(), 2000);
+
+                    const navBalance = document.querySelector('.balance-amount');
+                    const sidebarBalance = document.querySelector('#sidebar-balance-amount');
+                    const formBalance = document.querySelector('#balance-display');
+                    if (navBalance && sidebarBalance && formBalance && data.new_balance) {
+                        content = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance);
+                        navBalance.textContent = content;
+                        sidebarBalance.textContent = content;
+                        formBalance.value = content;
+                    }
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
-                }
+                } if (submitButton) App.hideLoading(submitButton);
             })
             .catch(error => {
                 resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred : ' + error + '</div>';
+                if (submitButton) App.hideLoading(submitButton);
             });
 
         })

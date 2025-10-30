@@ -78,7 +78,7 @@
                     </header>
                     <div class="section-content">
                         <div class="balance-display">
-                            <strong>Current Balance: <?= View::currency($user['balance'] ?? 0) ?></strong>
+                            <strong>Current Balance: <span id="sidebar-balance-amount"><?= View::currency($user['balance'] ?? 0) ?></span></strong>
                         </div>
                         
                         <form id="topUpForm" class="topup-form">
@@ -93,7 +93,7 @@
                                 <small id="amount-help">Minimum amount is Rp 10.000</small>
                             </div>
                             
-                            <button type="submit" class="btn btn-success">Top Up Balance</button>
+                            <button type="submit" class="btn btn-success" id ="topUpButton">Top Up Balance</button>
                         </form>
                         
                         <div id="topUpResult" aria-live="polite"></div>
