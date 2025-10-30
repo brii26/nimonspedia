@@ -1,33 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const showError = (input, message) => {
+        // Cek jika input ada
+        if (!input) return; 
+        
+        const errorElId = input.id + '-error'; // cth: 'name-error' atau 'confirm_password-error'
+        const errorEl = document.getElementById(errorElId);
+        
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.hidden = false;
+        }
+        input.classList.add('is-invalid');
+    };
+
+    const clearError = input => {
+        // Cek jika input ada
+        if (!input) return;
+
+        const errorElId = input.id + '-error';
+        const errorEl = document.getElementById(errorElId);
+        
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.hidden = true;
+        }
+        input.classList.remove('is-invalid');
+    };
+
+    /**
+     * Helper validasi email
+     */
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const reset = (submitButton, resultDiv) => {
+        if (submitButton) { 
+            App.hideLoading(submitButton)
+            setTimeout(() => {
+                resultDiv.innerHTML = '';
+            }, 5000)
+        }
+    };
+
     const profileForm = document.getElementById('profileUpdateForm');
     if (profileForm){
         const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');
         const addressInput = document.getElementById('address');
         const submitButton = document.getElementById('updateProfileButton');
-
-        const showError = (input, message) => {
-            const errorEl = document.getElementById(input.id + '-error'); // cth: 'name-error'
-            if (errorEl) {
-                errorEl.textContent = message;
-                errorEl.hidden = false;
-            }
-            input.classList.add('is-invalid');
-        };
-
-        const clearError = (input) => {
-            const errorEl = document.getElementById(input.id + '-error');
-            if (errorEl) {
-                errorEl.textContent = '';
-                errorEl.hidden = true;
-            }
-            input.classList.remove('is-invalid');
-        };
-
-        const validateEmail = (email) => {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(String(email).toLowerCase());
-        };
 
         const validateNameField = () => {
             clearError(nameInput);
@@ -143,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const formData = new FormData(topUpForm);
-            const resultDiv = document.getElementById("topUpResult");
+            const resultDiv = document.getElementById('topUpResult');
             const submitButton = document.getElementById('topUpButton');
 
             formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
@@ -181,7 +203,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const changePassword = document.getElementById("changePasswordForm");
     if (changePassword) {
+        const currentPasswordInput = document.getElementById('current_password');
         const newPasswordInput = document.getElementById('new_password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+
         const criteriaLength = document.getElementById('criteria-length');
         const criteriaLower = document.getElementById('criteria-lower');
         const criteriaUpper = document.getElementById('criteria-upper');
@@ -195,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasLower = /[a-z]/.test(password);
             const hasUpper = /[A-Z]/.test(password);
             const hasNumber = /\d/.test(password);
-            const hasSymbol = /[^A-Za-z0-9]/.test(password); // [^\w] berarti "non-word", _ adalah pengecualian
+            const hasSymbol = /[^A-Za-z0-9]/.test(password); // non-word
             const hasLength = password.length >= 8;
             
             // Update UI Checklist
@@ -208,8 +233,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return hasLength && hasLower && hasUpper && hasNumber && hasSymbol;
         };
 
-        if (newPasswordInput) {
+        const validatePasswordConfirmation = () => {
+            const newPass = newPasswordInput.value;
+            const confirmPass = confirmPasswordInput.value;
+
+            if (!confirmPass) {
+                clearError(confirmPasswordInput);
+                return true;
+            }
+
+            if (newPass !== confirmPass) {
+                showError(confirmPasswordInput, 'Passwords do not match.');
+                return false;
+            }
+
+            clearError(confirmPasswordInput);
+            return true;
+        };
+
+        if (newPasswordInput && confirmPasswordInput) {
             newPasswordInput.addEventListener('input', validatePasswordLive);
+
+            newPasswordInput.addEventListener('input', validatePasswordConfirmation);
+            confirmPasswordInput.addEventListener('input', validatePasswordConfirmation);
+            confirmPasswordInput.addEventListener('blur', validatePasswordConfirmation);
         }
 
         changePassword.addEventListener("submit", (e) => {
@@ -264,13 +311,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
-    const reset = (submitButton, resultDiv) => {
-        if (submitButton) { 
-            App.hideLoading(submitButton)
-            setTimeout(() => {
-                resultDiv.innerHTML = '';
-            }, 5000)
-        }
-    };
 })
