@@ -234,38 +234,6 @@ abstract class BaseController {
     }
     
     /**
-     * Handle file upload
-     */
-    protected function uploadFile($file, $directory, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif']) {
-        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception('No file uploaded or upload error');
-        }
-        
-        // Validate file type
-        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($extension, $allowedTypes)) {
-            throw new Exception('Invalid file type. Allowed: ' . implode(', ', $allowedTypes));
-        }
-        
-        // Generate unique filename
-        $filename = uniqid() . '_' . time() . '.' . $extension;
-        $uploadPath = "storage/{$directory}";
-        
-        // Create directory if not exists
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
-        }
-        
-        $fullPath = $uploadPath . '/' . $filename;
-        
-        if (!move_uploaded_file($file['tmp_name'], $fullPath)) {
-            throw new Exception('Failed to upload file');
-        }
-        
-        return $filename;
-    }
-    
-    /**
      * Return error response
      */
     protected function error($message, $status = 400) {

@@ -21,10 +21,10 @@
                     <?php endforeach; ?>
                 </ul>
             </div>
-        <?php endif; ?>
-    
-        <form method="POST" action="/register" class="auth-form" novalidate>
+        <?php endif; ?>       
+        <form method="POST" action="/register" enctype="multipart/form-data" class="auth-form" novalidate>
             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+            <input type="hidden" name="role" value="<?= View::escape($role ?? ($old['role'] ?? '')) ?>">
             
             <div class="form-group">
                 <label for="name">Full Name</label>
@@ -46,6 +46,7 @@
                             required aria-describedby="address-error"><?= View::escape($old['address'] ?? '') ?></textarea>
             </div>
             
+            <?php $currentRole = $role ?? ($old['role'] ?? ''); ?>
             <div class="form-group">
                 <label for="role">Register as</label>
                 <select id="role" name="role" required aria-describedby="role-error">
@@ -84,9 +85,25 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block">
-                Create Account
-            </button>
+            <?php if ($currentRole === 'SELLER'): ?>
+            <div style="height:1px; background:#eee; margin:16px 0;"></div>
+            <h3>Store Information</h3>
+            <div class="form-group">
+                <label for="store_name">Store Name:</label>
+                <input type="text" id="store_name" name="store_name" value="<?= View::escape($old['store_name'] ?? '') ?>" required>
+            </div>
+            <div class="form-group" style ="margin-bottom: 15px;">
+				<label for="input_file">Input Logo:</label>
+				<input type="file" id="input_file" name="store_logo" accept="image/*">
+			</div>
+            <div class="form-group">
+                <label for="store_description">Store Description :</label>
+				<div id="editor"><?= $old['store_description'] ?? '' ?></div>
+                <input type="hidden" name="store_description" id="store_description">
+            </div>
+            <?php endif; ?>
+
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
         </form>
         
         <nav class="auth-nav">

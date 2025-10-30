@@ -21,7 +21,7 @@ CREATE TABLE users (
 CREATE TABLE stores (
     store_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL UNIQUE,
-    store_name VARCHAR(255) NOT NULL UNIQUE,
+    store_name VARCHAR(100) NOT NULL UNIQUE,
     store_description TEXT,
     store_logo_path VARCHAR(500),
     balance INTEGER DEFAULT 0,

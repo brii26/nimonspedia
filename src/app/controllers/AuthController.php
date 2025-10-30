@@ -2,10 +2,14 @@
 
 class AuthController extends BaseController {
     private $authService;
-    
+    private $storeService;
+    private $statsService;
+
     public function __construct() {
         parent::__construct();
         $this->authService = new AuthService();
+        $this->storeService = new StoreService();
+        $this->statsService = new StatsService();
     }
     
     /**
@@ -29,11 +33,17 @@ class AuthController extends BaseController {
         if (Auth::check()) {
             $this->redirect('/dashboard');
         }
+        $role = $this->getQuery('role'); 
+        if ($role !== 'BUYER' && $role !== 'SELLER') { 
+            $this->redirect('/register/role');
+            return;
+        }
         $this->render('pages/auth/register', [
             'pageTitle' => 'Register',
             'cssFiles' => ['/css/pages/auth.css'],
-            'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js']
-        ]);;
+            'jsFiles' => ['/js/components/password-toggle.js', '/js/pages/auth/register.js'],
+            'role' => $role
+        ]);
     }
     
     /**
@@ -44,21 +54,26 @@ class AuthController extends BaseController {
             $this->verifyCsrf();
             $postData = $this->getPost();
 
-            $this->validate($postData, [
-                'name' => ['required', 'min:2', 'max:100'],
-                'email' => ['required', 'email'],
-                'password' => ['required', 'min:8', 
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
-                    .'(?=.*(_|[^\w])).+$/'
-                    .'`Password must contain uppercase, lowercase, number, and symbol'
-                ],
-                'password_confirmation' => 'required',
-                'role' => ['required', 'in:BUYER,SELLER'],
-                'address' => ['required', 'min:10']
-            ]);
-            
-            $user = $this->authService->register($postData);
-            
+			$rules = [
+				'name' => ['required', 'min:2', 'max:100'],
+				'email' => ['required', 'email'],
+				'password' => [
+					'required',
+					'min:8',
+					'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/'
+				],
+				'password_confirmation' => ['required'],
+				'role' => ['required', 'in:BUYER,SELLER'],
+				'address' => ['required', 'min:10'],
+			];
+
+			$rules['store_name'] = (isset($postData['role']) && $postData['role'] === 'SELLER')
+				? ['required', 'max:100']
+				: ['max:100'];
+
+			$this->validate($postData, $rules);
+			$user = $this->authService->register($postData);
+
             Auth::login($user);
             $this->redirect('/dashboard');
             
@@ -80,6 +95,31 @@ class AuthController extends BaseController {
             ]);
         }
     }
+
+    // Role select form 
+    public function roleSelectForm() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        $this->render('pages/auth/role_select'); 
+    } 
+
+    // Role select handler 
+    public function roleSelect() { 
+        if (Auth::check()) { 
+            $this->redirect('/dashboard'); 
+        } 
+        try { 
+            $this->verifyCsrf(); 
+            $role = $this->getPost('role'); 
+            if ($role !== 'BUYER' && $role !== 'SELLER') { 
+                throw new Exception('Invalid role'); 
+            } 
+            $this->redirect('/register?role=' . urlencode($role)); 
+        } catch (Exception $e) { 
+            $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); 
+        } 
+    } 
     
     /**
      * Show dashboard
@@ -88,11 +128,29 @@ class AuthController extends BaseController {
         $this->requireAuth();
         $user = Auth::user();
         $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $this->render($view, [
+        $data = ['user' => $user];
+
+        if ($user['role'] === 'SELLER') {
+            $store = $this->storeService->getStoreForUser($user['user_id']);
+            if ($store && isset($store['store_id'])) {
+                $storeId = (int)$store['store_id'];
+                $data['stats'] = $this->statsService->getSellerStats($storeId);
+                $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
+            } else {
+                $data['stats'] = [
+                    'total_products' => 0,
+                    'total_orders' => 0,
+                    'revenue' => 0,
+                    'low_stocks' => 0
+                ];
+            }
+        }
+
+        $this->render($view, array_merge($data, [
             'user' => $user,
             'pageTitle' => 'Dashboard',
             'cssFiles' => ['/css/pages/dashboard.css']
-        ]);
+        ]));
     }
     
     /**

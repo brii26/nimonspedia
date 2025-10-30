@@ -63,10 +63,12 @@ class Application {
         $this->router->get('/', 'HomeController@index');
         
         // Auth routes (Track 1)
-        $this->router->get('/login', 'AuthController@loginForm');
+		$this->router->get('/login', 'AuthController@loginForm');
         $this->router->post('/login', 'AuthController@login');
-        $this->router->get('/register', 'AuthController@registerForm');
+		$this->router->get('/register', 'AuthController@registerForm');
         $this->router->post('/register', 'AuthController@register');
+		$this->router->get('/register/role', 'AuthController@roleSelectForm'); 
+		$this->router->post('/register/role', 'AuthController@roleSelect'); 
         $this->router->post('/logout', 'AuthController@logout');
         
         // Dashboard & profile (authenticated users)
@@ -77,8 +79,8 @@ class Application {
         $this->router->post('/balance/topup', 'AuthController@topUp');
         
         // Product discovery routes (Track 2)
-        // $this->router->get('/products', 'ProductController@index');
-        // $this->router->get('/products/{id}', 'ProductController@show');
+        $this->router->get('/products', 'ProductController@index');
+        $this->router->get('/product', 'ProductController@show');
         // $this->router->get('/stores/{id}', 'StoreController@show');
         
         // Cart routes (Track 2) 
@@ -92,10 +94,14 @@ class Application {
         // $this->router->post('/checkout', 'OrderController@checkout');
         
         // Seller routes (Track 3 - TODO)
-        // $this->router->get('/seller/products', 'SellerController@products');
-        // $this->router->get('/seller/products/add', 'SellerController@addProductForm');
-        // $this->router->post('/seller/products', 'SellerController@storeProduct');
-        // $this->router->get('/seller/orders', 'SellerController@orders');
+        $this->router->get('/seller/products', 'SellerController@listProducts');
+        $this->router->get('/seller/products/create', 'SellerController@createProductForm');
+        $this->router->post('/seller/products/store', 'SellerController@storeProduct');
+		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
+		$this->router->post('/seller/products/update', 'SellerController@updateProduct');
+		$this->router->post('/seller/products/delete', 'SellerController@deleteProduct');
+		$this->router->get('/seller/orders', 'SellerController@orders'); // OTW
+		$this->router->post('/seller/store/update', 'SellerController@updateStore');
         
         // API routes for AJAX (TODO)
         // $this->router->get('/api/cart/count', 'CartController@count');

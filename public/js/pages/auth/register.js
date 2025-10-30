@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPasswordField = document.getElementById('password_confirmation');
     const emailField = document.getElementById('email');
     const form = document.querySelector('form');
+	
+	// Initialize quill rich text editor (store description)
+	createEditor('#editor', 'store_description');
     
     // Initialize password visibility toggle
     initPasswordToggle();
