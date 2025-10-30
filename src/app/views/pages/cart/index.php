@@ -79,84 +79,90 @@ $total = $cart['total'] ?? 0;
             const csrfToken = '<?= htmlspecialchars($csrf_token) ?>';
             
             // Update quantity
-            document.getElementById('updateCart').addEventListener('click', async function() {
+            document.getElementById('updateCart').addEventListener('click', function() {
                 const items = document.querySelectorAll('.cart-item');
-                const updates = [];
-
+                let completedUpdates = 0;
+                const totalUpdates = items.length;
+                
                 items.forEach(item => {
                     const productId = item.dataset.productId;
                     const quantity = item.querySelector('.cart-quantity').value;
-                    updates.push({ productId, quantity });
-                });
-
-                for (const update of updates) {
-                    try {
-                        const response = await fetch('/cart/update', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams({
-                                csrf_token: csrfToken,
-                                product_id: update.productId,
-                                quantity: update.quantity
-                            })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to update cart');
+                    
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/cart/update', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    
+                    xhr.onload = function() {
+                        completedUpdates++;
+                        if (completedUpdates === totalUpdates) {
+                            window.location.reload();
                         }
-                    } catch (error) {
-                        console.error('Error updating cart:', error);
-                    }
-                }
-
-                // Reload page to show updated cart
-                window.location.reload();
+                    };
+                    
+                    xhr.onerror = function() {
+                        console.error('Error updating cart');
+                        completedUpdates++;
+                        if (completedUpdates === totalUpdates) {
+                            window.location.reload();
+                        }
+                    };
+                    
+                    const data = new URLSearchParams({
+                        csrf_token: csrfToken,
+                        product_id: productId,
+                        quantity: quantity
+                    }).toString();
+                    
+                    xhr.send(data);
+                });
             });
 
             // Remove item
             document.querySelectorAll('.btn-remove').forEach(button => {
-                button.addEventListener('click', async function() {
+                button.addEventListener('click', function() {
                     const productId = this.dataset.productId;
+                    const xhr = new XMLHttpRequest();
                     
-                    try {
-                        const response = await fetch('/cart/remove', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams({
-                                csrf_token: csrfToken,
-                                product_id: productId
-                            })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to remove item');
+                    xhr.open('POST', '/cart/remove', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
+                            row.remove();
+                            
+                            if (document.querySelectorAll('.cart-item').length === 0) {
+                                window.location.reload();
+                            }
+                            updateCartBadge();
+                        } else {
+                            console.error('Error removing item:', xhr.responseText);
+                            alert('Gagal menghapus item dari keranjang');
                         }
-
-                        // Remove the row from UI
-                        const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
-                        row.remove();
-
-                        // If cart is empty, reload to show empty state
-                        if (document.querySelectorAll('.cart-item').length === 0) {
-                            window.location.reload();
-                        }
-                    } catch (error) {
-                        console.error('Error removing item:', error);
+                    };
+                    
+                    xhr.onerror = function() {
+                        console.error('Error removing item');
                         alert('Gagal menghapus item dari keranjang');
-                    }
+                    };
+                    
+                    const data = new URLSearchParams({
+                        csrf_token: csrfToken,
+                        product_id: productId
+                    }).toString();
+                    
+                    xhr.send(data);
                 });
             });
 
             // Update cart badge
-            async function updateCartBadge() {
-                try {
-                    const response = await fetch('/api/cart/count');
-                    if (response.ok) {
-                        const data = await response.json();
+            function updateCartBadge() {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '/api/cart/count', true);
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
                         const badge = document.querySelector('.cart-badge');
                         if (badge && data.unique > 0) {
                             badge.textContent = data.unique;
@@ -165,9 +171,13 @@ $total = $cart['total'] ?? 0;
                             badge.style.display = 'none';
                         }
                     }
-                } catch (error) {
-                    console.error('Error updating cart badge:', error);
-                }
+                };
+                
+                xhr.onerror = function() {
+                    console.error('Error updating cart badge');
+                };
+                
+                xhr.send();
             }
 
             // Call initially and after cart changes

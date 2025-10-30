@@ -45,48 +45,46 @@
                             </form>
 
                             <script>
-                            document.getElementById('addToCartForm').addEventListener('submit', async function(e) {
-                                e.preventDefault();
-                                const form = this;
-                                const button = form.querySelector('button[type="submit"]');
-                                const originalText = button.textContent;
-                            
-                                try {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    const form = this;
+                                    const button = form.querySelector('button[type="submit"]');
+                                    const originalText = button.textContent;
+                                    
                                     button.disabled = true;
                                     button.textContent = 'Adding...';
 
-                                    const response = await fetch('/cart/add', {
-                                        method: 'POST',
-                                        credentials: 'same-origin',
-                                        headers: {
-                                            'Content-Type': 'application/x-www-form-urlencoded',
-                                        },
-                                        body: new URLSearchParams(new FormData(form))
-                                    });
-
-                                    const result = await response.json();
-
-                                    if (!response.ok) {
-                                        throw new Error(result.error || 'Failed to add to cart');
-                                    }
-
-                                    // Update cart badge if it exists
-                                    const badge = document.querySelector('.cart-badge');
-                                    if (badge && result.data?.uniqueCount) {
-                                        badge.textContent = result.data.uniqueCount;
-                                        badge.style.display = 'flex';
-                                    }
-
-                                    // Show success message
-                                    alert('Item added to cart successfully!');
-                                
-                                } catch (error) {
-                                    console.error('Error:', error);
-                                    alert(error.message || 'Failed to add item to cart');
-                                } finally {
-                                    button.disabled = false;
-                                    button.textContent = originalText;
-                                }
+                                    const xhr = new XMLHttpRequest();
+                                    xhr.open('POST', '/cart/add', true);
+                                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                    
+                                    xhr.onload = function() {
+                                        if (xhr.status === 200) {
+                                            const result = JSON.parse(xhr.responseText);
+                                            const badge = document.querySelector('.cart-badge');
+                                            if (badge && result.data?.uniqueCount) {
+                                                badge.textContent = result.data.uniqueCount;
+                                                badge.style.display = 'flex';
+                                            }
+                                            alert('Item added to cart successfully!');
+                                        } else {
+                                            const result = JSON.parse(xhr.responseText);
+                                            alert(result.error || 'Failed to add item to cart');
+                                        }
+                                        button.disabled = false;
+                                        button.textContent = originalText;
+                                    };
+                                    
+                                    xhr.onerror = function() {
+                                        console.error('Error adding to cart');
+                                        alert('Failed to add item to cart');
+                                        button.disabled = false;
+                                        button.textContent = originalText;
+                                    };
+                                    
+                                    xhr.send(new URLSearchParams(new FormData(form)));
+                                });
                             });
                             </script>
                     </div>
