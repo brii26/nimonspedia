@@ -177,4 +177,187 @@ class OrderRepository extends BaseRepository {
         ";
         return $this->db->query($sql, [$orderId])->rowCount() > 0;
     }
+
+    /**
+     * Get a paginated list of orders for a specific buyer.
+     *
+     * @param int $buyerId The ID of the buyer
+     * @param int $page The current page number
+     * @param int $perPage Number of items per page
+     * @param string|null $status Filter by order status
+     * @return array Associative array with 'data' (orders) and 'total_pages'
+     */
+    public function getOrdersByBuyer(int $buyerId, int $page = 1, int $perPage = 10, ?string $status = null): array {
+        $offset = ($page - 1) * $perPage;
+        
+        $params = [$buyerId];
+        $countParams = [$buyerId];
+
+        // Base query
+        $sql = "
+            SELECT o.*, s.store_name
+            FROM {$this->table} o
+            JOIN stores s ON o.store_id = s.store_id
+            WHERE o.buyer_id = ?
+        ";
+        
+        // Base query for counting
+        $countSql = "
+            SELECT COUNT(*) as total
+            FROM {$this->table} o
+            WHERE o.buyer_id = ?
+        ";
+
+        // Add status filter if provided
+        if ($status) {
+            $sql .= " AND o.status = ?";
+            $countSql .= " AND o.status = ?";
+            $params[] = $status;
+            $countParams[] = $status;
+        }
+
+        // Add sorting and pagination to main query
+        $sql .= " ORDER BY o.created_at DESC LIMIT ? OFFSET ?";
+        $params[] = $perPage;
+        $params[] = $offset;
+
+        // Execute queries
+        $orders = $this->db->select($sql, $params);
+        $totalRow = $this->db->selectOne($countSql, $countParams);
+        $total = $totalRow['total'] ?? 0;
+
+        return [
+            'data' => $orders,
+            'total_pages' => ceil($total / $perPage)
+        ];
+    }
+
+    /**
+     * Get the full details for a single order, verifying it belongs to the buyer.
+     *
+     * @param int $orderId The ID of the order
+     * @param int $buyerId The ID of the buyer (for verification)
+     * @return array|null The complete order details (with items)
+     */
+    public function getBuyerOrderDetails(int $orderId, int $buyerId): ?array {
+        $sql = "
+            SELECT o.*, s.store_name, u.name as buyer_name, u.address as buyer_address
+            FROM {$this->table} o
+            JOIN stores s ON o.store_id = s.store_id
+            JOIN users u ON o.buyer_id = u.user_id
+            WHERE o.order_id = ? AND o.buyer_id = ?
+        ";
+        
+        $order = $this->db->selectOne($sql, [$orderId, $buyerId]);
+
+        if (!$order) {
+            return null; // Not found or doesn't belong to this buyer
+        }
+
+        // Attach items (using the existing seller method, which is fine)
+        $order['items'] = $this->getOrderItems($orderId);
+
+        return $order;
+    }
+    
+    /**
+     * Process the entire checkout transaction.
+     *
+     * @param int $buyerId
+     * @param array $items Array of cart items from CartService
+     * @param int $totalPrice Total price of the entire cart
+     * @return array Array of the newly created order records
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function processCheckout(int $buyerId, array $items, int $totalPrice): array {
+        try {
+            $buyerSql = "SELECT user_id, balance, address FROM users WHERE user_id = ? FOR UPDATE";
+            $buyer = $this->db->selectOne($buyerSql, [$buyerId]);
+
+            if (!$buyer || $buyer['balance'] < $totalPrice) {
+                throw new ValidationException("Saldo Anda tidak mencukupi.");
+            }
+            
+            $itemsByStore = [];
+            foreach ($items as $item) {
+                $prodSql = "SELECT store_id FROM products WHERE product_id = ?";
+                $product = $this->db->selectOne($prodSql, [$item['product_id']]);
+                if (!$product) {
+                    throw new ValidationException("Produk '{$item['product_name']}' tidak ditemukan.");
+                }
+                $storeId = $product['store_id'];
+                $itemsByStore[$storeId][] = $item;
+            }
+
+            $createdOrders = []; // To store the new order data
+
+            // 4. Loop per store and create an order for each
+            foreach ($itemsByStore as $storeId => $storeItems) {
+                
+                // Calculate subtotal for this specific order (store)
+                $storeTotalPrice = 0;
+                foreach ($storeItems as $item) {
+                    $storeTotalPrice += $item['subtotal'];
+                }
+
+                // 5. Create the main 'orders' record for this store
+                $orderSql = "
+                    INSERT INTO {$this->table} (buyer_id, store_id, total_price, status, shipping_address, created_at)
+                    VALUES (?, ?, ?, 'waiting_approval', ?, CURRENT_TIMESTAMP)
+                    RETURNING order_id, created_at, status, total_price
+                ";
+                $newOrder = $this->db->query($orderSql, [
+                    $buyerId,
+                    $storeId,
+                    $storeTotalPrice,
+                    $buyer['address'] // Use buyer's main address
+                ])->fetch();
+                
+                $newOrderId = $newOrder['order_id'];
+                if (!$newOrderId) {
+                    throw new Exception("Gagal membuat data order utama.");
+                }
+
+                // 6. Loop through items for this store and process them
+                foreach ($storeItems as $item) {
+                    // 7. Lock product row and check stock
+                    $stockSql = "SELECT product_name, stock FROM products WHERE product_id = ? FOR UPDATE";
+                    $product = $this->db->selectOne($stockSql, [$item['product_id']]);
+
+                    if (!$product || $product['stock'] < $item['quantity']) {
+                        throw new ValidationException("Stok untuk '{$product['product_name']}' tidak mencukupi.");
+                    }
+
+                    // 8. Insert into 'order_items'
+                    $itemSql = "
+                        INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
+                        VALUES (?, ?, ?, ?)
+                    ";
+                    $this->db->query($itemSql, [
+                        $newOrderId,
+                        $item['product_id'],
+                        $item['quantity'],
+                        $item['product_price']
+                    ]);
+                    $updateStockSql = "UPDATE products SET stock = stock - ? WHERE product_id = ?";
+                    $this->db->query($updateStockSql, [$item['quantity'], $item['product_id']]);
+                }
+                
+                $createdOrders[] = $newOrder;
+            }
+
+            $updateBalanceSql = "
+                UPDATE users 
+                SET balance = balance - ?, held_balance = held_balance + ?
+                WHERE user_id = ?
+            ";
+            $this->db->query($updateBalanceSql, [$totalPrice, $totalPrice, $buyerId]);
+            
+            return $createdOrders;
+
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }
