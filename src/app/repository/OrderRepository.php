@@ -331,14 +331,19 @@ class OrderRepository extends BaseRepository {
 
                     // 8. Insert into 'order_items'
                     $itemSql = "
-                        INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
-                        VALUES (?, ?, ?, ?)
+                        INSERT INTO order_items (order_id, product_id, quantity, price_at_order, subtotal)
+                        VALUES (?, ?, ?, ?, ?)
                     ";
+                    $price = $item['product_price'];
+                    $quantity = $item['quantity'];
+                    $subtotal = $price * $quantity;
+                    
                     $this->db->query($itemSql, [
                         $newOrderId,
                         $item['product_id'],
-                        $item['quantity'],
-                        $item['product_price']
+                        $quantity,
+                        $price,
+                        $subtotal
                     ]);
                     $updateStockSql = "UPDATE products SET stock = stock - ? WHERE product_id = ?";
                     $this->db->query($updateStockSql, [$item['quantity'], $item['product_id']]);
@@ -349,10 +354,10 @@ class OrderRepository extends BaseRepository {
 
             $updateBalanceSql = "
                 UPDATE users 
-                SET balance = balance - ?, held_balance = held_balance + ?
+                SET balance = balance - ?
                 WHERE user_id = ?
             ";
-            $this->db->query($updateBalanceSql, [$totalPrice, $totalPrice, $buyerId]);
+            $this->db->query($updateBalanceSql, [$totalPrice, $buyerId]);
             
             return $createdOrders;
 

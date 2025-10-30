@@ -93,7 +93,7 @@ class Application {
         $this->router->get('/orders', 'BuyerOrdersController@index');
         $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 
         $this->router->post('/checkout', 'BuyerOrdersController@checkout');
-        $this->router->get('/order/detail', 'BuyerOrdersController@show');
+        $this->router->get('/orders/show', 'BuyerOrdersController@show');
         
         // Seller routes (Track 3 - TODO)
         $this->router->get('/seller/products', 'SellerController@listProducts');

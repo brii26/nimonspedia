@@ -43,7 +43,7 @@ $statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
                                     <td>#<?= View::escape($order['order_id']) ?></td>
                                     <td><?= View::date($order['created_at']) ?></td>
                                     <td><?= View::escape($order['store_name']) ?></td>
-                                    <td><?= View::currency($order['total_amount']) ?></td>
+                                    <td><?= View::currency($order['total_price']) ?></td>
                                     <td>
                                         <span class="badge badge-<?= $order['status'] === 'cancelled' ? 'danger' : 
                                             ($order['status'] === 'delivered' ? 'success' : 'info') ?>">

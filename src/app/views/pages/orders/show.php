@@ -21,11 +21,8 @@ $statusClasses = [
                 <div class="col-md-6">
                     <h5>Informasi Pesanan</h5>
                     <p><strong>Tanggal Pesan:</strong> <?= View::date($order['created_at']) ?></p>
-                    <p><strong>Total:</strong> <?= View::currency($order['total_amount']) ?></p>
+                    <p><strong>Total:</strong> <?= View::currency($order['total_price']) ?></p>
                     <p><strong>Status:</strong> <?= ucfirst($order['status']) ?></p>
-                    <?php if ($order['delivery_info']): ?>
-                        <p><strong>Info Pengiriman:</strong> <?= nl2br(View::escape($order['delivery_info'])) ?></p>
-                    <?php endif; ?>
                 </div>
                 <div class="col-md-6">
                     <h5>Informasi Toko</h5>
@@ -52,16 +49,16 @@ $statusClasses = [
                                         <?= View::escape($item['product_name']) ?>
                                     </a>
                                 </td>
-                                <td><?= View::currency($item['price']) ?></td>
+                                <td><?= View::currency($item['price_at_order']) ?></td>
                                 <td><?= View::escape($item['quantity']) ?></td>
-                                <td><?= View::currency($item['price'] * $item['quantity']) ?></td>
+                                <td><?= View::currency($item['subtotal']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                            <td><strong><?= View::currency($order['total_amount']) ?></strong></td>
+                            <td><strong><?= View::currency($order['total_price']) ?></strong></td>
                         </tr>
                     </tfoot>
                 </table>

@@ -63,7 +63,7 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
-            $order = $this->orderService->getOrderDetails($orderId, Auth::user()['user_id']);
+            $order = $this->orderService->getBuyerOrderDetails($orderId, Auth::user()['user_id']);
             if (!$order) {
                 $this->redirect('/orders');
                 return;
@@ -112,19 +112,33 @@ class BuyerOrdersController extends BaseController {
         $this->verifyCsrf();
         
         try {
-            $order = $this->orderService->createFromCart(Auth::user()['user_id']);
+            // Pre-validation to get more specific error messages
+            $userId = Auth::user()['user_id'];
+            $cart = $this->cartService->getCart($userId);
+            
+            if (empty($cart['items'])) {
+                $this->redirect('/cart?error=' . urlencode("Keranjang belanja Anda kosong."));
+                return;
+            }
+
+            $order = $this->orderService->createFromCart($userId);
             
             if ($order) {
-                $this->redirect('/order/detail?id=' . $order['order_id']);
+                $this->redirect('/orders/show?id=' . $order['order_id']);
+                return;
             } else {
                 throw new Exception('Failed to create order');
             }
             
+        } catch (PDOException $e) {
+            error_log("Checkout PDO Error: " . $e->getMessage());
+            $this->redirect('/cart?error=' . urlencode("Database error during checkout: " . $e->getMessage()));
         } catch (ValidationException $e) {
-            $this->redirect('/cart?error=' . urlencode($e->getFirstError()));
+            error_log("Checkout Validation Error: " . $e->getMessage());
+            $this->redirect('/cart?error=' . urlencode($e->getMessage()));
         } catch (Exception $e) {
-            error_log('Checkout error: ' . $e->getMessage());
-            $this->redirect('/cart?error=' . urlencode('Checkout failed. Please try again.'));
+            error_log("Checkout Error: " . $e->getMessage());
+            $this->redirect('/cart?error=' . urlencode("Unexpected error during checkout: " . $e->getMessage()));
         }
     }
 }
