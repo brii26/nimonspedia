@@ -237,6 +237,22 @@
     display: block;
 }
 
+.form-group input.is-invalid,
+.form-group textarea.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.error-message:not([hidden]) {
+    display: block;
+}
+
 /* Button Styles */
 .btn {
     display: inline-block;

@@ -22,36 +22,31 @@
                         <div class="alert alert-error" role="alert" aria-live="polite">
                             <?= View::escape($error) ?>
                         </div>
-                    <?php endif; ?>                        <form method="POST" action="/profile" class="profile-form">
+                    <?php endif; ?>                        
+                    <form method="POST" action="/profile" class="profile-form" id = "profileUpdateForm">
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                         
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" 
-                                    value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
-                                    required aria-describedby="name-error">
-                            <?php if (isset($errors['name'])): ?>
-                                <div class="error" id="name-error" role="alert"><?= View::escape($errors['name']) ?></div>
-                            <?php endif; ?>
+                                value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
+                                required aria-describedby="name-error">
+                            <small class="error-message" id="name-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email Address</label>
                             <input type="email" id="email" name="email" 
-                                    value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
-                                    required aria-describedby="email-error">
-                            <?php if (isset($errors['email'])): ?>
-                                <div class="error" id="email-error" role="alert"><?= View::escape($errors['email']) ?></div>
-                            <?php endif; ?>
+                                value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
+                                required aria-describedby="email-error">
+                            <small class="error-message" id="email-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
                             <label for="address">Address</label>
                             <textarea id="address" name="address" rows="3" 
                                         required aria-describedby="address-error"><?= View::escape($old['address'] ?? $user['address']) ?></textarea>
-                            <?php if (isset($errors['address'])): ?>
-                                <div class="error" id="address-error" role="alert"><?= View::escape($errors['address']) ?></div>
-                            <?php endif; ?>
+                            <small class="error-message" id="address-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
@@ -68,7 +63,7 @@
                         </div>
                         <?php endif; ?>
                         
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="submit" class="btn btn-primary" id="updateProfileButton">Update Profile</button>
                     </form>
                 </div>
             </section>
