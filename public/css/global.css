@@ -22,11 +22,19 @@ html {
 }
 
 body {
-  margin: 0; /* 2. Hapus margin default browser! */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* Contoh font stack modern */
-  line-height: 1.5; /* Atur line-height dasar yang nyaman dibaca */
-  background-color: #f8f9fa; /* Warna background default jika tidak ditimpa */
-  color: #212529; /* Warna teks default */
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  background-color: #f8f9fa;
+  color: #212529;
+  
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
 }
 
 /* Aturan dasar lainnya (opsional, sesuaikan kebutuhan) */

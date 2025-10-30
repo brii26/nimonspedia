@@ -17,20 +17,18 @@
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" 
-                        value="<?= View::escape($old['email'] ?? '') ?>" 
-                        required aria-describedby="email-error">
+                    value="<?= View::escape($old['email'] ?? '') ?>" 
+                    required aria-describedby="email-error">
+                <small class="error-message" id="email-error" hidden></small>
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="password-input-container">
                     <input type="password" id="password" name="password" 
-                            required aria-describedby="password-error">
-                    <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="password">
-                        <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
-                        <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
-                    </button>
-                </div>
+                        required aria-describedby="password-error">
+                    </div>
+                <small class="error-message" id="password-error" hidden></small>
             </div>
             
             <button type="submit" class="btn btn-primary btn-block">

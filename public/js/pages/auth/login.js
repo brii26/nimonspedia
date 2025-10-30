@@ -1,111 +1,75 @@
-/**
- * Login page client-side validation
- * Handles form validation and user experience enhancements
- */
-
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    // --- Helper Validasi ---
+    const showError = (input, message) => {
+        if (!input) return;
+        const errorElId = input.id + '-error'; // cth: 'email-error'
+        const errorEl = document.getElementById(errorElId);
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.hidden = false;
+        }
+        input.classList.add('is-invalid');
+    };
+
+    const clearError = (input) => {
+        if (!input) return;
+        const errorElId = input.id + '-error';
+        const errorEl = document.getElementById(errorElId);
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.hidden = true;
+        }
+        input.classList.remove('is-invalid');
+    };
+
+    // ---  Validator ---
+    
+    const validateEmailField = () => {
+        clearError(emailField);
+        if (!emailField.value.trim()) {
+            showError(emailField, 'Email is required');
+            return false;
+        }
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(String(emailField.value).toLowerCase())) {
+            showError(emailField, 'Please enter a valid email address');
+            return false;
+        }
+        return true;
+    };
+
+    const validatePasswordField = () => {
+        clearError(passwordField);
+        if (!passwordField.value) { // Password 'required' tapi bisa spasi
+            showError(passwordField, 'Password is required');
+            return false;
+        }
+        return true;
+    };
+
+    // --- Event Listeners ---
+    
+    emailField.addEventListener('input', () => clearError(emailField));
+    passwordField.addEventListener('input', () => clearError(passwordField));
+
+    emailField.addEventListener('blur', validateEmailField);
+    passwordField.addEventListener('blur', validatePasswordField);
     
     form.addEventListener('submit', function(e) {
-        if (!validateForm()) {
+        const isEmailValid = validateEmailField();
+        const isPasswordValid = validatePasswordField();
+        
+        if (!isEmailValid || !isPasswordValid) {
             e.preventDefault();
+            if (submitButton) {
+                App.hideLoading(submitButton);
+            }
             return false;
         }
-        
-        showLoadingState();
     });
-    
-    emailField.addEventListener('blur', function() {
-        validateEmail();
-    });
-    
-    /**
-     * Validate entire form before submission
-     */
-    function validateForm() {
-        const isEmailValid = validateEmail();
-        const isPasswordValid = validatePassword();
-        
-        return isEmailValid && isPasswordValid;
-    }
-    
-    function validateEmail() {
-        const email = emailField.value.trim();
-        
-        if (!email) {
-            showFieldError(emailField, 'Email is required');
-            return false;
-        }
-        
-        if (!isValidEmail(email)) {
-            showFieldError(emailField, 'Please enter a valid email address');
-            return false;
-        }
-        
-        clearFieldError(emailField);
-        return true;
-    }
-
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-    
-    function validatePassword() {
-        const password = passwordField.value;
-        
-        if (!password) {
-            showFieldError(passwordField, 'Password is required');
-            return false;
-        }
-        
-        clearFieldError(passwordField);
-        return true;
-    }
-    
-    /**
-     * Show loading state on form submission
-     */
-    function showLoadingState() {
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            const originalText = submitButton.textContent;
-            submitButton.textContent = 'Logging in...';
-            submitButton.disabled = true;
-            
-            setTimeout(() => {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-            }, 3000);
-        }
-    }
-    
-    /**
-     * Show error message for a field
-     */
-    function showFieldError(field, message) {
-        clearFieldError(field);
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'field-error';
-        errorDiv.textContent = message;
-        
-        field.parentNode.insertBefore(errorDiv, field.nextSibling);
-        
-        field.classList.add('error');
-    }
-    
-    /**
-     * Clear error message for a field
-     */
-    function clearFieldError(field) {
-        const existingError = field.parentNode.querySelector('.field-error');
-        if (existingError) {
-            existingError.remove();
-        }
-        
-        field.classList.remove('error');
-    }
 });

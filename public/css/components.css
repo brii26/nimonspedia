@@ -713,6 +713,105 @@
 }
 
 /* ==========================================================================
+   FOOTER COMPONENT
+   ========================================================================== */
+
+.footer {
+    background: var(--text-dark, #2c3e50); /* Warna gelap untuk kontras */
+    color: var(--gray-300, #adb5bd); /* Teks abu-abu terang */
+    padding: 3rem 0 0 0; /* Padding atas, tanpa padding bawah */
+    margin-top: 2rem; /* Beri jarak dari konten utama */
+    border-top: 4px solid var(--primary-color, #667eea); /* Aksen warna primer */
+}
+
+/* Konten utama footer, menggunakan grid */
+.footer-content {
+    display: grid;
+    /* Buat 3 kolom di desktop, 1 kolom di mobile */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.footer-section h4 {
+    color: var(--white, #fff); /* Judul section lebih terang */
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+/* Garis aksen di bawah judul section */
+.footer-section h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--primary-color, #667eea);
+}
+
+.footer-section p {
+    color: var(--gray-300, #adb5bd);
+    line-height: 1.6;
+}
+
+/* Styling untuk list link */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: var(--gray-300, #adb5bd);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--white, #fff);
+    text-decoration: underline;
+    padding-left: 5px; /* Efek hover kecil */
+}
+
+/* Bagian copyright di paling bawah */
+.footer-bottom {
+    border-top: 1px solid var(--gray-700, #495057); /* Garis pemisah */
+    padding: 1.5rem 0;
+    text-align: center;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gray-400, #ced4da);
+}
+
+/* Penyesuaian untuk mobile */
+@media (max-width: 768px) {
+    .footer {
+        padding-top: 2rem;
+    }
+    .footer-content {
+        /* Di mobile, grid akan otomatis jadi 1 kolom */
+        text-align: center;
+    }
+    
+    .footer-section h4::after {
+        /* Pusatkan garis aksen di mobile */
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 
