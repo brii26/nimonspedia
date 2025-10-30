@@ -21,14 +21,14 @@ class SellerController extends BaseController {
 		$this->render('pages/seller/products/create', [
 			'categories' => $categories,
 			'old' => $_SESSION['old'] ?? [],
-			'errors' => $_SESSION['errors'] ?? []
+			'errors' => $_SESSION['errors'] ?? [],
             'pageTitle' => 'Create Product',
             'cssFiles' => ['/css/dashboard.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
                 '/js/pages/dashboard/seller.js',
-                ],
+            ],
 		]);
         
     }
