@@ -153,7 +153,7 @@ class AuthController extends BaseController {
 				'/js/pages/dashboard/seller.js',
 				'https://cdn.quilljs.com/1.3.6/quill.js',
 				'/js/utils/quill-setup.js',
-				'js/utils/fetchXHR.js'
+				'js/utils/fetchXhr.js'
 			];
 			$cssFiles = [
 				'css/pages/dashboard.css',

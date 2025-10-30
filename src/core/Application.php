@@ -100,7 +100,12 @@ class Application {
 		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
 		$this->router->post('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/delete', 'SellerController@deleteProduct');
-		$this->router->get('/seller/orders', 'SellerController@orders'); // OTW
+    		// Seller Orders Management
+		$this->router->get('/seller/orders', 'SellerOrdersController@index');
+		$this->router->get('/seller/orders/show', 'SellerOrdersController@showOrder');
+		$this->router->post('/seller/orders/approve', 'SellerOrdersController@approve');
+		$this->router->post('/seller/orders/reject', 'SellerOrdersController@reject');
+		$this->router->post('/seller/orders/delivery', 'SellerOrdersController@setDelivery');
 		$this->router->post('/seller/store/update', 'SellerController@updateStore');
         
         // API routes for AJAX (TODO)

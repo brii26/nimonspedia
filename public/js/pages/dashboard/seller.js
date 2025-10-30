@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 		const formData = new FormData(storeForm);
 		formData.set('store_description', editor.root.innerHTML);
-	
-		console.log('saveBtn before showLoading:', saveBtn);
 		App.showLoading(saveBtn, 'Saving...');
 	
 		try {
@@ -44,8 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (logoPathEl) logoPathEl.innerHTML = ' ' + payload.data.store_logo_path;
 			}
 			App.hideLoading(saveBtn);
-			// console.log("done ", saveBtn.textContent);
-			// document.body.classList.toggle('edit-mode');
+			document.body.classList.toggle('edit-mode');
 			App.showAlert('Store updated', 'success');
 		} else {
 			App.showAlert(payload?.message || 'Update failed', 'error');
@@ -57,5 +54,3 @@ document.addEventListener('DOMContentLoaded', () => {
 	  }
 	});
 });
-
-//test
