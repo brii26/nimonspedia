@@ -23,11 +23,16 @@ class SellerController extends BaseController {
 			'old' => $_SESSION['old'] ?? [],
 			'errors' => $_SESSION['errors'] ?? [],
             'pageTitle' => 'Create Product',
-            'cssFiles' => ['/css/dashboard.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+            'cssFiles' => [
+				'/css/pages/dashboard.css', 
+				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+				'/css/pages/seller/products.css'
+			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
                 '/js/pages/seller/products.js',
+				'/js/pages/seller/products/create.js'
             ],
 		]);
         
@@ -53,9 +58,17 @@ class SellerController extends BaseController {
             'store_id' => $storeId 
         ];
         $productsData = $this->productService->getAllProducts($options);
-        
-        $this->render('pages/seller/products/index', ['productsData' => $productsData]);
-    }
+
+        $this->render('pages/seller/products/index', [
+			'productsData' => $productsData,
+			'cssFiles' => [
+				'/css/pages/dashboard.css',
+				'/css/pages/seller/products.css'
+			],
+            'jsFiles' => [
+            ],
+		]);
+	}
 
     public function storeProduct() {
         $postData = $this->getPost();
@@ -135,11 +148,14 @@ class SellerController extends BaseController {
 			'old' => $_SESSION['old'] ?? [],
 			'errors' => $_SESSION['errors'] ?? [],
             'pageTitle' => 'Edit Product',
-            'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+            'cssFiles' => [
+				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+				'/css/pages/seller/products.css'
+			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
-                '/js/pages/seller/products.js',
+				'/js/pages/seller/products/edit.js'
             ],
 		]);
 	}

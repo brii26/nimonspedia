@@ -1,110 +1,82 @@
 <div class="container mt-4">
     <!-- Store Information Header -->
-    <div class="row mb-4">
-        <div class="col">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">			
-                    <h3>Header Info</h3>
-                </div>
-                <div class="card-body">
-                    <!-- Display Mode -->
-                <div id="store-display">
-                    <p id='store-name-display'><?= View::escape($store['store_name'] ?? 'My Store') ?></p>
-                    <div id="store-description-display"><?= $store['store_description'] ?? 'No description available' ?></div>
-
-                    <div id="store-logo-path-container">
-                        <strong>path: </strong> <span id="store-logo-path"><?= View::escape($store['store_logo_path'] ?? '-') ?></span>
-                    </div>
-
-                    <button type="button" id="edit-store-button">Edit Store</button>
-                </div>
-                    
-                    <!-- Edit Mode -->
-                    <div id="store-edit">
-                        <form>
-                            <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                            <div class="form-group mb-3">
-                                <label for="store_name">Store Name</label>
-                                <input type="text" id="store_name" name="store_name" class="form-control" value="<?= View::escape($store['store_name'] ?? '') ?>" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_file">Edit Logo:</label>
-                                <input type="file" id="edit_file" name="store_logo" accept="image/*">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="store_description">Store Description</label>
-                                <div id="editor"><?= $store['store_description'] ?? '' ?></div>
-                                <input type="hidden" name="store_description" id="store_description">
-                            </div>
-                            <button type="submit" id="save-button">Save Changes</button>
-                            <button type="button" id="cancel-button">Cancel</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row">
         <div class="col">
             <div class="card">
-                <div class="card-header">
-                    <h3> Quick Stats Cards</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h5>Total Products</h5>
-                                    <h2><?= isset($stats['total_products']) ? (int)$stats['total_products'] : 0 ?></h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h5>Pending Orders</h5>
-                                    <h2><?= isset($stats['total_orders']) ? (int)$stats['total_orders'] : 0 ?></h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h5>Low Stock</h5>
-                                    <h2><?= isset($stats['low_stocks']) ? (int) $stats['low_stocks'] : 0 ?></h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h5>Revenue</h5>
-                                    <h2><?= View::currency(isset($stats['revenue']) ? (int)$stats['revenue'] : 0) ?></h2>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <h4>Quick Actions</h4>
-                        <div class="mt-3">
-                            <a href="/seller/products" class="btn btn-primary btn-sm">Manage Products</a>
-                            <a href="/seller/orders" class="btn btn-secondary btn-sm">View Orders</a>
-                            <a href="/seller/products/create" class="btn btn-secondary btn-sm">Add Products</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Track 3 Development Area -->
-                    <div class="mt-5" style="border: 2px dashed #28a745; padding: 20px;">
-                        <h4> Track 3 Development Area</h4>
-                        <p><strong>TOLONG BUATIN:</strong></p>
-                        <ul>
-                            <li>TODO: Implement order management for sellers</li>
-                        </ul>
-                    </div>
-                </div>
+				<div class="card-body">
+					<div id="store-display">
+						<div class="display-layout">
+							
+							<div class="display-col-image">
+								<div class="store-logo-container">
+									<?php
+										$logoPath = $store['store_logo_path'] ?? null;
+										if ($logoPath) {
+											$imageUrl = '/storage/' . View::escape($logoPath);
+											$altText = View::escape($store['store_name'] ?? 'Store') . ' Logo';
+										} else {
+											$imageUrl = '/images/default-logo-placeholder.png'; 
+											$altText = 'Default Store Logo';
+										}
+									?>
+									<img src="<?= $imageUrl ?>" alt="<?= $altText ?>" class="store-logo-img">
+								</div>
+							</div>
+							
+							<div class="display-col-details">
+								<span class="store-badge">Profil Toko</span>
+								<h2 id='store-name-display'><?= View::escape($store['store_name'] ?? 'My Store') ?></h2>
+								<div id="store-description-display">
+									<?= $store['store_description'] ?? '<p><i>Tidak ada deskripsi. Klik "Edit" untuk menambahkan.</i></p>' ?>
+								</div>
+								<button type="button" id="edit-store-button" class="btn-edit-custom">
+									<i class="icon-edit"></i> 
+									Edit Store Info
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<div id="store-edit">
+						<form>
+							<input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+							
+							<div class="edit-layout-simple">
+
+								<div class="edit-col-image-simple">
+									<div class="form-group mb-3">
+										<label>Logo Toko</label>
+										<label for="edit_file" class="file-upload-label btn-secondary-custom">
+											<span>Ganti Logo</span>
+											<input type="file" id="edit_file" name="store_logo" accept="image/*">
+										</label>
+									</div>
+									
+									<div class="form-group mb-3" id="preview-wrapper">
+										<img id="image-preview" src="#" alt="Image preview">
+									</div>
+								</div>
+
+								<div class="edit-col-details-simple">
+									<div class="form-group mb-3">
+										<label for="store_name">Nama Toko</label>
+										<input type="text" id="store_name" name="store_name" class="form-control-custom" value="<?= View::escape($store['store_name'] ?? '') ?>" required>
+									</div>
+									
+									<div class="form-group mb-3">
+										<label for="store_description">Deskripsi Toko</label>
+										<div id="editor"><?= $store['store_description'] ?? '' ?></div>
+										<input type="hidden" name="store_description" id="store_description">
+									</div>
+								</div>
+
+							</div> <div class="edit-actions">
+								<button type="button" id="cancel-button" class="btn-cancel">Batal</button>
+								<button type="submit" id="save-button" class="btn-save">Simpan Perubahan</button>
+							</div>
+						</form>
+					</div>
+				</div>
             </article>
             
             <article class="stat-card">
@@ -114,16 +86,6 @@
                 <div class="stat-content">
                     <div class="stat-value"><?= View::currency(0) ?></div>
                     <a href="/seller/analytics" class="btn btn-secondary">Analytics</a>
-                </div>
-            </article>
-            
-            <article class="stat-card">
-                <header class="stat-header">
-                    <h3>Store Rating</h3>
-                </header>
-                <div class="stat-content">
-                    <div class="stat-value">-</div>
-                    <a href="/seller/store" class="btn btn-secondary">Store Profile</a>
                 </div>
             </article>
         </div>
@@ -149,26 +111,6 @@
             <div class="alert alert-info" role="status">
                 <p>No recent activity. Start by adding your first product!</p>
             </div>
-        </div>
-    </section>
-    
-    <!-- Track 3 Development Area -->
-    <section class="development-area">
-        <header class="development-header">
-            <h2>Track 3 Development Area</h2>
-        </header>
-        <div class="development-content">
-            <p><strong>TOLONG BUATIN:</strong></p>
-            <ul>
-                <li>User authentication is working</li>
-                <li>Seller user data available in <code>$user</code> variable</li>
-                <li>User role validation working (<code>Auth::requireRole('SELLER')</code>)</li>
-                <li>TODO: Implement SellerController</li>
-                <li>TODO: Implement product CRUD (create, read, update, delete)</li>
-                <li>TODO: Implement file upload for product images</li>
-                <li>TODO: Implement order management for sellers</li>
-                <li>TODO: Implement store profile management</li>
-            </ul>
         </div>
     </section>
 </div>

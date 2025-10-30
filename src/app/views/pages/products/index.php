@@ -65,44 +65,45 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.add-to-cart-listing').forEach(form => {
-            form.addEventListener('submit', async function(e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const btn = form.querySelector('button[type="submit"]');
                 const originalText = btn.textContent;
-                try {
-                    btn.disabled = true;
-                    btn.textContent = 'Adding...';
+                
+                btn.disabled = true;
+                btn.textContent = 'Adding...';
 
-                    const response = await fetch('/cart/add', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams(new FormData(form))
-                    });
-
-                    const result = await response.json();
-                    if (!response.ok) {
-                        throw new Error(result.error || 'Failed to add to cart');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/cart/add', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        const badge = document.querySelector('.cart-badge');
+                        if (badge && result.data?.uniqueCount) {
+                            badge.textContent = result.data.uniqueCount;
+                            badge.style.display = 'flex';
+                        }
+                        
+                        btn.textContent = 'Added';
+                        setTimeout(() => btn.textContent = originalText, 900);
+                    } else {
+                        const result = JSON.parse(xhr.responseText);
+                        alert(result.error || 'Gagal menambahkan ke keranjang');
+                        btn.disabled = false;
+                        btn.textContent = originalText;
                     }
-
-                    // update cart badge
-                    const badge = document.querySelector('.cart-badge');
-                    if (badge && result.data?.uniqueCount) {
-                        badge.textContent = result.data.uniqueCount;
-                        badge.style.display = 'flex';
-                    }
-
-                    // lightweight feedback
-                    btn.textContent = 'Added';
-                    setTimeout(() => btn.textContent = originalText, 900);
-                } catch (err) {
-                    console.error(err);
-                    alert(err.message || 'Gagal menambahkan ke keranjang');
+                };
+                
+                xhr.onerror = function() {
+                    console.error('Error adding to cart');
+                    alert('Gagal menambahkan ke keranjang');
                     btn.disabled = false;
                     btn.textContent = originalText;
-                }
+                };
+                
+                xhr.send(new URLSearchParams(new FormData(form)));
             });
         });
     });

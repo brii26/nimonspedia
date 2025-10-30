@@ -166,7 +166,8 @@ class AuthController extends BaseController {
 			];
 			$cssFiles = [
 				'css/pages/dashboard.css',
-				'https://cdn.quilljs.com/1.3.6/quill.snow.css'
+				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+				'css/pages/seller/store.css'
 			];
 		} else {
 			$jsFiles = ['/js/pages/dashboard/buyer.js'];

@@ -14,6 +14,26 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.body.classList.toggle('edit-mode');
 	});
 
+	const fileInput = document.getElementById('edit_file');
+    const previewWrapper = document.getElementById('preview-wrapper');
+    const previewImage = document.getElementById('image-preview');
+
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewWrapper.style.display = 'flex';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            previewWrapper.style.display = 'none';
+            previewImage.src = '#';
+        }
+    });
+
 	storeForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const formData = new FormData(storeForm);
@@ -38,8 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (descEl) descEl.innerHTML = payload.data.store_description;
 
 			if (payload.data.store_logo_path) {
-			const logoPathEl = document.querySelector('#store-logo-path');
-			if (logoPathEl) logoPathEl.innerHTML = ' ' + payload.data.store_logo_path;
+				const logoImgEl = document.querySelector('.store-logo-img');
+				
+				if (logoImgEl) {
+					const newImageUrl = '/storage/' + payload.data.store_logo_path;
+					logoImgEl.src = newImageUrl;
+					logoImgEl.alt = (payload.data.store_name || 'Store') + ' Logo';
+				}
 			}
 			App.hideLoading(saveBtn);
 			document.body.classList.toggle('edit-mode');

@@ -90,8 +90,10 @@ class Application {
         $this->router->get('/api/cart/count', 'CartController@count');
         
         // Order routes (Track 2 & 3)
-        // $this->router->get('/orders', 'OrderController@index');
-        // $this->router->post('/checkout', 'OrderController@checkout');
+        $this->router->get('/orders', 'BuyerOrdersController@index');
+        $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 
+        $this->router->post('/checkout', 'BuyerOrdersController@checkout');
+        $this->router->get('/orders/show', 'BuyerOrdersController@show');
         
         // Seller routes (Track 3 - TODO)
         $this->router->get('/seller/products', 'SellerController@listProducts');

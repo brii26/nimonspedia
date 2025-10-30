@@ -276,22 +276,6 @@
     background-color: #c82333;
 }
 
-
-/* buat header store */
-#store-edit {
-	display: none;
-}
-
-/* edit toko same page ui manipulation */
-body.edit-mode #store-display {
-	display: none;
-}
-body.edit-mode #store-edit {
-	display : block;
-}
-
-/* =========================================== */
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .stats-grid {
