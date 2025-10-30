@@ -52,7 +52,7 @@ class ProductService {
 		$now = date('Y-m-d H:i:s');
 		$productData = [
 			'product_name' => htmlspecialchars($data['product_name']),
-			'description' => $data['description'] ?? '',
+			'description' => $data['product-description'] ?? '',
 			'price' => (float)$data['price'],
 			'stock' => (int)$data['stock'],
 			'store_id' => $storeId,
@@ -92,7 +92,7 @@ class ProductService {
 	
 		$updateData = [
 			'product_name' => htmlspecialchars($data['product_name']),
-			'description' => $data['description'] ?? '',
+			'description' => $data['product-description'] ?? '',
 			'price' => (float)$data['price'],
 			'stock' => (int)$data['stock'],
 			'main_image_path' => $productImagePath

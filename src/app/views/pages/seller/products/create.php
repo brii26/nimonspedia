@@ -65,12 +65,10 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="description">Description</label>
-                            <div id="editor">
-                                <?= $old['description'] ?? '' ?>
-                            </div>
-                            <input type="hidden" name="description" id="description">
-                        </div>
+							<label for="product-description">Description</label>
+							<div id="editor"><?= $old['product-description'] ?? '' ?></div>
+							<input type="hidden" name="product-description" id="product-description">
+						</div>
 
                         <button type="submit" class="btn btn-primary">Save Product</button>
                         <a href="/seller/products" class="btn btn-secondary">Cancel</a>

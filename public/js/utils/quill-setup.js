@@ -3,8 +3,8 @@ function createEditor(selector, hiddenInputName) {
   const hidden = document.querySelector(`[name="${hiddenInputName}"]`);
   if (!editor || !hidden) return null;
 
-  const quill = new Quill('#editor', {
-	modules: { toolbar: true },
+  const quill = new Quill(selector, {
+	modules: { toolbar: false },
 	theme: 'snow'
   });
   

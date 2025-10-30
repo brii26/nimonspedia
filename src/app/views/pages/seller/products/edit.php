@@ -70,9 +70,9 @@
 						</div>
 
 						<div class="form-group mb-3">
-							<label for="description">Description</label>
+							<label for="product-description">Description</label>
 							<div id="editor"><?= $product['description'] ?? '' ?></div>
-							<input type="hidden" name="description" id="description">
+							<input type="hidden" name="product-description" id="product-description">
 						</div>
 
 						<button type="submit" class="btn btn-primary">Update Product</button>

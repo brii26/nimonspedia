@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewWrapper = document.getElementById('preview-wrapper');
     const previewImage = document.getElementById('image-preview');
 
-	createEditor('#editor', 'description');
+	createEditor('#editor', 'product-description');
 
     fileInput.addEventListener('change', function() {
         const file = this.files[0];

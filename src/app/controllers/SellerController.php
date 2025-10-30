@@ -31,7 +31,6 @@ class SellerController extends BaseController {
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
-                '/js/pages/seller/products.js',
 				'/js/pages/seller/products/create.js'
             ],
 		]);
@@ -101,8 +100,7 @@ class SellerController extends BaseController {
                 'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
-                    '/js/utils/quill-setup.js', 
-                    '/js/pages/seller/products.js',
+                    '/js/utils/quill-setup.js',
                 ],
             ]);
         } catch (Exception $e) {
@@ -113,8 +111,7 @@ class SellerController extends BaseController {
                 'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
-                    '/js/utils/quill-setup.js', 
-                    '/js/pages/seller/products.js',
+                    '/js/utils/quill-setup.js',
                 ],
             ]);
         }
