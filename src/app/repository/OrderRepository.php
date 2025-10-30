@@ -307,12 +307,12 @@ class OrderRepository extends BaseRepository {
                     VALUES (?, ?, ?, 'waiting_approval', ?, CURRENT_TIMESTAMP)
                     RETURNING order_id, created_at, status, total_price
                 ";
-                $newOrder = $this->db->query($orderSql, [
+                $newOrder = $this->db->selectOne($orderSql, [
                     $buyerId,
                     $storeId,
                     $storeTotalPrice,
                     $buyer['address'] // Use buyer's main address
-                ])->fetch();
+                ]);
                 
                 $newOrderId = $newOrder['order_id'];
                 if (!$newOrderId) {
