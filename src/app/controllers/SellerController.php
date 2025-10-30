@@ -27,7 +27,7 @@ class SellerController extends BaseController {
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
-                '/js/pages/dashboard/seller.js',
+                '/js/pages/seller/products.js',
             ],
 		]);
         
@@ -83,12 +83,26 @@ class SellerController extends BaseController {
         } catch (ValidationException $e) {
             $this->render('pages/seller/products/create', [
                 'errors' => $e->getErrors(),
-                'old' => $postData
+                'old' => $postData,
+                'pageTitle' => 'Add Product',
+                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js', 
+                    '/js/pages/seller/products.js',
+                ],
             ]);
         } catch (Exception $e) {
             $this->render('pages/seller/products/create', [
                 'error' => $e->getMessage(),
-                'old' => $postData
+                'old' => $postData,
+                'pageTitle' => 'Add Product',
+                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js', 
+                    '/js/pages/seller/products.js',
+                ],
             ]);
         }
 	}
@@ -120,6 +134,13 @@ class SellerController extends BaseController {
 			'assigned_category_ids' => $assignedIds,
 			'old' => $_SESSION['old'] ?? [],
 			'errors' => $_SESSION['errors'] ?? []
+            'pageTitle' => 'Edit Product',
+            'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+            'jsFiles' => [
+                'https://cdn.quilljs.com/1.3.6/quill.js',
+                '/js/utils/quill-setup.js', 
+                '/js/pages/seller/products.js',
+            ],
 		]);
 	}
 
@@ -148,13 +169,27 @@ class SellerController extends BaseController {
 			$this->render('pages/seller/products/edit', [ 
 				'errors' => $e->getErrors(), 
 				'old' => $postData, 
-				'product' => array_merge(['product_id' => $productId], $postData) 
+				'product' => array_merge(['product_id' => $productId], $postData)
+                'pageTitle' => 'Update Product',
+                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js', 
+                    '/js/pages/seller/products.js',
+                ],
 			]); 
 		} catch (Exception $e) { 
 			$this->render('pages/seller/products/edit', [
 				'error' => $e->getMessage(), 
 				'old' => $postData, 
 				'product' => array_merge(['product_id' => $productId], $postData) 
+                'pageTitle' => 'Update Product',
+                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'jsFiles' => [
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js', 
+                    '/js/pages/seller/products.js',
+                ],
 			]); 
 		} 
 	} 
