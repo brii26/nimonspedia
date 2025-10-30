@@ -218,8 +218,8 @@ class AuthController extends BaseController {
         $this->render('pages/auth/profile', [
             'user' => $user,
             'pageTitle' => 'Profile Settings',
-            'cssFiles' => ['/css/pages/profile.css'], // CSS profile
-            'jsFiles' => [ // JS profile
+            'cssFiles' => ['/css/pages/profile.css'],
+            'jsFiles' => [
                 '/js/components/password-toggle.js',
                 '/js/pages/auth/profile.js'
             ]
@@ -247,13 +247,33 @@ class AuthController extends BaseController {
             
             $this->render('pages/auth/profile', [
                 'success' => 'Profile updated successfully',
-                'user' => $updatedUser
+                'user' => $updatedUser,
+                'pageTitle' => 'Profile Settings',
+                'cssFiles' => ['/css/pages/profile.css'],
+                'jsFiles' => [
+                    '/js/components/password-toggle.js',
+                    '/js/pages/auth/profile.js'
+                ]
             ]);
-            
+        } catch (ValidationException $e) {
+            $currentUser = $this->authService->getUserById(Auth::id());
+            $oldData = $this->getPost();
+
+            $this->render('pages/auth/profile', [
+                'errors' => $e->getErrors(),
+                'old' => $oldData,
+                'user' => $currentUser,
+                'pageTitle' => 'Profile Settings',
+                'cssFiles' => ['/css/pages/profile.css'],
+                'jsFiles' => ['/js/components/password-toggle.js','/js/pages/auth/profile.js']
+            ]);
         } catch (Exception $e) {
             $this->render('pages/auth/profile', [
                 'error' => $e->getMessage(),
-                'user' => $this->authService->getUserById(Auth::id())
+                'user' => $this->authService->getUserById(Auth::id()),
+                'pageTitle' => 'Profile Settings',
+                'cssFiles' => ['/css/pages/profile.css'],
+                'jsFiles' => ['/js/components/password-toggle.js','/js/pages/auth/profile.js']
             ]);
         }
     }
