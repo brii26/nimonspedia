@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPasswordField = document.getElementById('password_confirmation');
     const emailField = document.getElementById('email');
     const form = document.querySelector('form');
-	
-	// Initialize quill rich text editor (store description)
-	createEditor('#editor', 'store_description');
-    
-    // Initialize password visibility toggle
-    initPasswordToggle();
+
+    const roleSelect = document.getElementById('role');
+    const sellerFields = document.getElementById('seller-fields');
+    const storeNameInput = document.getElementById('store_name');
+
+    let isEditorInitialized = false;
     
     // Email validation on input
     emailField.addEventListener('input', () => {
@@ -37,6 +37,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     });
+
+    function toggleSellerFields() {
+        if (roleSelect.value === 'SELLER') {
+            sellerFields.style.display = 'block';
+            storeNameInput.required = true;
+
+            if (!isEditorInitialized) {
+                createEditor('#editor', 'store_description');
+                isEditorInitialized = true;
+            }
+        } else {
+            sellerFields.style.display = 'none';
+            storeNameInput.required = false;
+        }
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', toggleSellerFields);
+    }
+
+    toggleSellerFields();
+    
+    // Initialize password visibility toggle
+    initPasswordToggle();
     
     /**
      * Validate email format using regex
