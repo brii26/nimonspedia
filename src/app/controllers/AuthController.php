@@ -145,11 +145,32 @@ class AuthController extends BaseController {
             }
         }
 
-        $this->render($view, array_merge($data, [
-            'user' => $user,
-            'pageTitle' => 'Dashboard',
-            'cssFiles' => ['/css/pages/dashboard.css']
-        ]));
+		$jsFiles = null;
+		$cssFiles = null;
+
+		if($user['role'] === 'SELLER') {
+			$jsFiles = [
+				'/js/pages/dashboard/seller.js',
+				'https://cdn.quilljs.com/1.3.6/quill.js',
+				'/js/utils/quill-setup.js',
+				'js/utils/fetchXHR.js'
+			];
+			$cssFiles = [
+				'css/pages/dashboard.css',
+				'https://cdn.quilljs.com/1.3.6/quill.snow.css'
+			];
+		} else {
+			$jsFiles = ['/js/pages/dashboard/buyer.js'];
+			$cssFiles = [
+				'css/pages/dashboard.css'
+			];
+		}
+		$this->render($view, array_merge($data, [
+			'user' => $user,
+			'pageTitle' => 'Dashboard',
+			'cssFiles' => $cssFiles,
+			'jsFiles' => $jsFiles
+		]));
     }
     
     /**

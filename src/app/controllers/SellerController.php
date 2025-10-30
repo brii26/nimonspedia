@@ -133,7 +133,7 @@ class SellerController extends BaseController {
 			'categories' => $categories,
 			'assigned_category_ids' => $assignedIds,
 			'old' => $_SESSION['old'] ?? [],
-			'errors' => $_SESSION['errors'] ?? []
+			'errors' => $_SESSION['errors'] ?? [],
             'pageTitle' => 'Edit Product',
             'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
             'jsFiles' => [
@@ -169,7 +169,7 @@ class SellerController extends BaseController {
 			$this->render('pages/seller/products/edit', [ 
 				'errors' => $e->getErrors(), 
 				'old' => $postData, 
-				'product' => array_merge(['product_id' => $productId], $postData)
+				'product' => array_merge(['product_id' => $productId], $postData),
                 'pageTitle' => 'Update Product',
                 'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
@@ -182,7 +182,7 @@ class SellerController extends BaseController {
 			$this->render('pages/seller/products/edit', [
 				'error' => $e->getMessage(), 
 				'old' => $postData, 
-				'product' => array_merge(['product_id' => $productId], $postData) 
+				'product' => array_merge(['product_id' => $productId], $postData),
                 'pageTitle' => 'Update Product',
                 'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [

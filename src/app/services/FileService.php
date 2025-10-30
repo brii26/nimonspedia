@@ -8,6 +8,44 @@ class FileService
         'product_image' => 'product_images'
     ];
 
+	private static function reencodeWithoutMetadata(string $path): void {
+    if (!extension_loaded('gd')) return;
+
+    $info = getimagesize($path);
+    if ($info === false) return;
+    $mime = $info['mime'];
+
+    switch ($mime) {
+        case 'image/jpeg':
+            $img = @imagecreatefromjpeg($path);
+            break;
+        case 'image/png':
+            $img = @imagecreatefrompng($path);
+            break;
+		case 'image/webp':
+			$img = @imagecreatefromwebp($path);
+			break;
+        default:
+            return; 
+    }
+
+    if (!$img) return;
+    switch ($mime) {
+        case 'image/jpeg':
+            imagejpeg($img, $path, 70);
+            break;
+        case 'image/png':
+            imagesavealpha($img, true);
+            imagepng($img, $path, 3);
+            break;
+		case 'image/webp':
+			imagewebp($img, $path, 70); 
+			break;
+    }
+
+    imagedestroy($img);
+}
+
     public static function saveUploadedImage(array $file, string $type, string $oldFile = ''){
         if (!isset(self::$map[$type])) {
             throw new InvalidArgumentException("Unknown type '{$type}'. Allowed: " . implode(', ', array_keys(self::$map)));
@@ -34,6 +72,8 @@ class FileService
         if (!move_uploaded_file($file['tmp_name'], $destinationPath)) {
             throw new RuntimeException('Failed to move uploaded file to destination.');
         }
+
+		self::reencodeWithoutMetadata($destinationPath);
 
         $relative = $subfolder . '/' . $finalFilename;
         return $relative;

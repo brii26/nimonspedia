@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
 
-            fetch('/balance/topup', {
+            fetchXhr('/balance/topup', {
                 method: 'POST',
                 body: formData
             })
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
 
-        fetch("profile/password", {
+        fetchXhr("profile/password", {
             method: "POST",
             body: formData,
         })

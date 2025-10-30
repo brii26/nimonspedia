@@ -74,7 +74,7 @@ window.App = {
             }
         }
         
-        return fetch(url, { ...defaultOptions, ...options });
+        return fetchXhr(url, { ...defaultOptions, ...options });
     },
     
     formatCurrency: function(amount) {

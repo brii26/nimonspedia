@@ -330,7 +330,7 @@ const Auth = {
             const jsonData = Object.fromEntries(formData);
 
             // Make AJAX request
-            const response = await fetch(form.action || window.location.pathname, {
+            const response = await fetchXhr(form.action || window.location.pathname, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
