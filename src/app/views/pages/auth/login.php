@@ -1,47 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Nimonspedia</title>
-</head>
-<body>
-    <div class="card">
-        <h1>Login to Nimonspedia</h1>
+<div class="auth-container">
+    <section class="auth-card">
+        <header class="auth-header">
+            <h1>Login to Nimonspedia</h1>
+            <p>Access your account to continue</p>
+        </header>
         
         <?php if (isset($error)): ?>
-            <div class="error"><?= View::escape($error) ?></div>
+            <div class="alert alert-error" role="alert" aria-live="polite">
+                <?= View::escape($error) ?>
+            </div>
         <?php endif; ?>
         
-        <form method="POST" action="/login">
+        <form method="POST" action="/login" class="auth-form" novalidate>
             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
             
             <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="<?= View::escape($old['email'] ?? '') ?>" required>
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" 
+                        value="<?= View::escape($old['email'] ?? '') ?>" 
+                        required aria-describedby="email-error">
             </div>
             
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <label for="password">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="password" name="password" 
+                            required aria-describedby="password-error">
+                    <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="password">
+                        <img src="/assets/icons/eye.svg" alt="Show password" class="icon-eye">
+                        <img src="/assets/icons/eye-off.svg" alt="Hide password" class="icon-eye-off">
+                    </button>
+                </div>
             </div>
             
-            <button type="submit">Login</button>
+            <button type="submit" class="btn btn-primary btn-block">
+                Login
+            </button>
         </form>
         
-        <div class="links">
+        <nav class="auth-nav">
             <p>Don't have an account? <a href="/register">Register here</a></p>
-            <p><a href="/">← Back to Home</a></p>
-        </div>
-    </div>
-    
-    <div class="debug-section">
-        <h3>Testing Navigation</h3>
-        <p><a href="/dashboard">Test Dashboard (requires login)</a></p>
-        <p><a href="/profile">Test Profile (requires login)</a></p>
-        <p><a href="/register">Go to Register</a></p>
-    </div>
-
-    <script src="/js/pages/auth/login.js"></script>
-</body>
-</html>
+            <p><a href="/" class="btn-link">← Back to Home</a></p>
+        </nav>
+    </section>
+</div>

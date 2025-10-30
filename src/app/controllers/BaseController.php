@@ -21,7 +21,28 @@ abstract class BaseController {
             'current_url' => $_SERVER['REQUEST_URI']
         ]);
         
-        echo View::render($template, $data);
+        try {
+            $pageContent = View::render($template, $data);
+        } catch (Exception $e) {
+            error_log("Error rendering view content '{$template}': " . $e->getMessage());
+            $pageContent = "<p>Error: Could not render page content. View file '{$template}' not found or invalid.</p>";
+            if (!headers_sent()) {
+                http_response_code(500);
+            }
+        }
+
+        $data['content'] = $pageContent;
+
+        try {
+            echo View::render('components/layout', $data);
+        } catch (Exception $e) {
+            error_log("Error rendering layout 'components/layout': " . $e->getMessage());
+            echo "<h1>Application Layout Error</h1>";
+            echo "<p>Could not render the main application layout.</p>";
+            if (!headers_sent()) {
+                http_response_code(500);
+            }
+        }
     }
     
     /**

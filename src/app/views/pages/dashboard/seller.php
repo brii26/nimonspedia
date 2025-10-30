@@ -129,9 +129,72 @@
                             </ul>
                         </div>
                     </div>
+                </article>
+                
+                <article class="stat-card">
+                    <header class="stat-header">
+                        <h3>Revenue</h3>
+                    </header>
+                    <div class="stat-content">
+                        <div class="stat-value"><?= View::currency(0) ?></div>
+                        <a href="/seller/analytics" class="btn btn-secondary">Analytics</a>
+                    </div>
+                </article>
+                
+                <article class="stat-card">
+                    <header class="stat-header">
+                        <h3>Store Rating</h3>
+                    </header>
+                    <div class="stat-content">
+                        <div class="stat-value">-</div>
+                        <a href="/seller/store" class="btn btn-secondary">Store Profile</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+        
+        <section class="quick-actions">
+            <header class="section-header">
+                <h2>Quick Actions</h2>
+            </header>
+            <nav class="actions-nav">
+                <a href="/seller/products/add" class="btn btn-success">Add New Product</a>
+                <a href="/seller/products" class="btn btn-primary">Manage Products</a>
+                <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
+                <a href="/seller/store" class="btn btn-secondary">Store Settings</a>
+            </nav>
+        </section>
+        
+        <section class="recent-activity">
+            <header class="section-header">
+                <h2>Recent Activity</h2>
+            </header>
+            <div class="activity-content">
+                <div class="alert alert-info" role="status">
+                    <p>No recent activity. Start by adding your first product!</p>
                 </div>
             </div>
-        </div>
+        </section>
+        
+        <!-- Track 3 Development Area -->
+        <section class="development-area">
+            <header class="development-header">
+                <h2>Track 3 Development Area</h2>
+            </header>
+            <div class="development-content">
+                <p><strong>TOLONG BUATIN:</strong></p>
+                <ul>
+                    <li>User authentication is working</li>
+                    <li>Seller user data available in <code>$user</code> variable</li>
+                    <li>User role validation working (<code>Auth::requireRole('SELLER')</code>)</li>
+                    <li>TODO: Implement SellerController</li>
+                    <li>TODO: Implement product CRUD (create, read, update, delete)</li>
+                    <li>TODO: Implement file upload for product images</li>
+                    <li>TODO: Implement order management for sellers</li>
+                    <li>TODO: Implement store profile management</li>
+                </ul>
+            </div>
+        </section>
     </div>
 
 	<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
