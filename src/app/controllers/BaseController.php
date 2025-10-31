@@ -63,6 +63,15 @@ abstract class BaseController {
         header("Location: {$url}");
         exit;
     }
+
+    protected function handle404(){
+        http_response_code(404);
+        $this->render('pages/errors/404', [
+            'cssFiles' => ['/css/pages/errors.css'],
+            'pageTitle' => '404 Not Found'
+        ]);
+        return;
+    }
     
     /**
      * Require authentication

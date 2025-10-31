@@ -44,13 +44,13 @@ class ProductController extends BaseController {
     public function show() {
         $productId = $this->getQuery('id');
         if (!$productId) {
-            $this->render('pages/errors/404');
+            $this->handle404();
             return;
         }
 
         $product = $this->productService->getProductById($productId);
         if (!$product) {
-            $this->render('pages/errors/404');
+            $this->handle404();
             return;
         }
 
