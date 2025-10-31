@@ -14,8 +14,8 @@ class StatsService {
     public function getSellerStats($storeId) {
         return [
             'total_products' => $this->productRepo->getTotalProducts($storeId),
-            'total_orders' => $this->orderRepo->getTotalOrders($storeId),
-            'revenue' => $this->orderRepo->getRevenue($storeId),
+            'total_orders' => $this->orderRepo->getPendingOrders($storeId),
+            'revenue' => $this->storeRepo->getRevenue($storeId),
             'low_stocks' => $this->productRepo->getLowStocks($storeId)
         ];
     }

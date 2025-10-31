@@ -1,7 +1,7 @@
 <?php
 
 class BuyerOrdersController extends BaseController {
-    private $orderService;
+    private $buyerOrderService;
     private $cartService;
     private $orderRepository;
     
@@ -10,7 +10,7 @@ class BuyerOrdersController extends BaseController {
         $this->requireAuth(); 
         $this->orderRepository = new OrderRepository();
         $this->cartService = new CartService(new ProductRepository(), new CartItemRepository());
-        $this->orderService = new BuyerOrderService(
+        $this->buyerOrderService = new BuyerOrderService(
             $this->orderRepository,
             $this->cartService
         );
@@ -27,7 +27,7 @@ class BuyerOrdersController extends BaseController {
             $status = $this->getQuery('status');
             $perPage = 10;
             
-            $orders = $this->orderService->getBuyerOrders(
+            $orders = $this->buyerOrderService->getBuyerOrders(
                 Auth::user()['user_id'],
                 $page,
                 $perPage,
@@ -63,7 +63,7 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
-            $order = $this->orderService->getBuyerOrderDetails($orderId, Auth::user()['user_id']);
+            $order = $this->buyerOrderService->getBuyerOrderDetails($orderId, Auth::user()['user_id']);
             if (!$order) {
                 $this->redirect('/orders');
                 return;
@@ -121,7 +121,7 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
 
-            $order = $this->orderService->createFromCart($userId);
+            $order = $this->buyerOrderService->createFromCart($userId);
             
             if ($order) {
                 $this->redirect('/orders/show?id=' . $order['order_id']);

@@ -7,31 +7,24 @@ class OrderRepository extends BaseRepository {
         return 'order_id';
     }
 
-    /**
-     * Returns total number of orders for a store
-     * @param int $storeId
-     * @return int
-     */
     public function getTotalOrders($storeId) {
         $sql = "SELECT COUNT(*) AS total_orders FROM {$this->table} WHERE store_id = ?";
         $row = $this->db->selectOne($sql, [$storeId]);
         return isset($row['total_orders']) ? (int)$row['total_orders'] : 0;
     }
 
-    /**
-     * Returns total revenue for a store (only orders with status 'received')
-     * @param int $storeId
-     * @return int
-     */
-    public function getRevenue($storeId) {
-        $sql = "SELECT COALESCE(SUM(total_price), 0) AS revenue FROM {$this->table} WHERE store_id = ? AND status = 'received'";
-        $row = $this->db->selectOne($sql, [$storeId]);
-        return isset($row['revenue']) ? (int)$row['revenue'] : 0;
+    public function getOrderPrice($orderId) {
+        $sql = "SELECT total_price FROM {$this->table} WHERE order_id = ?";
+        $row = $this->db->selectOne($sql, [$orderId]);
+        return isset($row['total_price']) ? (float)$row['total_price'] : 0.0;
     }
 
-    /**
-     * Get orders for a store with optional filtering and search
-     */
+    public function getPendingOrders($storeId) {
+        $sql = "SELECT COUNT(*) AS total_orders FROM {$this->table} WHERE store_id = ? AND status = 'waiting_approval'";
+        $row = $this->db->selectOne($sql, [$storeId]);
+        return isset($row['total_orders']) ? (int)$row['total_orders'] : 0;
+    }
+
     public function getOrdersByStore(int $storeId, ?string $status = null, ?string $search = null, int $page = 1, int $perPage = 10) {
         $offset = ($page - 1) * $perPage;
         $params = [$storeId];
@@ -63,7 +56,6 @@ class OrderRepository extends BaseRepository {
 
         $orders = $this->db->select($sql, $params);
 
-        // Get total count for pagination
         $countSql = "
             SELECT COUNT(*) as total 
             FROM orders o 
@@ -106,9 +98,6 @@ class OrderRepository extends BaseRepository {
         return $this->db->select($sql, [$orderId]);
     }
 
-    /**
-     * Approve a pending order
-     */
     public function approveOrder(int $orderId): bool {
         $sql = "
             UPDATE orders 
@@ -120,9 +109,6 @@ class OrderRepository extends BaseRepository {
         return $this->db->query($sql, [$orderId])->rowCount() > 0;
     }
 
-    /**
-     * Reject an order and set rejection reason
-     */
     public function rejectOrder(int $orderId, string $reason): bool {
         $sql = "
             UPDATE orders 
@@ -135,9 +121,6 @@ class OrderRepository extends BaseRepository {
         return $this->db->query($sql, [$reason, $orderId])->rowCount() > 0;
     }
 
-    /**
-     * Set delivery time and update status to on_delivery
-     */
     public function setDelivery(int $orderId, string $deliveryTime): bool {
         $sql = "
             UPDATE orders 
@@ -251,10 +234,9 @@ class OrderRepository extends BaseRepository {
         $order = $this->db->selectOne($sql, [$orderId, $buyerId]);
 
         if (!$order) {
-            return null; // Not found or doesn't belong to this buyer
+            return null;
         }
 
-        // Attach items (using the existing seller method, which is fine)
         $order['items'] = $this->getOrderItems($orderId);
 
         return $order;
@@ -290,12 +272,9 @@ class OrderRepository extends BaseRepository {
                 $itemsByStore[$storeId][] = $item;
             }
 
-            $createdOrders = []; // To store the new order data
+            $createdOrders = [];
 
-            // 4. Loop per store and create an order for each
             foreach ($itemsByStore as $storeId => $storeItems) {
-                
-                // Calculate subtotal for this specific order (store)
                 $storeTotalPrice = 0;
                 foreach ($storeItems as $item) {
                     $storeTotalPrice += $item['subtotal'];
