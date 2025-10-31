@@ -49,7 +49,7 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🔑</span>
                             <span class="nav-text">Login</span>
                         </a>
-                        <a href="/register" class="nav-link nav-link-primary <?= $activePage === 'register' ? 'active' : '' ?>">
+                        <a href="/register" class="nav-link <?= $activePage === 'register' ? 'active' : '' ?>">
                             <span class="nav-icon">✨</span>
                             <span class="nav-text">Register</span>
                         </a>
