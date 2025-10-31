@@ -120,6 +120,11 @@
       } else if (init.body instanceof FormData) {
         xhr.send(init.body);
       } else if (init.body instanceof URLSearchParams) {
+			if (!headers['Content-Type'] && !headers['content-type']) {
+				try {
+					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+				} catch (e) {}
+			}
         xhr.send(init.body.toString());
       } else if (typeof init.body === 'string') {
         xhr.send(init.body);

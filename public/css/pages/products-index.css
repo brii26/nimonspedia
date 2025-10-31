@@ -1,0 +1,204 @@
+/* ==========================================================================
+   Product Index (Home) Page Styles
+   ========================================================================== */
+
+/* --- 1. Main Layout --- */
+.products-index-main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background: #f8f9fa;
+    min-height: calc(100vh - 80px);
+}
+
+.products-index-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* --- 2. Filter & Header --- */
+.products-header-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.products-header-card h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-dark, #2c3e50);
+}
+
+/* --- 3. Products Section --- */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.product-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border-color: var(--primary-color, #667eea);
+}
+
+.product-image-link {
+    display: block;
+    text-decoration: none;
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.product-info {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-name-link {
+    text-decoration: none;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    /* UBAHAN 1: Judul lebih tebal */
+    font-weight: 700;
+    color: var(--text-dark, #2c3e50);
+    margin: 0 0 0.25rem 0; /* Margin bawah dikurangi */
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.8em;
+}
+
+.product-name-link:hover .product-name {
+    color: var(--primary-color, #667eea);
+}
+
+.product-store-link {
+    font-size: 0.875rem;
+    /* UBAHAN 2: Ganti warna dari abu-abu ke warna link */
+    color: var(--primary-color, #667eea);
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+}
+
+.product-store-link:hover {
+    text-decoration: underline;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color, #667eea);
+    margin: 0 0 1rem 0;
+}
+
+.product-info form {
+    margin-top: auto;
+}
+
+/* --- Empty State --- */
+.products-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted, #6c757d);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .products-index-main {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+    .products-header-card {
+        padding: 1.25rem 1.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* ===================================
+   UBAHAN UTAMA UNTUK MOBILE
+   =================================== */
+@media (max-width: 576px) {
+    .products-index-main {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    .products-index-container {
+        padding: 0;
+    }
+    .products-header-card {
+        border-radius: 0;
+        margin-bottom: 1.5rem;
+    }
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 0.75rem; /* Beri sedikit padding di samping */
+        gap: 0.75rem; /* Perkecil jarak antar kartu */
+    }
+    
+    /* Bonus Kerapian 1: Perkecil padding di dalam kartu */
+    .product-info {
+        padding: 0.75rem;
+    }
+    
+    .product-name {
+        /* UBAHAN 1: Ukuran judul di mobile */
+        font-size: 1.0rem; 
+        min-height: 2.8em; /* 1.4 * 2 baris */
+    }
+    
+    .product-price {
+        /* UBAHAN 3: Ukuran harga di mobile dikecilkan */
+        font-size: 1.05rem; 
+        margin-bottom: 0.75rem; /* Kurangi margin bawah */
+    }
+
+    /* Bonus Kerapian 2: Perkecil tombol di mobile */
+    .product-info .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.25rem;
+    }
+}

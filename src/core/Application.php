@@ -77,7 +77,10 @@ class Application {
         $this->router->post('/balance/topup', 'AuthController@topUp');
         
         // Product discovery routes (Track 2)
+        $this->router->get('/products', 'ProductController@index');
         $this->router->get('/product', 'ProductController@show');
+
+        $this->router->get('/store', 'StoreController@show');
         // $this->router->get('/stores/{id}', 'StoreController@show');
         
         // Cart routes (Track 2) 

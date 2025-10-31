@@ -15,7 +15,8 @@ class HomeController extends BaseController {
         }
 
         $options = [
-            'page'       => $this->getQuery('page', 1),
+            'page'       => (int)$this->getQuery('page', 1),
+            'perPage'    => 8,
             'searchTerm' => $this->getQuery('search'),
             'categoryId' => $this->getQuery('category'),
             'minPrice'   => $this->getQuery('min_price'),
@@ -24,7 +25,17 @@ class HomeController extends BaseController {
 
         $productService = new ProductService();
         $productsData = $productService->getAllProducts($options);
-        $this->render('pages/products/index', ['productsData' => $productsData]);
+        $this->render('pages/products/index', [
+            'productsData' => $productsData,
+            'pageTitle' => 'Browse Products',
+            'jsFiles' => [
+                '/js/utils/fetchXhr.js',
+                '/js/pages/products/index.js'
+            ],
+            'cssFiles' => [
+                '/css/pages/products-index.css'
+            ]
+        ]);
         return;
     }
 }
