@@ -190,11 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         formBalance.value = content;
                     }
                 } else {
-                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
                 } reset(submitButton, resultDiv);
             })
             .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred : ' + error + '</div>';
+                resultDiv.innerHTML = '<div class="alert alert-error">An error occurred : ' + error + '</div>';
                 reset(submitButton, resultDiv);
             });
 
@@ -273,13 +273,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmPass = formData.get('confirm_password');
 
             if (!isPasswordValid) {
-                resultDiv.innerHTML = '<div class="alert alert-danger">Password baru tidak memenuhi semua kriteria.</div>';
+                resultDiv.innerHTML = '<div class="alert alert-error">Password baru tidak memenuhi kriteria.</div>';
                 if (submitButton) App.hideLoading(submitButton);
                 return;
             }
             
             if (newPass !== confirmPass) {
-                resultDiv.innerHTML = '<div class="alert alert-danger">Konfirmasi password baru tidak cocok.</div>';
+                resultDiv.innerHTML = '<div class="alert alert-error">Konfirmasi password baru tidak cocok.</div>';
                 if (submitButton) App.hideLoading(submitButton);
                 return; 
             }
@@ -293,20 +293,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + ' Halaman akan di-reload...</div>';
+                    resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
                     changePassword.reset();
-                    
-                    setTimeout(() => {
-                        window.location.reload(); 
-                    }, 2000);
-
                 } else {
-                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
-                    reset(submitButton, resultDiv);
+                    resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
                 }
+                reset(submitButton, resultDiv);
             })
             .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred: '+ error +'</div>';
+                resultDiv.innerHTML = '<div class="alert alert-error">An error occurred: '+ error +'</div>';
                 reset(submitButton, resultDiv);2
             });
         });
