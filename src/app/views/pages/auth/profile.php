@@ -25,6 +25,15 @@
                     <?php endif; ?>                        
                     <form method="POST" action="/profile" class="profile-form" id = "profileUpdateForm">
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" 
+                                value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
+                                required aria-describedby="email-error" readonly>
+                            <small class="error-message" id="email-error" hidden></small>
+                            <small>Email cannot be changed</small>
+                        </div>
                         
                         <div class="form-group">
                             <label for="name">Full Name</label>
@@ -32,14 +41,6 @@
                                 value="<?= View::escape($old['name'] ?? $user['name']) ?>" 
                                 required aria-describedby="name-error">
                             <small class="error-message" id="name-error" hidden></small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" 
-                                value="<?= View::escape($old['email'] ?? $user['email']) ?>" 
-                                required aria-describedby="email-error">
-                            <small class="error-message" id="email-error" hidden></small>
                         </div>
                         
                         <div class="form-group">
