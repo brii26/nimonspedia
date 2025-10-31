@@ -17,7 +17,7 @@ class AuthController extends BaseController {
      */
     public function loginForm() {
         if (Auth::check()) {
-            $this->redirect('/dashboard');
+            $this->redirect('/');
         }
         $this->render('pages/auth/login', [
             'pageTitle' => 'Login',
@@ -31,7 +31,7 @@ class AuthController extends BaseController {
      */
     public function registerForm() {
         if (Auth::check()) {
-            $this->redirect('/dashboard');
+            $this->redirect('/');
         }
         $this->render('pages/auth/register', [
             'pageTitle' => 'Register',
@@ -74,7 +74,7 @@ class AuthController extends BaseController {
 			$user = $this->authService->register($postData);
 
             Auth::login($user);
-            $this->redirect('/dashboard');
+            $this->redirect('/');
             
         } catch (ValidationException $e) {
             $this->render('pages/auth/register', [
@@ -107,7 +107,7 @@ class AuthController extends BaseController {
     // Role select form 
     public function roleSelectForm() { 
         if (Auth::check()) { 
-            $this->redirect('/dashboard'); 
+            $this->redirect('/'); 
         } 
         $this->render('pages/auth/role_select'); 
     } 
@@ -115,7 +115,7 @@ class AuthController extends BaseController {
     // Role select handler 
     public function roleSelect() { 
         if (Auth::check()) { 
-            $this->redirect('/dashboard'); 
+            $this->redirect('/'); 
         } 
         try { 
             $this->verifyCsrf(); 
@@ -127,45 +127,6 @@ class AuthController extends BaseController {
         } catch (Exception $e) { 
             $this->render('pages/auth/role_select', ['error' => $e->getMessage()]); 
         } 
-    } 
-    
-    /**
-     * Show dashboard
-     */
-    public function dashboard() {
-        $this->requireAuth();
-        $user = Auth::user();
-        if ($user['role'] === 'SELLER') {
-            $view = 'pages/dashboard/seller';
-            $data = ['user' => $user];
-            $store = $this->storeService->getStoreForUser($user['user_id']);
-            if ($store && isset($store['store_id'])) {
-                $storeId = (int)$store['store_id'];
-                $data['stats'] = $this->statsService->getSellerStats($storeId);
-                $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
-            }
-
-			$jsFiles = [
-				'/js/pages/dashboard/seller.js',
-				'https://cdn.quilljs.com/1.3.6/quill.js',
-				'/js/utils/quill-setup.js',
-				'js/utils/fetchXhr.js'
-			];
-			$cssFiles = [
-				'css/pages/dashboard.css',
-				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
-				'css/pages/seller/store.css'
-			];
-
-            $this->render($view, array_merge($data, [
-			'user' => $user,
-			'pageTitle' => 'Dashboard',
-			'cssFiles' => $cssFiles,
-			'jsFiles' => $jsFiles
-		    ]));
-        } else {
-            $this->redirect('/');
-        }
     }
     
     /**
@@ -184,7 +145,7 @@ class AuthController extends BaseController {
             $user = $this->authService->login($postData['email'], $postData['password']);
             
             Auth::login($user);
-            $this->redirect('/dashboard');
+            $this->redirect('/');
             
         } catch (ValidationException $e) {
             $this->render('pages/auth/login', [

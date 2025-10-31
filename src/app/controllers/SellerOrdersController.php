@@ -15,7 +15,7 @@ class SellerOrdersController extends BaseController {
     private function getSellerStoreId(): ?int {
         $storeId = $this->storeService->getSellerStoreId();
         if (!$storeId) {
-            $this->redirect('/dashboard?error=no_store');
+            $this->redirect('/?error=no_store');
             return null;
         }
         return $storeId;

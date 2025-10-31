@@ -23,7 +23,7 @@ class StoreController extends BaseController {
 
         $storeInfo = $this->storeRepository->find($storeId); 
         if (!$storeInfo) {
-            $this->render('pages/errors/404');
+            $this->handle404();
             return;
         }
 

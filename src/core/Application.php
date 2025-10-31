@@ -70,7 +70,6 @@ class Application {
         $this->router->post('/logout', 'AuthController@logout');
         
         // Dashboard & profile (authenticated users)
-        $this->router->get('/dashboard', 'AuthController@dashboard');
         $this->router->get('/profile', 'AuthController@profileForm');
         $this->router->post('/profile', 'AuthController@updateProfile');
         $this->router->post('/profile/password', 'AuthController@changePassword');
