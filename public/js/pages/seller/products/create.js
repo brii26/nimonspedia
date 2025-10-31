@@ -10,14 +10,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (file) {
             const reader = new FileReader();
+            
             reader.onload = function(e) {
                 previewImage.src = e.target.result;
-                previewWrapper.style.display = 'block';
+                previewWrapper.classList.add('has-image'); 
             }
             reader.readAsDataURL(file);
+
         } else {
-            previewWrapper.style.display = 'none';
+            previewWrapper.classList.remove('has-image');
             previewImage.src = '#';
         }
     });
-})
+});

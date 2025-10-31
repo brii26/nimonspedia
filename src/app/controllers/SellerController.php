@@ -26,7 +26,7 @@ class SellerController extends BaseController {
             'cssFiles' => [
 				'/css/pages/dashboard.css', 
 				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
-				'/css/pages/seller/products.css'
+				'/css/pages/seller/products/create.css'
 			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
@@ -62,7 +62,7 @@ class SellerController extends BaseController {
 			'productsData' => $productsData,
 			'cssFiles' => [
 				'/css/pages/dashboard.css',
-				'/css/pages/seller/products.css'
+				'/css/pages/seller/products/index.css'
 			],
             'jsFiles' => [
             ],
@@ -138,6 +138,8 @@ class SellerController extends BaseController {
 		$assigned = $this->categoryService->getForProduct($productId);
 		$assignedIds = array_column($assigned, 'category_id');
 
+		// throw new Exception(print_r($product, true));
+
 		$this->render('pages/seller/products/edit', [
 			'product' => $product,
 			'categories' => $categories,
@@ -147,7 +149,8 @@ class SellerController extends BaseController {
             'pageTitle' => 'Edit Product',
             'cssFiles' => [
 				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
-				'/css/pages/seller/products.css'
+				'/css/pages/seller/products/edit.css',
+				'/css/pages/dashboard.css'
 			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
