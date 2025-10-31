@@ -47,9 +47,24 @@ class Router {
     
     private function handle404($method, $path) {
         http_response_code(404);
-        
-        // Better 404 page
-        echo "The page {$path} could not be found. Method: {$method}";
+
+        $data = [
+            'pageTitle' => '404 Not Found',
+            'path' => $path,
+            'method' => $method,
+            'cssFiles' => ['/css/pages/errors.css'],
+        ];
+
+        try {
+            $content = View::render('pages/errors/404', $data);
+            echo View::render('components/layout', array_merge($data, ['content' => $content]));
+        } catch (Exception $e) {
+            error_log("404 rendering failed: " . $e->getMessage());
+            if (!headers_sent()) {
+                http_response_code(404);
+            }
+            echo "404 Not Found: " . htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
+        }
     }
     
     private function handleError($exception) {
