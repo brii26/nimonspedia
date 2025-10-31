@@ -64,14 +64,14 @@ class BuyerOrderService {
      * @throws ValidationException If cart is empty, stock is insufficient, or balance is too low
      * @throws Exception If a system-level error occurs
      */
-    public function createFromCart(int $buyerId): ?array {
+    public function createFromCart(int $buyerId, ?string $shippingAddress = null): ?array {
         $cart = $this->cartService->getCart($buyerId);
         $items = $cart['items'];
         $totalPrice = $cart['total'];
         if (empty($items)) {
             throw new ValidationException("Keranjang Anda kosong.");
         }
-        $createdOrders = $this->orderRepo->processCheckout($buyerId, $items, $totalPrice);
+        $createdOrders = $this->orderRepo->processCheckout($buyerId, $items, $totalPrice, $shippingAddress);
         
         if (empty($createdOrders)) {
             throw new Exception("Gagal membuat pesanan karena kesalahan sistem.");

@@ -270,7 +270,7 @@ class OrderRepository extends BaseRepository {
      * @throws ValidationException
      * @throws Exception
      */
-    public function processCheckout(int $buyerId, array $items, int $totalPrice): array {
+    public function processCheckout(int $buyerId, array $items, int $totalPrice, ?string $shippingAddress = null): array {
         try {
             $buyerSql = "SELECT user_id, balance, address FROM users WHERE user_id = ? FOR UPDATE";
             $buyer = $this->db->selectOne($buyerSql, [$buyerId]);
@@ -304,11 +304,13 @@ class OrderRepository extends BaseRepository {
                     VALUES (?, ?, ?, 'waiting_approval', ?, CURRENT_TIMESTAMP)
                     RETURNING order_id, created_at, status, total_price
                 ";
+                // If shipping address provided use it, otherwise fallback to buyer's stored address
+                $addrToUse = $shippingAddress !== null ? $shippingAddress : $buyer['address'];
                 $newOrder = $this->db->selectOne($orderSql, [
                     $buyerId,
                     $storeId,
                     $storeTotalPrice,
-                    $buyer['address'] // Use buyer's main address
+                    $addrToUse
                 ]);
                 
                 $newOrderId = $newOrder['order_id'];
