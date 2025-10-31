@@ -237,7 +237,7 @@ class AuthController extends BaseController {
             // Allow GET logout too for simplicity, though POST is safer
             Auth::logout();
         }
-        $this->redirect('/login');
+        $this->redirect('/');
     }
     
     /**
