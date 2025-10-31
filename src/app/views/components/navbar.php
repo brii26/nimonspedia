@@ -60,10 +60,6 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🏠</span>
                             <span class="nav-text">Home</span>
                         </a>
-                        <a href="/products" class="nav-link <?= $activePage === 'products' ? 'active' : '' ?>">
-                            <span class="nav-icon">🛍️</span>
-                            <span class="nav-text">Products</span>
-                        </a>
                         <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
                             <span class="nav-icon">🛒</span>
                             <span class="nav-text">Cart</span>

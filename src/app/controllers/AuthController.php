@@ -135,29 +135,16 @@ class AuthController extends BaseController {
     public function dashboard() {
         $this->requireAuth();
         $user = Auth::user();
-        $view = ($user['role'] === 'SELLER') ? 'pages/dashboard/seller' : 'pages/dashboard/buyer';
-        $data = ['user' => $user];
-
         if ($user['role'] === 'SELLER') {
+            $view = 'pages/dashboard/seller';
+            $data = ['user' => $user];
             $store = $this->storeService->getStoreForUser($user['user_id']);
             if ($store && isset($store['store_id'])) {
                 $storeId = (int)$store['store_id'];
                 $data['stats'] = $this->statsService->getSellerStats($storeId);
                 $data['store'] = $store ?: ['store_name' => '', 'store_description' => ''];
-            } else {
-                $data['stats'] = [
-                    'total_products' => 0,
-                    'total_orders' => 0,
-                    'revenue' => 0,
-                    'low_stocks' => 0
-                ];
             }
-        }
 
-		$jsFiles = null;
-		$cssFiles = null;
-
-		if($user['role'] === 'SELLER') {
 			$jsFiles = [
 				'/js/pages/dashboard/seller.js',
 				'https://cdn.quilljs.com/1.3.6/quill.js',
@@ -169,18 +156,16 @@ class AuthController extends BaseController {
 				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
 				'css/pages/seller/store.css'
 			];
-		} else {
-			$jsFiles = ['/js/pages/dashboard/buyer.js'];
-			$cssFiles = [
-				'css/pages/dashboard.css'
-			];
-		}
-		$this->render($view, array_merge($data, [
+
+            $this->render($view, array_merge($data, [
 			'user' => $user,
 			'pageTitle' => 'Dashboard',
 			'cssFiles' => $cssFiles,
 			'jsFiles' => $jsFiles
-		]));
+		    ]));
+        } else {
+            $this->redirect('/');
+        }
     }
     
     /**
