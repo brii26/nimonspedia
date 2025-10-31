@@ -26,7 +26,7 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <a href="/product?id=<?= View::escape($product['product_id']) ?>">
+                                    <a href="?id=<?= View::escape($product['product_id']) ?>">
                                         <?= View::escape($product['product_name']) ?>
                                     </a>
                                 </h5>
@@ -52,13 +52,44 @@
             </div>
 
             <nav>
-                <ul class="pagination justify-content-center">
-                    <?php for ($i = 1; $i <= $productsData['total_pages']; $i++): ?>
-                        <li class="page-item <?= ($i == $productsData['current_page']) ? 'active' : '' ?>">
-                            <a class="page-link" href="/products?page=<?= $i ?>"><?= $i ?></a>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        <?php
+                            $total = $productsData['total'] ?? 0;
+                            $perPage = $productsData['per_page'] ?? 8;
+                            $current = $productsData['current_page'] ?? 1;
+                            $start = ($total === 0) ? 0 : (($current - 1) * $perPage) + 1;
+                            $end = min($total, $current * $perPage);
+                        ?>
+                        Menampilkan <?= $start ?> - <?= $end ?> dari <?= $total ?> produk
+                    </small>
+                    <ul class="pagination mb-0">
+                        <?php
+                            $baseQuery = $_GET ?? [];
+                            $totalPages = $productsData['total_pages'] ?? 1;
+                            $prev = max(1, $current - 1);
+                            $next = min($totalPages, $current + 1);
+                        ?>
+                        <li class="page-item <?= ($current == 1) ? 'disabled' : '' ?>">
+                            <?php $baseQuery['page'] = $prev; $qs = http_build_query($baseQuery); ?>
+                            <a class="page-link" href="?<?= $qs ?>">&laquo; Prev</a>
                         </li>
-                    <?php endfor; ?>
-                </ul>
+
+                        <?php for ($i = 1; $i <= $totalPages; $i++): 
+                                $baseQuery['page'] = $i;
+                                $qs = http_build_query($baseQuery);
+                        ?>
+                            <li class="page-item <?= ($i == $current) ? 'active' : '' ?>">
+                                <a class="page-link" href="?<?= $qs ?>"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <li class="page-item <?= ($current == $totalPages) ? 'disabled' : '' ?>">
+                            <?php $baseQuery['page'] = $next; $qs = http_build_query($baseQuery); ?>
+                            <a class="page-link" href="?<?= $qs ?>">Next &raquo;</a>
+                        </li>
+                    </ul>
+                </div>
             </nav>
         <?php endif; ?>
     </div>

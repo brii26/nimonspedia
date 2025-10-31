@@ -15,7 +15,8 @@ class HomeController extends BaseController {
         }
 
         $options = [
-            'page'       => $this->getQuery('page', 1),
+            'page'       => (int)$this->getQuery('page', 1),
+            'perPage'    => 8,
             'searchTerm' => $this->getQuery('search'),
             'categoryId' => $this->getQuery('category'),
             'minPrice'   => $this->getQuery('min_price'),
