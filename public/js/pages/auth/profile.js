@@ -103,23 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         addressInput.addEventListener('blur', validateAddressField);
 
         // Listener 'submit' buat validasi akhir
-        profileForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const isNameValid = validateNameField();
-            const isEmailValid = validateEmailField();
-            const isAddressValid = validateAddressField();
-
+        // Extracted AJAX submit logic so it can be called after confirmation
+        function submitProfileAjax(form) {
             const resultDiv = document.getElementById('profileUpdateResult');
-            resultDiv.innerHTML = ''
+            resultDiv.innerHTML = '';
+            const submitButton = document.getElementById('updateProfileButton');
+            const formData = new FormData(form);
 
-            if (!isNameValid || !isEmailValid || !isAddressValid) {
-                console.log('Validasi FE gagal, submit dibatalkan.');
-                reset(submitButton, resultDiv); 
-                return;
-            }
-            console.log('Validasi FE berhasil, kirim AJAX');
-            const formData = new FormData(profileForm);
             fetchXhr('/profile', {
                 method: 'POST',
                 body: formData,
@@ -130,21 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.success) {
                     resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                    
                     const navUserName = document.querySelector('.user-name');
                     if (navUserName && data.user && data.user.name) {
                         navUserName.textContent = data.user.name;
                     }
-                }
-
-                else if (data.errors) {
-                    console.log('Validasi BE gagal:', data.errors);
+                } else if (data.errors) {
                     Object.keys(data.errors).forEach(key => {
-                        const input = document.getElementById(key); // cth: 'email'
+                        const input = document.getElementById(key);
                         const message = data.errors[key];
-                        if (input) {
-                            showError(input, message);
-                        }
+                        if (input) showError(input, message);
                     });
                     resultDiv.innerHTML = `<div class="alert alert-error">Please fix the errors below.</div>`;
                 } else {
@@ -155,7 +139,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('AJAX Error:', error);
                 resultDiv.innerHTML = `<div class="alert alert-error">A network error occurred. Please try again.</div>`;
                 reset(submitButton, resultDiv);
-            })
+            });
+        }
+
+        profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const isNameValid = validateNameField();
+            const isEmailValid = validateEmailField();
+            const isAddressValid = validateAddressField();
+
+            const resultDiv = document.getElementById('profileUpdateResult');
+            resultDiv.innerHTML = '';
+
+            if (!isNameValid || !isEmailValid || !isAddressValid) {
+                reset(submitButton, resultDiv);
+                return;
+            }
+
+            // When confirmed, perform AJAX submit
+            const onConfirm = () => {
+                submitProfileAjax(profileForm);
+                document.removeEventListener('confirm:ok', onConfirm);
+            };
+
+            document.addEventListener('confirm:ok', onConfirm);
+
+            // Use the app confirm modal if available, otherwise fallback to native confirm
+            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                window.AppConfirm.ask('Save changes to your profile?');
+            } else {
+                if (confirm('Save changes to your profile?')) {
+                    submitProfileAjax(profileForm);
+                }
+            }
         });
     }
 
@@ -164,9 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         topUpForm.addEventListener("submit", (e) =>{
             e.preventDefault();
 
-            const formData = new FormData(topUpForm);
-            const resultDiv = document.getElementById('topUpResult');
-            const submitButton = document.getElementById('topUpButton');
+                const formData = new FormData(topUpForm);
+                const resultDiv = document.getElementById('topUpResult');
+                const submitButton = document.getElementById('topUpButton');
 
             formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
 
@@ -259,15 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmPasswordInput.addEventListener('blur', validatePasswordConfirmation);
         }
 
-        changePassword.addEventListener("submit", (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(changePassword);
+        function submitChangePasswordAjax(form) {
+            const formData = new FormData(form);
             const resultDiv = document.getElementById("passwordResult");
             const submitButton = document.getElementById('changePasswordButton');
-            
+
             resultDiv.innerHTML = '';
-            
+
             const isPasswordValid = validatePasswordLive();
             const newPass = formData.get('new_password');
             const confirmPass = formData.get('confirm_password');
@@ -277,14 +292,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (submitButton) App.hideLoading(submitButton);
                 return;
             }
-            
+
             if (newPass !== confirmPass) {
                 resultDiv.innerHTML = '<div class="alert alert-error">Konfirmasi password baru tidak cocok.</div>';
                 if (submitButton) App.hideLoading(submitButton);
                 return; 
             }
 
-            formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
+            formData.append("csrf_token", form.querySelector('input[name="csrf_token"]').value);
 
             fetchXhr("profile/password", {
                 method: "POST",
@@ -294,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.success) {
                     resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-                    changePassword.reset();
+                    form.reset();
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
                 }
@@ -302,8 +317,134 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 resultDiv.innerHTML = '<div class="alert alert-error">An error occurred: '+ error +'</div>';
-                reset(submitButton, resultDiv);2
+                reset(submitButton, resultDiv);
             });
+        }
+
+        changePassword.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const onConfirmChange = () => {
+                submitChangePasswordAjax(changePassword);
+                document.removeEventListener('confirm:ok', onConfirmChange);
+            };
+
+            document.addEventListener('confirm:ok', onConfirmChange);
+
+            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                window.AppConfirm.ask('Are you sure you want to change your password?');
+            } else {
+                if (confirm('Are you sure you want to change your password?')) {
+                    submitChangePasswordAjax(changePassword);
+                }
+            }
         });
     }
-})
+    // Inject a reusable confirmation modal and API (AppConfirm)
+    (function () {
+        // Helper: create DOM from HTML string
+        function createElementFromHTML(htmlString) {
+            const div = document.createElement('div');
+            div.innerHTML = htmlString.trim();
+            return div.firstChild;
+        }
+
+        const modalHtml = `
+            <div class="app-confirm-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirm-title" tabindex="-1" style="display:none;">
+                <div class="app-confirm-backdrop"></div>
+                <div class="app-confirm-wrapper" role="document">
+                    <div class="app-confirm-card">
+                        <header class="app-confirm-header">
+                            <h2 id="confirm-title">Please confirm</h2>
+                        </header>
+                        <div class="app-confirm-body">
+                            <p id="confirm-message">Are you sure you want to save changes?</p>
+                        </div>
+                        <footer class="app-confirm-footer">
+                            <button type="button" class="btn btn-secondary app-confirm-cancel">Cancel</button>
+                            <button type="button" class="btn btn-primary app-confirm-ok">Confirm</button>
+                        </footer>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modalNode = createElementFromHTML(modalHtml);
+        document.body.appendChild(modalNode);
+
+        const backdrop = modalNode.querySelector('.app-confirm-backdrop');
+        const okBtn = modalNode.querySelector('.app-confirm-ok');
+        const cancelBtn = modalNode.querySelector('.app-confirm-cancel');
+        const messageEl = modalNode.querySelector('#confirm-message');
+
+        let lastFocused = null;
+        let handleKeydown = null;
+
+        function openModal(message) {
+            messageEl.textContent = message || 'Are you sure you want to proceed?';
+            modalNode.style.display = 'block';
+            modalNode.setAttribute('aria-hidden', 'false');
+            lastFocused = document.activeElement;
+            okBtn.focus();
+            trapFocus(modalNode);
+        }
+
+        function closeModal() {
+            modalNode.style.display = 'none';
+            modalNode.setAttribute('aria-hidden', 'true');
+            releaseFocusTrap();
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
+        }
+
+        // Basic focus trap
+        function trapFocus(root) {
+            const focusableElements = Array.from(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+                .filter(el => !el.hasAttribute('disabled'));
+            handleKeydown = function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeModal();
+                } else if (e.key === 'Tab') {
+                    if (focusableElements.length === 0) return;
+                    const first = focusableElements[0];
+                    const last = focusableElements[focusableElements.length - 1];
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            };
+            document.addEventListener('keydown', handleKeydown);
+        }
+        function releaseFocusTrap() {
+            if (handleKeydown) {
+                document.removeEventListener('keydown', handleKeydown);
+                handleKeydown = null;
+            }
+        }
+
+        cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+        backdrop.addEventListener('click', () => closeModal());
+
+        okBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Dispatch event to forms listening for confirmation
+            const event = new Event('confirm:ok', { bubbles: true, cancelable: true });
+            document.activeElement && document.activeElement.dispatchEvent && document.activeElement.dispatchEvent(event);
+            // Also broadcast on document so form listeners catch it
+            document.dispatchEvent(event);
+            closeModal();
+        });
+
+        // Public API
+        window.AppConfirm = {
+            ask: function (message) {
+                openModal(message);
+            }
+        };
+    })();
+
+});
