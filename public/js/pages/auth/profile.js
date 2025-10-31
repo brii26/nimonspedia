@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listener 'submit' buat validasi akhir
         // Extracted AJAX submit logic so it can be called after confirmation
-        function submitProfileAjax(form) {
+        const submitProfileAjax = form => {
             const resultDiv = document.getElementById('profileUpdateResult');
             resultDiv.innerHTML = '';
             const submitButton = document.getElementById('updateProfileButton');
@@ -157,21 +157,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // When confirmed, perform AJAX submit
             const onConfirm = () => {
                 submitProfileAjax(profileForm);
-                document.removeEventListener('confirm:ok', onConfirm);
+                cleanupListeners();
             };
 
-            document.addEventListener('confirm:ok', onConfirm);
+            const onCancel = () => {
+                reset(submitButton, resultDiv);
+                cleanupListeners();
+            };
+
+            const cleanupListeners = () => {
+                document.removeEventListener('confirm:ok', onConfirm);
+                document.removeEventListener('confirm:cancel', onCancel);
+            };
+
+            document.addEventListener('confirm:ok', onConfirm, { once: true });
+            document.addEventListener('confirm:cancel', onCancel, { once: true });
 
             // Use the app confirm modal if available, otherwise fallback to native confirm
             if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
                 window.AppConfirm.ask('Save changes to your profile?');
             } else {
-                if (confirm('Save changes to your profile?')) {
-                    submitProfileAjax(profileForm);
-                }
+                confirm('Save changes to your profile?') ? onConfirm() : onCancel();
             }
         });
     }
@@ -276,13 +284,15 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmPasswordInput.addEventListener('blur', validatePasswordConfirmation);
         }
 
-        function submitChangePasswordAjax(form) {
-            const formData = new FormData(form);
+        changePassword.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(changePassword);
             const resultDiv = document.getElementById("passwordResult");
             const submitButton = document.getElementById('changePasswordButton');
-
+            
             resultDiv.innerHTML = '';
-
+            
             const isPasswordValid = validatePasswordLive();
             const newPass = formData.get('new_password');
             const confirmPass = formData.get('confirm_password');
@@ -299,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
-            formData.append("csrf_token", form.querySelector('input[name="csrf_token"]').value);
+            formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
 
             fetchXhr("profile/password", {
                 method: "POST",
@@ -309,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.success) {
                     resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-                    form.reset();
+                    changePassword.reset();
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
                 }
@@ -319,58 +329,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultDiv.innerHTML = '<div class="alert alert-error">An error occurred: '+ error +'</div>';
                 reset(submitButton, resultDiv);
             });
-        }
-
-        changePassword.addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            const onConfirmChange = () => {
-                submitChangePasswordAjax(changePassword);
-                document.removeEventListener('confirm:ok', onConfirmChange);
-            };
-
-            document.addEventListener('confirm:ok', onConfirmChange);
-
-            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-                window.AppConfirm.ask('Are you sure you want to change your password?');
-            } else {
-                if (confirm('Are you sure you want to change your password?')) {
-                    submitChangePasswordAjax(changePassword);
-                }
-            }
         });
     }
     // Inject a reusable confirmation modal and API (AppConfirm)
     (function () {
-        // Helper: create DOM from HTML string
-        function createElementFromHTML(htmlString) {
-            const div = document.createElement('div');
-            div.innerHTML = htmlString.trim();
-            return div.firstChild;
+        const modalNode = document.querySelector('.app-confirm-modal');
+        // Hentikan jika modal tidak ditemukan di halaman
+        if (!modalNode) {
+            console.error('AppConfirm modal not found in DOM.');
+            return; 
         }
-
-        const modalHtml = `
-            <div class="app-confirm-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirm-title" tabindex="-1" style="display:none;">
-                <div class="app-confirm-backdrop"></div>
-                <div class="app-confirm-wrapper" role="document">
-                    <div class="app-confirm-card">
-                        <header class="app-confirm-header">
-                            <h2 id="confirm-title">Please confirm</h2>
-                        </header>
-                        <div class="app-confirm-body">
-                            <p id="confirm-message">Are you sure you want to save changes?</p>
-                        </div>
-                        <footer class="app-confirm-footer">
-                            <button type="button" class="btn btn-secondary app-confirm-cancel">Cancel</button>
-                            <button type="button" class="btn btn-primary app-confirm-ok">Confirm</button>
-                        </footer>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        const modalNode = createElementFromHTML(modalHtml);
-        document.body.appendChild(modalNode);
 
         const backdrop = modalNode.querySelector('.app-confirm-backdrop');
         const okBtn = modalNode.querySelector('.app-confirm-ok');
@@ -380,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastFocused = null;
         let handleKeydown = null;
 
-        function openModal(message) {
+        const openModal = message => {
             messageEl.textContent = message || 'Are you sure you want to proceed?';
             modalNode.style.display = 'block';
             modalNode.setAttribute('aria-hidden', 'false');
@@ -389,15 +357,18 @@ document.addEventListener('DOMContentLoaded', () => {
             trapFocus(modalNode);
         }
 
-        function closeModal() {
+        const closeModal = () => {
             modalNode.style.display = 'none';
             modalNode.setAttribute('aria-hidden', 'true');
             releaseFocusTrap();
             if (lastFocused && lastFocused.focus) lastFocused.focus();
+
+            const event = new Event('confirm:cancel', { bubbles: true, cancelable: true });
+            document.dispatchEvent(event);
         }
 
         // Basic focus trap
-        function trapFocus(root) {
+        const trapFocus = root => {
             const focusableElements = Array.from(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
                 .filter(el => !el.hasAttribute('disabled'));
             handleKeydown = function (e) {
@@ -419,7 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             document.addEventListener('keydown', handleKeydown);
         }
-        function releaseFocusTrap() {
+        
+        const releaseFocusTrap = () => {
             if (handleKeydown) {
                 document.removeEventListener('keydown', handleKeydown);
                 handleKeydown = null;
@@ -431,10 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         okBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Dispatch event to forms listening for confirmation
             const event = new Event('confirm:ok', { bubbles: true, cancelable: true });
             document.activeElement && document.activeElement.dispatchEvent && document.activeElement.dispatchEvent(event);
-            // Also broadcast on document so form listeners catch it
             document.dispatchEvent(event);
             closeModal();
         });
@@ -446,5 +416,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     })();
-
 });
