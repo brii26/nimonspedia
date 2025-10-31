@@ -1,6 +1,6 @@
 <?php
 $currentStatus = $status_filter ?? 'all';
-$statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+$statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 ?>
 
 <div class="container mt-4">
@@ -15,8 +15,12 @@ $statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
             <ul class="nav nav-tabs card-header-tabs">
                 <?php foreach ($statuses as $status): ?>
                     <li class="nav-item">
-                        <a class="nav-link <?= $currentStatus === $status ? 'active' : '' ?>" 
-                           href="?status=<?= $status ?>"><?= ucfirst($status) ?></a>
+                        <?php 
+                            $isActive = $currentStatus === $status ? 'active' : '';
+                            // For 'all' we want a clean /orders link without query string
+                            $href = ($status === 'all') ? '/orders' : '/orders?status=' . urlencode($status);
+                        ?>
+                        <a class="nav-link <?= $isActive ?>" href="<?= $href ?>"><?= ucfirst(str_replace('_', ' ', $status)) ?></a>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -51,7 +55,7 @@ $statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="/order/detail?id=<?= $order['order_id'] ?>" 
+                                        <a href="/orders/show?id=<?= $order['order_id'] ?>" 
                                            class="btn btn-sm btn-outline-primary">
                                             Detail
                                         </a>
@@ -65,9 +69,12 @@ $statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
                 <?php if ($total_pages > 1): ?>
                     <nav class="mt-4">
                         <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <?php 
+                                $statusParam = ($currentStatus && $currentStatus !== 'all') ? '&status=' . urlencode($currentStatus) : '';
+                                for ($i = 1; $i <= $total_pages; $i++): 
+                            ?>
                                 <li class="page-item <?= $i === $current_page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $i ?>&status=<?= $currentStatus ?>">
+                                    <a class="page-link" href="/orders?page=<?= $i ?><?= $statusParam ?>">
                                         <?= $i ?>
                                     </a>
                                 </li>
