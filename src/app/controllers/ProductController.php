@@ -44,7 +44,7 @@ class ProductController extends BaseController {
     public function show() {
         $productId = $this->getQuery('id');
         if (!$productId) {
-            $this->handle404();
+            $this->redirect('/');
             return;
         }
 
