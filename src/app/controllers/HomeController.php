@@ -4,12 +4,14 @@ class HomeController extends BaseController {
     private $storeService;
     private $statsService;
     private $productService;
+    private $categoryService;
 
     public function __construct() {
         parent::__construct();
         $this->storeService = new StoreService();
         $this->statsService = new StatsService();
         $this->productService = new ProductService();
+        $this->categoryService = new CategoryService();
     }
 
     /**
@@ -52,26 +54,47 @@ class HomeController extends BaseController {
 
             return;
         } 
+
+        $allowedPerPag = [4, 8, 12, 20];
+        $perPage = (int)$this->getQuery('perPage', 8);
+        if (!in_array($perPage, $allowedPerPag)) {
+            $perPage = 8;
+        }
+
+        $priceRange = $this->getQuery('priceRange');
+        $minPrice = null;
+        $maxPrice = null;
+
+        if ($priceRange && str_contains($priceRange, '-')) {
+            list($min, $max) = explode('-', $priceRange);
+            $minPrice = ($min !== '') ? (int)$min : null;
+            $maxPrice = ($max !== '') ? (int)$max : null;
+        }
         
-        $options = [
+        $filters = [
             'page'       => (int)$this->getQuery('page', 1),
-            'perPage'    => 8,
-            'searchTerm' => $this->getQuery('search'),
-            'categoryId' => $this->getQuery('category'),
-            'minPrice'   => $this->getQuery('min_price'),
-            'maxPrice'   => $this->getQuery('max_price'),
+            'perPage'    => $perPage,
+            'searchTerm' => $this->getQuery('searchTerm'),
+            'categoryId' => $this->getQuery('categoryId'),
+            'minPrice'   => $minPrice,
+            'maxPrice'   => $maxPrice,
+            'priceRange' => $priceRange,
         ];
 
-        $productsData = $this->productService->getAllProducts($options); 
+        $productsData = $this->productService->getAllProducts($filters);
+        $categories = $this->categoryService->getForDropdown();
         $this->render('pages/products/index', [
             'productsData' => $productsData,
+            'categories'   => $categories,
+            'filters'      => $filters,
             'pageTitle' => 'Browse Products',
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/products/index.js'
             ],
             'cssFiles'=> [
-                'css/pages/products-index.css'
+                'css/pages/products-index.css',
+                'css/components/product-filter.css'
             ]
         ]);
         return;

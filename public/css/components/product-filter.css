@@ -1,0 +1,95 @@
+.filter-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-form {
+    display: grid;
+    /* 4 kolom: Kategori, Harga, perPage, Tombol */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-form .form-group {
+    margin: 0;
+}
+
+/* Grup search mengambil 4 kolom (penuh 1 baris) */
+.filter-form .search-group {
+    grid-column: 1 / -1;
+}
+
+.filter-form .form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-dark, #2c3e50);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Styling input dan select yang lebih rapi */
+.filter-form input[type="text"],
+.filter-form input[type="number"],
+.filter-form select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    background-color: #f8f9fa; /* Warna abu-abu muda */
+    color: var(--text-dark, #2c3e50);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-form input[type="text"]:focus,
+.filter-form input[type="number"]:focus,
+.filter-form select:focus {
+    outline: none;
+    border-color: var(--primary-color, #667eea);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Tombol Aksi */
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center; /* Vertikal tengah */
+    height: 100%;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .filter-form {
+        /* 2 kolom di tablet */
+        grid-template-columns: 1fr 1fr;
+    }
+    .filter-form .search-group {
+        grid-column: 1 / -1; /* Tetap penuh */
+    }
+    .filter-actions {
+        grid-column: 1 / -1; /* Tombol jadi penuh di bawah */
+    }
+}
+
+@media (max-width: 576px) {
+    .filter-form {
+        /* 1 kolom di mobile */
+        grid-template-columns: 1fr;
+    }
+    .filter-form .search-group,
+    .filter-actions {
+        grid-column: 1 / -1;
+    }
+}

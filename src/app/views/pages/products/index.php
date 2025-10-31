@@ -1,9 +1,13 @@
 <div class="products-index-main">
     <div class="products-index-container">
 
-        <div class="products-header-card">
-            <h2>All Products</h2>
-            </div>
+        <?php
+        echo View::component('product-filter', [
+            'actionUrl' => '/',
+            'categories' => $categories ?? [],
+            'filters' => $filters ?? []
+        ]);
+        ?>
 
         <?php if (empty($productsData['data'])): ?>
             <div class="products-empty-state">
