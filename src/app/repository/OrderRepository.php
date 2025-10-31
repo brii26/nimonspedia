@@ -241,6 +241,24 @@ class OrderRepository extends BaseRepository {
 
         return $order;
     }
+
+    /**
+     * Mark an order as received when buyer confirms delivery.
+     * Only allowed when the order belongs to the buyer and is currently on_delivery
+     * and the delivery_time has already passed.
+     *
+     * @param int $orderId
+     * @param int $buyerId
+     * @return bool
+     */
+    public function confirmReceived(int $orderId, int $buyerId): bool {
+        $sql = "
+            UPDATE {$this->table}
+            SET status = 'received', received_at = CURRENT_TIMESTAMP
+            WHERE order_id = ? AND buyer_id = ? AND status = 'on_delivery' AND delivery_time <= CURRENT_TIMESTAMP
+        ";
+        return $this->db->execute($sql, [$orderId, $buyerId]) > 0;
+    }
     
     /**
      * Process the entire checkout transaction.

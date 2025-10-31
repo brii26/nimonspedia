@@ -78,6 +78,34 @@ class BuyerOrdersController extends BaseController {
             $this->redirect('/orders');
         }
     }
+
+    /**
+     * Buyer confirms that an on_delivery order has been received.
+     */
+    public function confirmReceived() {
+        $this->requireRole('BUYER');
+        $this->verifyCsrf();
+
+        try {
+            $orderId = (int)($this->getBody('order_id'));
+            if (!$orderId) {
+                $this->redirect('/orders?error=' . urlencode('Order tidak valid'));
+                return;
+            }
+
+            $buyerId = Auth::user()['user_id'];
+            $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
+            if ($ok) {
+                $this->redirect('/orders?success=' . urlencode('Pesanan dikonfirmasi diterima.'));
+            } else {
+                $this->redirect('/orders?error=' . urlencode('Tidak dapat mengkonfirmasi pesanan. Pastikan status sudah on_delivery dan estimasi pengiriman terlewati.'));
+            }
+
+        } catch (Exception $e) {
+            error_log('Error confirming received: ' . $e->getMessage());
+            $this->redirect('/orders?error=' . urlencode('Terjadi kesalahan saat mengkonfirmasi pesanan.'));
+        }
+    }
     
     public function showCheckoutPage() {
         $this->requireRole('BUYER');
