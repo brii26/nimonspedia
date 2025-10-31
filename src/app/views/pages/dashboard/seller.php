@@ -104,7 +104,7 @@
                     </header>
                     <div class="stat-content">
                         <div class="stat-value"><?= isset($stats['total_orders']) ? (int)$stats['total_orders'] : 0 ?></div>
-                        <a href="/seller/orders?status=pending" class="btn btn-secondary">View Orders</a>
+                        <a href="/seller/orders?status=waiting_approval" class="btn btn-secondary">View Orders</a>
                     </div>
                 </article>
 
@@ -125,21 +125,9 @@
             <h2>Quick Actions</h2>
         </header>
         <nav class="actions-nav">
-            <a href="/seller/products/add" class="btn btn-success">Add New Product</a>
+            <a href="/seller/products/create" class="btn btn-success">Add New Product</a>
             <a href="/seller/products" class="btn btn-primary">Manage Products</a>
             <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
-            <a href="/seller/store" class="btn btn-secondary">Store Settings</a>
         </nav>
-    </section>
-    
-    <section class="recent-activity">
-        <header class="section-header">
-            <h2>Recent Activity</h2>
-        </header>
-        <div class="activity-content">
-            <div class="alert alert-info" role="status">
-                <p>No recent activity. Start by adding your first product!</p>
-            </div>
-        </div>
     </section>
 </div>

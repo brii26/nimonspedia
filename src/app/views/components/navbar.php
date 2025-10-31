@@ -74,7 +74,7 @@ $activePage = $currentPage ?? '';
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
                         <!-- Seller Navigation -->
-                        <a href="/seller/dashboard" class="nav-link <?= $activePage === 'seller-dashboard' ? 'active' : '' ?>">
+                        <a href="/dashboard" class="nav-link <?= $activePage === 'seller-dashboard' ? 'active' : '' ?>">
                             <span class="nav-icon">📊</span>
                             <span class="nav-text">Dashboard</span>
                         </a>
@@ -86,7 +86,7 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">📋</span>
                             <span class="nav-text">Orders</span>
                         </a>
-                        <a href="/seller/add-product" class="nav-link nav-link-primary <?= $activePage === 'add-product' ? 'active' : '' ?>">
+                        <a href="/seller/products/create" class="nav-link nav-link-primary <?= $activePage === 'add-product' ? 'active' : '' ?>">
                             <span class="nav-icon">➕</span>
                             <span class="nav-text">Add Product</span>
                         </a>
