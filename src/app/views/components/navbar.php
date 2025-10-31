@@ -74,7 +74,7 @@ $activePage = $currentPage ?? '';
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
                         <!-- Seller Navigation -->
-                        <a href="/dashboard" class="nav-link <?= $activePage === 'seller-dashboard' ? 'active' : '' ?>">
+                        <a href="/" class="nav-link <?= $activePage === 'seller-dashboard' ? 'active' : '' ?>">
                             <span class="nav-icon">📊</span>
                             <span class="nav-text">Dashboard</span>
                         </a>

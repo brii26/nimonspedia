@@ -41,7 +41,7 @@ class SellerController extends BaseController {
     {
         $storeId = $this->storeService->getSellerStoreId();
         if (!$storeId) {
-            $this->redirect('/dashboard?error=no_store');
+            $this->redirect('/?error=no_store');
             return null;
         }
         return $storeId;
@@ -97,7 +97,7 @@ class SellerController extends BaseController {
                 'errors' => $e->getErrors(),
                 'old' => $postData,
                 'pageTitle' => 'Add Product',
-                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js',
@@ -108,7 +108,7 @@ class SellerController extends BaseController {
                 'error' => $e->getMessage(),
                 'old' => $postData,
                 'pageTitle' => 'Add Product',
-                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js',
@@ -184,7 +184,7 @@ class SellerController extends BaseController {
 				'old' => $postData, 
 				'product' => array_merge(['product_id' => $productId], $postData),
                 'pageTitle' => 'Update Product',
-                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js', 
@@ -197,7 +197,7 @@ class SellerController extends BaseController {
 				'old' => $postData, 
 				'product' => array_merge(['product_id' => $productId], $postData),
                 'pageTitle' => 'Update Product',
-                'cssFiles' => ['/css/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js', 
@@ -254,7 +254,7 @@ class SellerController extends BaseController {
                 echo json_encode($response);
                 exit;
             } else {
-                $this->redirect('/dashboard?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
+                $this->redirect('/?status=store_updated'. ($row && isset($row['last_updated']) ? '&t='.$row['last_updated'] : ''));
             }
         } catch (ValidationException $e) {
             if ($isAjax) {
@@ -265,7 +265,7 @@ class SellerController extends BaseController {
                 ]);
                 exit;
             } else {
-                $this->redirect('/dashboard?error=' . urlencode($e->getFirstError()));
+                $this->redirect('/?error=' . urlencode($e->getFirstError()));
             }
         } catch (Exception $e) {
             if ($isAjax) {
@@ -276,7 +276,7 @@ class SellerController extends BaseController {
                 ]);
                 exit;
             } else {
-                $this->redirect('/dashboard?error=' . urlencode($e->getMessage()));
+                $this->redirect('/?error=' . urlencode($e->getMessage()));
             }
         }
     }
