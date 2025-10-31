@@ -21,7 +21,11 @@
                             <h6 class="card-subtitle mb-2 text-muted"><?= View::currency($product['price']) ?></h6>
                             <p class="card-text">
                                 <small>Stok: <?= View::escape($product['stock']) ?></small><br>
-                                <small>Toko: <?= View::escape($product['store_name']) ?></small>
+                                <small>Toko: 
+                                    <a href="/store?id=<?= View::escape($product['store_id']) ?>">
+                                        <?= View::escape($product['store_name']) ?>
+                                    </a>
+                                </small>
                             </p>
                         </div>
                         <div class="card-footer">

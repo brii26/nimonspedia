@@ -1,13 +1,29 @@
-<?php
-?>
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>All Products</h3>
+
+    <div class="card mb-4 store-header-card">
+        
+        <a href="javascript:history.back()" class="store-header-back-link">
+            &larr; Kembali
+        </a>
+    
+        <div class="store-header-content">
+            <img src="<?= '/storage/' . View::escape($store['store_logo_path'] ?? 'path/to/default-logo.png') ?>" 
+                 alt="<?= View::escape($store['store_name']) ?> Logo" 
+                 class="store-header-logo">
+            
+            <div class="store-header-info">
+                <h1><?= View::escape($store['store_name']) ?></h1>
+                <div class="description"><?= $store['store_description'] ?? '<i>Toko ini belum memiliki deskripsi.</i>' ?></div>
+            </div>
+        </div>
     </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Products from this Store</h3>
+        </div>
 
     <?php if (empty($productsData['data'])): ?>
         <div class="alert alert-info">
-            No products found.
+            Toko ini belum memiliki produk.
         </div>
     <?php else: ?>
         <div class="row">
@@ -23,7 +39,11 @@
                             <h6 class="card-subtitle mb-2 text-muted"><?= View::currency($product['price']) ?></h6>
                             <p class="card-text">
                                 <small>Stok: <?= View::escape($product['stock']) ?></small><br>
-                                <small>Toko: <?= View::escape($product['store_name']) ?></small>
+                                <small>Toko: 
+                                    <a href="/store?id=<?= View::escape($product['store_id']) ?>">
+                                        <?= View::escape($product['store_name']) ?>
+                                    </a>
+                                </small>
                             </p>
                         </div>
                         <div class="card-footer">

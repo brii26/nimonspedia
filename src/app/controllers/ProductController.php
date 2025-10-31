@@ -30,6 +30,9 @@ class ProductController extends BaseController {
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/products/index.js'
+            ],
+            'cssFiles' => [
+                '/css/pages/store-detail.css'
             ]
         ]);
         return;
@@ -57,6 +60,9 @@ class ProductController extends BaseController {
             'jsFiles' => [
                 '/js/utils/fetchXhr.js', 
                 '/js/pages/products/show.js'
+            ],
+            'cssFiles' => [
+                '/css/pages/store-detail.css'
             ]
         ]);
     }
