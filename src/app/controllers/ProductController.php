@@ -32,7 +32,7 @@ class ProductController extends BaseController {
                 '/js/pages/products/index.js'
             ],
             'cssFiles' => [
-                '/css/pages/store-detail.css'
+                '/css/pages/products-index.css'
             ]
         ]);
         return;

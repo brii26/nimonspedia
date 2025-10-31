@@ -1,74 +1,102 @@
-<div class="container mt-4">
+<?php
+$description = $store['store_description'] ?? null;
+$desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
+?>
 
-    <div class="card mb-4 store-header-card">
+<div class="store-detail-main">
+    <div class="store-detail-container">
         
-        <a href="javascript:history.back()" class="store-header-back-link">
-            &larr; Kembali
-        </a>
-    
-        <div class="store-header-content">
-            <img src="<?= '/storage/' . View::escape($store['store_logo_path'] ?? 'path/to/default-logo.png') ?>" 
-                 alt="<?= View::escape($store['store_name']) ?> Logo" 
-                 class="store-header-logo">
+        <section class="store-header-card">
             
-            <div class="store-header-info">
-                <h1><?= View::escape($store['store_name']) ?></h1>
-                <div class="description"><?= $store['store_description'] ?? '<i>Toko ini belum memiliki deskripsi.</i>' ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Products from this Store</h3>
-        </div>
+            <div class="store-header-content">
+                
+                <a href="javascript:history.back()" class="store-header-back-link">Kembali</a>
 
-    <?php if (empty($productsData['data'])): ?>
-        <div class="alert alert-info">
-            Toko ini belum memiliki produk.
-        </div>
-    <?php else: ?>
-        <div class="row">
-            <?php foreach ($productsData['data'] as $product): ?>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <a href="/product?id=<?= View::escape($product['product_id']) ?>">
-                                    <?= View::escape($product['product_name']) ?>
-                                </a>
-                            </h5>
-                            <h6 class="card-subtitle mb-2 text-muted"><?= View::currency($product['price']) ?></h6>
-                            <p class="card-text">
-                                <small>Stok: <?= View::escape($product['stock']) ?></small><br>
-                                <small>Toko: 
-                                    <a href="/store?id=<?= View::escape($product['store_id']) ?>">
-                                        <?= View::escape($product['store_name']) ?>
-                                    </a>
-                                </small>
-                            </p>
-                        </div>
-                        <div class="card-footer">
-                            <form class="add-to-cart-listing" data-product-id="<?= View::escape($product['product_id']) ?>">
-                                <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
-                                <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-primary btn-sm w-100" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
-                                    <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
-                                </button>
-                            </form>
+                <div class="store-header-main">
+                    <img src="<?= '/storage/' . View::escape($store['store_logo_path'] ?? 'images/default-store.png') ?>" 
+                         alt="<?= View::escape($store['store_name']) ?> Logo" 
+                         class="store-header-logo">
+                    
+                    <div class="store-header-info">
+                        <h1><?= View::escape($store['store_name']) ?></h1>
+                        <p class="description <?= $desc_placeholder ?>">
+                            <?= $description ?? '<i>Toko ini belum memiliki deskripsi.</i>' ?>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="store-stats">
+                    <div class="store-stat">
+                        <div class="store-stat-icon">🛍️</div>
+                        <div class="store-stat-content">
+                            <p class="store-stat-label">Total Produk</p>
+                            <p class="store-stat-value"><?= View::escape($productsData['total']) ?></p>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
+        </section>
 
-        <nav>
-            <ul class="pagination justify-content-center">
-                <?php for ($i = 1; $i <= $productsData['total_pages']; $i++): ?>
-                    <li class="page-item <?= ($i == $productsData['current_page']) ? 'active' : '' ?>">
-                        <a class="page-link" href="/products?page=<?= $i ?>"><?= $i ?></a>
-                    </li>
-                <?php endfor; ?>
-            </ul>
-        </nav>
-    <?php endif; ?>
+        <section class="store-products-section">
+            <header class="store-products-header">
+                <h2>Semua Produk (<?= View::escape($productsData['total']) ?>)</h2>
+            </header>
+            
+            <div class="store-products-content">
+                <?php if (empty($productsData['data'])): ?>
+                    <div class="store-empty-state">
+                        <h3>Tidak Ada Produk</h3>
+                        <p>Toko ini belum memiliki produk untuk dijual.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="products-grid">
+                        <?php foreach ($productsData['data'] as $product): ?>
+                            <div class="product-card">
+                                <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-image-link">
+                                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                                         alt="<?= View::escape($product['product_name']) ?>" 
+                                         class="product-image">
+                                </a>
+                                <div class="product-info">
+                                    <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-name-link">
+                                        <h3 class="product-name"><?= View::escape($product['product_name']) ?></h3>
+                                    </a>
+                                    <p class="product-price"><?= View::currency($product['price']) ?></p>
+                                    
+                                    <form class="add-to-cart-listing" data-product-id="<?= View::escape($product['product_id']) ?>">
+                                        <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary" style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
+                                            <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <?php if ($productsData['total_pages'] > 1): ?>
+                        <nav style="margin-top: 2rem;">
+                            <ul class="pagination" style="justify-content: center;">
+                                <?php 
+                                $queryParams = $_GET;
+                                unset($queryParams['page']);
+                                $baseQuery = http_build_query($queryParams);
+                                $baseUrl = "/store?" . $baseQuery;
+                                ?>
+                                <?php for ($i = 1; $i <= $productsData['total_pages']; $i++): ?>
+                                    <li class="page-item <?= ($i == $productsData['current_page']) ? 'active' : '' ?>">
+                                        <a class="page-link" href="<?= $baseUrl ?>&page=<?= $i ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
+                    <?php endif; ?>
+                    
+                <?php endif; ?>
+            </div>
+        </section>
+
+    </div>
 </div>

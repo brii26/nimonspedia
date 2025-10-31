@@ -43,13 +43,13 @@ class StoreController extends BaseController {
             'store'        => $storeInfo,
             'productsData' => $productsData,
             'pageTitle'    => View::escape($storeInfo['store_name']),
+            'cssFiles' => [
+                '/css/pages/store-detail.css'
+            ],
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/products/index.js'
             ],
-            'cssFiles' => [
-                '/css/pages/store-detail.css'
-            ]
         ]);
     }
 }
