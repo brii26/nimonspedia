@@ -25,7 +25,14 @@ class HomeController extends BaseController {
 
         $productService = new ProductService();
         $productsData = $productService->getAllProducts($options);
-        $this->render('pages/products/index', ['productsData' => $productsData]);
+        $this->render('pages/products/index', [
+            'productsData' => $productsData,
+            'pageTitle' => 'Browse Products',
+            'jsFiles' => [
+                '/js/utils/fetchXhr.js',
+                '/js/pages/products/index.js'
+            ]
+        ]);
         return;
     }
 }

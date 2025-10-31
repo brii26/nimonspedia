@@ -28,6 +28,13 @@ class ProductController extends BaseController {
             return;
         }
 
-        $this->render('pages/products/show', ['product' => $product]);
+        $this->render('pages/products/show', [
+            'product' => $product,
+            'pageTitle' => View::escape($product['product_name']),
+            'jsFiles' => [
+                '/js/utils/fetchXhr.js', 
+                '/js/pages/products/show.js'
+            ]
+        ]);
     }
 }
