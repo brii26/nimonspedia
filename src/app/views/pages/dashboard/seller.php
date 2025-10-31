@@ -83,7 +83,7 @@
                         <h3>Revenue</h3>
                     </header>
                     <div class="stat-content">
-                        <div class="stat-value"><?= View::currency(0) ?></div>
+					<div class="stat-value"><?= isset($stats['revenue']) ? (int)$stats['revenue'] : 0 ?></div> 
                         <a href="/seller/analytics" class="btn btn-secondary">Analytics</a>
                     </div>
                 </article>

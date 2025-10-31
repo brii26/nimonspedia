@@ -1,17 +1,18 @@
 <?php
 
-class OrderService {
+class SellerOrderService {
     protected $orderRepo;
+	protected $storeService;
 
     public function __construct() {
         $this->orderRepo = new OrderRepository();
+		$this->storeService = new StoreService();
     }
 
     public function getOrders(int $storeId, ?string $status = null, ?string $search = null, int $page = 1): array {
         $perPage = 10;
         $result = $this->orderRepo->getOrdersByStore($storeId, $status, $search, $page, $perPage);
-        
-        // Get order items for each order
+
         foreach ($result['orders'] as &$order) {
             $order['items'] = $this->orderRepo->getOrderItems($order['order_id']);
         }
@@ -34,7 +35,6 @@ class OrderService {
         if (!$order || $order['status'] !== 'waiting_approval') {
             return false;
         }
-
         return $this->orderRepo->approveOrder($orderId);
     }
 
@@ -43,7 +43,7 @@ class OrderService {
         if (!$order || $order['status'] !== 'waiting_approval') {
             return false;
         }
-        // Perform refund and reject without explicit transaction here
+
         $refunded = $this->orderRepo->refundBuyerBalance($orderId);
         $rejected = $this->orderRepo->rejectOrder($orderId, $reason);
 

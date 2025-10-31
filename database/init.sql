@@ -153,3 +153,21 @@ CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
 
 CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON cart_items
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE OR REPLACE FUNCTION update_store_balance_on_order_received()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'UPDATE' AND NEW.status = 'received' AND OLD.status != 'received') THEN
+        UPDATE stores
+        SET balance = balance + NEW.total_price
+        WHERE store_id = NEW.store_id;
+            
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql';
+
+CREATE TRIGGER trg_orders_received_update_balance
+    AFTER UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_store_balance_on_order_received();

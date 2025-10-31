@@ -1,12 +1,12 @@
 <?php
 
 class SellerOrdersController extends BaseController {
-    private $orderService;
+    private $sellerOrderService;
     private $storeService;
 
     public function __construct() {
         parent::__construct();
-        $this->orderService = new OrderService();
+        $this->sellerOrderService = new SellerOrderService();
         $this->storeService = new StoreService();
         
         $this->requireRole('SELLER');
@@ -29,7 +29,7 @@ class SellerOrdersController extends BaseController {
         $search = $this->getQuery('search');
         $page = (int) $this->getQuery('page', 1);
         
-        $ordersData = $this->orderService->getOrders($storeId, $status, $search, $page);
+        $ordersData = $this->sellerOrderService->getOrders($storeId, $status, $search, $page);
 
 		$jsFiles = [
 			'/js/utils/fetchXHR.js',
@@ -60,7 +60,7 @@ class SellerOrdersController extends BaseController {
             return;
         }
 
-        $order = $this->orderService->getOrderDetail($orderId, $storeId);
+        $order = $this->sellerOrderService->getOrderDetail($orderId, $storeId);
         if (!$order) {
             $this->redirect('/seller/orders?error=not_found');
             return;
@@ -83,7 +83,7 @@ class SellerOrdersController extends BaseController {
             $this->verifyCsrf();
             $orderId = (int) $this->getPost('order_id');
 
-            if ($this->orderService->approveOrder($orderId, $storeId)) {
+            if ($this->sellerOrderService->approveOrder($orderId, $storeId)) {
                 if ($this->isAjax()) {
                     $this->jsonResponse(['success' => true]);
                 } else {
@@ -115,7 +115,7 @@ class SellerOrdersController extends BaseController {
                 throw new ValidationException(['reject_reason' => 'Reason is required']);
             }
 
-            if ($this->orderService->rejectOrder($orderId, $storeId, $reason)) {
+            if ($this->sellerOrderService->rejectOrder($orderId, $storeId, $reason)) {
                 if ($this->isAjax()) {
                     $this->jsonResponse(['success' => true]);
                 } else {
@@ -153,7 +153,7 @@ class SellerOrdersController extends BaseController {
                 throw new ValidationException(['delivery_time' => 'Delivery time is required']);
             }
 
-            if ($this->orderService->setDeliveryTime($orderId, $storeId, $deliveryTime)) {
+            if ($this->sellerOrderService->setDeliveryTime($orderId, $storeId, $deliveryTime)) {
                 if ($this->isAjax()) {
                     $this->jsonResponse(['success' => true]);
                 } else {

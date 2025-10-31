@@ -74,4 +74,11 @@ class StoreRepository extends BaseRepository {
 		$row = $this->db->selectOne($sql, [$storeId]);
 		return $row ? $row['store_logo_path'] : null;
 	}
+
+    public function getRevenue($storeId) {
+        $sql = "SELECT balance FROM {$this->table} WHERE store_id = ?";
+        $row = $this->db->selectOne($sql, [$storeId]);
+        return $row ? (int)$row['balance'] : 0;
+    }
+	
 }
