@@ -381,3 +381,62 @@
         margin-bottom: 1.5rem;
     }
 }
+
+/* Confirmation Modal (profile) */
+.app-confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: none; /* shown by JS */
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55); /* semi-opaque black */
+    backdrop-filter: blur(2px);
+}
+
+.app-confirm-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.app-confirm-card {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 520px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    padding: 1.25rem;
+    transform: translateY(-6px);
+    transition: transform 160ms ease, opacity 160ms ease;
+    opacity: 1;
+}
+
+.app-confirm-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+    color: var(--text-dark, #2c3e50);
+}
+
+.app-confirm-body { color: var(--text-dark, #333); margin-bottom: 1rem; }
+.app-confirm-footer { display:flex; gap:0.5rem; justify-content:flex-end; }
+
+.app-confirm-modal[aria-hidden="false"] .app-confirm-card {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Buttons sizing */
+.app-confirm-footer .btn { padding: 0.5rem 1rem; }
+
+@media (max-width: 520px) {
+    .app-confirm-card { margin: 0 1rem; max-width: calc(100% - 2rem); }
+}

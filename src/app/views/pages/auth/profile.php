@@ -163,4 +163,5 @@
             </aside>
         </div>
     </div>
+    <?= View::component('confirm-modal') ?>
 </div>

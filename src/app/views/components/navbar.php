@@ -49,7 +49,7 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🔑</span>
                             <span class="nav-text">Login</span>
                         </a>
-                        <a href="/register" class="nav-link nav-link-primary <?= $activePage === 'register' ? 'active' : '' ?>">
+                        <a href="/register" class="nav-link <?= $activePage === 'register' ? 'active' : '' ?>">
                             <span class="nav-icon">✨</span>
                             <span class="nav-text">Register</span>
                         </a>
@@ -59,10 +59,6 @@ $activePage = $currentPage ?? '';
                         <a href="/" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">
                             <span class="nav-icon">🏠</span>
                             <span class="nav-text">Home</span>
-                        </a>
-                        <a href="/products" class="nav-link <?= $activePage === 'products' ? 'active' : '' ?>">
-                            <span class="nav-icon">🛍️</span>
-                            <span class="nav-text">Products</span>
                         </a>
                         <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
                             <span class="nav-icon">🛒</span>
