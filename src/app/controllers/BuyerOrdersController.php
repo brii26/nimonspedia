@@ -149,7 +149,8 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
 
-            $order = $this->buyerOrderService->createFromCart($userId);
+            $shippingAddress = $this->getPost('shipping_address', null);
+            $order = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
             
             if ($order) {
                 $this->redirect('/orders/show?id=' . $order['order_id']);
