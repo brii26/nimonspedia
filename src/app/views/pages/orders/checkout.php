@@ -42,11 +42,10 @@ $sisaSaldo = $saldoUser - $totalBelanja;
                         </div>
                         <div class="card-body">
                             <?php
-                                // Group items by store_id (fallback to "Umum" if missing)
                                 $groups = [];
                                 foreach ($cart['items'] as $it) {
                                     $sid = $it['store_id'] ?? 0;
-                                    $groups[$sid]['store_name'] = $it['store_name'] ?? ($it['store_name'] ?? 'Toko');
+                                    $groups[$sid]['store_name'] = $it['store_name'] ?? 'Unknown Store';
                                     $groups[$sid]['items'][] = $it;
                                 }
                                 $grandTotal = 0;
