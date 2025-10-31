@@ -47,19 +47,49 @@
 
             <?php if ($productsData['total_pages'] > 1): ?>
                 <nav style="margin-top: 2rem;">
-                    <ul class="pagination" style="justify-content: center;">
+                    <div class="pagination" style="justify-content: center;">
                         <?php 
                         $queryParams = $_GET;
                         unset($queryParams['page']);
                         $baseQuery = http_build_query($queryParams);
                         $baseUrl = "/?" . $baseQuery;
+
+                        $currentPage = (int)$productsData['current_page'];
+                        $totalPages = (int)$productsData['total_pages'];
+                        
+                        $window = 2; 
+                        $lastNum = 0; 
+
+                        for ($i = 1; $i <= $totalPages; $i++):
+                            $showNumber = false;
+                            if ($i == 1 || $i == $totalPages) {
+                                $showNumber = true;
+                            } 
+                            elseif ($i >= $currentPage - $window && $i <= $currentPage + $window) {
+                                $showNumber = true;
+                            }
+                            if ($showNumber):
+                                if ($i > $lastNum + 1):
                         ?>
-                        <?php for ($i = 1; $i <= $productsData['total_pages']; $i++): ?>
-                            <li class="page-item <?= ($i == $productsData['current_page']) ? 'active' : '' ?>">
-                                <a class="page-link" href="<?= $baseUrl ?>&page=<?= $i ?>"><?= $i ?></a>
-                            </li>
-                        <?php endfor; ?>
-                    </ul>
+                                    <span class="pagination-item disabled" 
+                                        style="border: none; background: none; color: var(--gray-700);">
+                                        ...
+                                    </span>
+                        <?php
+                                endif;
+
+                                $isActive = ($i == $currentPage) ? 'active' : '';
+                        ?>
+                                <a href="<?= $baseUrl ?>&page=<?= $i ?>"
+                                class="pagination-item <?= $isActive ?>">
+                                    <?= $i ?>
+                                </a>
+                        <?php
+                                $lastNum = $i;
+                            endif;
+                        endfor;
+                        ?>
+                    </div>
                 </nav>
             <?php endif; ?>
             
