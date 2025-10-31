@@ -164,57 +164,94 @@ abstract class BaseController {
     /**
      * Validate individual field
      */
-    private function validateField($field, $value, $rule, $allData) {
-        $fieldName = ucfirst(str_replace('_', ' ', $field));
-        
-        if ($rule === 'required' && (empty($value) && $value !== '0')) {
-            return "{$fieldName} is required";
-        }
-        
-        if (!empty($value)) {
-            if ($rule === 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                return "{$fieldName} must be a valid email address";
-            }
-            
-            if (strpos($rule, 'min:') === 0) {
-                $min = (int)substr($rule, 4);
-                if (strlen($value) < $min) {
-                    return "{$fieldName} must be at least {$min} characters";
-                }
-            }
-
-            if (strpos($rule, 'regex:') === 0) {
-                $ruleContent = substr($rule, 6);
-
-                $parts = explode('`', $ruleContent, 2);
-                $regex = $parts[0];
-                $customMessage = $parts[1] ?? null;
-                if (!preg_match($regex, $value)) {
-                    return $customMessage ?: "{$fieldName} format is invalid.";
-            }
-            }
-            
-            if (strpos($rule, 'max:') === 0) {
-                $max = (int)substr($rule, 4);
-                if (strlen($value) > $max) {
-                    return "{$fieldName} must not exceed {$max} characters";
-                }
-            }
-            
-            if ($rule === 'numeric' && !is_numeric($value)) {
-                return "{$fieldName} must be a number";
-            }
-            
-            if (strpos($rule, 'in:') === 0) {
-                $options = explode(',', substr($rule, 3));
-                if (!in_array($value, $options)) {
-                    return "{$fieldName} must be one of: " . implode(', ', $options);
-                }
-            }
-        }
-        
-        return null;
-    }
+	private function validateField($field, $value, $rule, $allData) {
+		$fieldName = ucfirst(str_replace('_', ' ', $field));
+	
+		if ($rule === 'required' && (empty($value) && $value !== '0')) {
+			return "{$fieldName} is required";
+		}
+	
+		if (is_array($value) && isset($value['error'])) {
+			
+			if ($value['error'] !== UPLOAD_ERR_NO_FILE) {
+				
+				if (strpos($rule, 'mimes:') === 0) {
+					$allowedMimes = explode(',', substr($rule, 6));
+					$error = FileService::validateImageMime($value, $allowedMimes);
+					if ($error) {
+						return $error;
+					}
+				}
+				
+				if (strpos($rule, 'size:') === 0) {
+					$maxSizeBytes = (int)substr($rule, 5);
+					$error = FileService::validateImageSize($value, $maxSizeBytes);
+					if ($error) {
+						return $error;
+					}
+				}
+				
+				if ($value['error'] !== UPLOAD_ERR_OK) {
+					return "{$fieldName} upload failed. Error code: " . $value['error'];
+				}
+			}
+		}
+	
+		if (!empty($value)) {
+			if ($rule === 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+				return "{$fieldName} must be a valid email address";
+			}
+	
+			if (strpos($rule, 'min:') === 0) {
+				$min = (int)substr($rule, 4);
+				if (strlen($value) < $min) {
+					return "{$fieldName} must be at least {$min} characters";
+				}
+			}
+	
+			if (strpos($rule, 'regex:') === 0) {
+				$ruleContent = substr($rule, 6);
+	
+				$parts = explode('`', $ruleContent, 2);
+				$regex = $parts[0];
+				$customMessage = $parts[1] ?? null;
+				if (!preg_match($regex, $value)) {
+					return $customMessage ?: "{$fieldName} format is invalid.";
+				}
+			}
+	
+			if (strpos($rule, 'max:') === 0) {
+				$max = (int)substr($rule, 4);
+				if (strlen($value) > $max) {
+					return "{$fieldName} must not exceed {$max} characters";
+				}
+			}
+	
+			if ($rule === 'numeric' && !is_numeric($value)) {
+				return "{$fieldName} must be a number";
+			}
+	
+			if (strpos($rule, 'numeric_min:') === 0) {
+				$minVal = (float)substr($rule, 12); 
+				if (!is_numeric($value)) {
+					return "{$fieldName} must be a number";
+				}
+				if ((float)$value < $minVal) {
+					return "{$fieldName} must be at least {$minVal}";
+				}
+			}
+	
+			if (strpos($rule, 'in:') === 0) {
+				$options = explode(',', substr($rule, 3));
+				if (!in_array($value, $options)) {
+					return "{$fieldName} must be one of: " . implode(', ', $options);
+				}
+			}
+		}
+		
+		return null;
+	}
+	
     
     /**
      * Verify CSRF token

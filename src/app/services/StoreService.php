@@ -29,13 +29,8 @@ class StoreService {
 
         if (isset($logoFile) && $logoFile['error'] === UPLOAD_ERR_OK) {
             $updatedLogoPath = FileService::saveUploadedImage($logoFile, 'store_logo', $old_logo);
-            
-            if ($old_logo && $old_logo !== $updatedLogoPath) {
-                FileService::deleteFile($old_logo);
-            }
 
         } else if (isset($logoFile) && $logoFile['error'] !== UPLOAD_ERR_NO_FILE) {
-            // Jika ada error upload (misal file kegedean), lempar error
             throw new Exception("File upload error code: " . $logoFile['error']);
         }
         
@@ -44,10 +39,6 @@ class StoreService {
 
     public function getLogoPath($storeId) {
         return $this->storeRepo->getLogoPath($storeId);
-    }
-
-    public function removeLogoPath($storeId) {
-        return $this->storeRepo->removeLogoPath($storeId);
     }
 
     public function getStoreForUser($userId) {

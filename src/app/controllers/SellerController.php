@@ -65,6 +65,7 @@ class SellerController extends BaseController {
 				'/css/pages/seller/products/index.css'
 			],
             'jsFiles' => [
+				'/js/pages/seller/products/index.js'
             ],
 		]);
 	}
@@ -72,13 +73,24 @@ class SellerController extends BaseController {
     public function storeProduct() {
         $postData = $this->getPost();
 
+		if (isset($postData['product-description'])) {
+            $plainText = trim(strip_tags($postData['product-description']));
+            $postData['description_plain_text'] = $plainText;
+        }
+
+		$categories = $this->categoryService->getForDropdown();
+
         try {
             $this->verifyCsrf();
-            $this->validate($postData, [
-                'product_name' => ['required', 'min:3'],
-                'price' => ['required', 'numeric'],
-                'stock' => ['required', 'numeric']
-            ]);
+			$postData['product_image'] = $_FILES['product_image'];
+
+			$this->validate($postData, [ 
+				'product_name' => ['required', 'min:0', 'max:200'], 
+				'price' => ['required', 'numeric', 'numeric_min:1000'], 
+				'stock' => ['required', 'numeric', 'numeric_min:0'],
+				'description_plain_text' => ['max:1000'],
+				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp']
+			]); 
 
 			$storeId = $this->getSellerStoreId();
 
@@ -94,25 +106,37 @@ class SellerController extends BaseController {
 
         } catch (ValidationException $e) {
             $this->render('pages/seller/products/create', [
+				'categories' => $categories,
                 'errors' => $e->getErrors(),
                 'old' => $postData,
                 'pageTitle' => 'Add Product',
-                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
-                'jsFiles' => [
-                    'https://cdn.quilljs.com/1.3.6/quill.js',
-                    '/js/utils/quill-setup.js',
-                ],
+				'cssFiles' => [
+					'/css/pages/dashboard.css', 
+					'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+					'/css/pages/seller/products/create.css'
+				],
+				'jsFiles' => [
+					'https://cdn.quilljs.com/1.3.6/quill.js',
+					'/js/utils/quill-setup.js', 
+					'/js/pages/seller/products/create.js'
+				],
             ]);
         } catch (Exception $e) {
             $this->render('pages/seller/products/create', [
+				'categories' => $categories,
                 'error' => $e->getMessage(),
                 'old' => $postData,
                 'pageTitle' => 'Add Product',
-                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
-                'jsFiles' => [
-                    'https://cdn.quilljs.com/1.3.6/quill.js',
-                    '/js/utils/quill-setup.js',
-                ],
+				'cssFiles' => [
+					'/css/pages/dashboard.css', 
+					'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+					'/css/pages/seller/products/create.css'
+				],
+				'jsFiles' => [
+					'https://cdn.quilljs.com/1.3.6/quill.js',
+					'/js/utils/quill-setup.js', 
+					'/js/pages/seller/products/create.js'
+				],
             ]);
         }
 	}
@@ -138,8 +162,6 @@ class SellerController extends BaseController {
 		$assigned = $this->categoryService->getForProduct($productId);
 		$assignedIds = array_column($assigned, 'category_id');
 
-		// throw new Exception(print_r($product, true));
-
 		$this->render('pages/seller/products/edit', [
 			'product' => $product,
 			'categories' => $categories,
@@ -164,12 +186,23 @@ class SellerController extends BaseController {
 		$postData = $this->getPost(); 
 		$productId = (int)($this->getQuery('id', 0) ?: ($postData['product_id'] ?? 0)); 
 
+		if (isset($postData['product-description'])) {
+            $plainText = trim(strip_tags($postData['product-description']));
+            $postData['description_plain_text'] = $plainText;
+		}
+
+		$categories = $this->categoryService->getForDropdown();
+
 		try { 
 			$this->verifyCsrf(); 
+			$postData['product_image'] = $_FILES['product_image'];
+
 			$this->validate($postData, [ 
-				'product_name' => ['required', 'min:3'], 
-				'price' => ['required', 'numeric'], 
-				'stock' => ['required', 'numeric']
+				'product_name' => ['required', 'min:0', 'max:200'], 
+				'price' => ['required', 'numeric', 'numeric_min:1000'], 
+				'stock' => ['required', 'numeric', 'numeric_min:0'],
+				'description_plain_text' => ['max:1000'],
+				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp']
 			]); 
 
 			$storeId = $this->getSellerStoreId(); 
@@ -186,12 +219,17 @@ class SellerController extends BaseController {
 				'errors' => $e->getErrors(), 
 				'old' => $postData, 
 				'product' => array_merge(['product_id' => $productId], $postData),
+				'categories' => $categories,
                 'pageTitle' => 'Update Product',
-                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+                'cssFiles' => [
+					'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+					'/css/pages/seller/products/edit.css',
+					'/css/pages/dashboard.css'
+					],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js', 
-                    '/js/pages/seller/products.js',
+                    '/js/pages/seller/products/edit.js',
                 ],
 			]); 
 		} catch (Exception $e) { 
@@ -199,12 +237,17 @@ class SellerController extends BaseController {
 				'error' => $e->getMessage(), 
 				'old' => $postData, 
 				'product' => array_merge(['product_id' => $productId], $postData),
+				'categories' => $categories,
                 'pageTitle' => 'Update Product',
-                'cssFiles' => ['/css/pages/seller/products.css', 'https://cdn.quilljs.com/1.3.6/quill.snow.css'],
+				'cssFiles' => [
+					'https://cdn.quilljs.com/1.3.6/quill.snow.css',
+					'/css/pages/seller/products/edit.css',
+					'/css/pages/dashboard.css'
+					],
                 'jsFiles' => [
                     'https://cdn.quilljs.com/1.3.6/quill.js',
                     '/js/utils/quill-setup.js', 
-                    '/js/pages/seller/products.js',
+                    '/js/pages/seller/products/edit.js',
                 ],
 			]); 
 		} 

@@ -58,17 +58,6 @@ class StoreRepository extends BaseRepository {
                  WHERE store_id = ?";
         return $this->db->selectOne($sql, [$storeId]);
     }
-
-    public function removeLogoPath($storeId) {
-        $sql = "SELECT store_logo_path FROM stores WHERE store_id = ?";
-        $store = $this->db->selectOne($sql, [$storeId]);
-        
-        if ($store && $store['store_logo_path']) {
-            FileService::deleteFile($store['store_logo_path']);
-            $sql = "UPDATE stores SET store_logo_path = NULL WHERE store_id = ?";
-            $this->db->execute($sql, [$storeId]);
-        }
-    }
 	public function getLogoPath($storeId) {
 		$sql = "SELECT store_logo_path FROM stores WHERE store_id = ?";
 		$row = $this->db->selectOne($sql, [$storeId]);

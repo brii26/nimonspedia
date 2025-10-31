@@ -20,7 +20,7 @@
                                 <div class="row mb-3 align-items-center">
                                     <label for="product_name" class="col-md-3 col-form-label">Product Name</label>
                                     <div class="col-md-9">
-                                        <input type="text" id="product_name" name="product_name" class="form-control" value="<?= View::escape($old['product_name'] ?? '') ?>">
+                                        <input type="text" id="product_name" name="product_name" class="form-control" value="<?= View::escape($old['product_name'] ?? '') ?>" required maxlength="200">
                                         <?php if (isset($errors['product_name'])): ?>
                                             <small class="text-danger"><?= View::escape($errors['product_name']) ?></small>
                                         <?php endif; ?>
@@ -30,7 +30,7 @@
                                 <div class="row mb-3 align-items-center">
                                     <label for="price" class="col-md-3 col-form-label">Price</label>
                                     <div class="col-md-9">
-                                        <input type="number" id="price" name="price" class="form-control" value="<?= View::escape($old['price'] ?? '') ?>">
+                                        <input type="number" id="price" name="price" class="form-control" value="<?= View::escape($old['price'] ?? '') ?>" required min="1000">
                                         <?php if (isset($errors['price'])): ?>
                                             <small class="text-danger"><?= View::escape($errors['price']) ?></small>
                                         <?php endif; ?>
@@ -40,7 +40,7 @@
                                 <div class="row mb-3 align-items-center">
                                     <label for="stock" class="col-md-3 col-form-label">Stock</label>
                                     <div class="col-md-9">
-                                        <input type="number" id="stock" name="stock" class="form-control" value="<?= View::escape($old['stock'] ?? '') ?>">
+                                        <input type="number" id="stock" name="stock" class="form-control" value="<?= View::escape($old['stock'] ?? '') ?>" required min="0">
                                         <?php if (isset($errors['stock'])): ?>
                                             <small class="text-danger"><?= View::escape($errors['stock']) ?></small>
                                         <?php endif; ?>
@@ -50,7 +50,7 @@
                                 <div class="row mb-3 align-items-center">
                                     <label for="category_id" class="col-md-3 col-form-label">Category</label>
                                     <div class="col-md-9">
-                                        <select id="category_id" name="category_id" class="form-select">
+                                        <select id="category_id" name="category_id" class="form-select" required>
                                             <option value="">Select Category</option>
                                             <?php
                                             $selectedValue = (string)($old['category_id']
@@ -71,6 +71,10 @@
 								<label for="input_file" class="col-md-3 col-form-label">Product Image</label>
 									<div class="col-md-9">
 										<input type="file" id="input_file" name="product_image" class="form-control" accept="image/*">
+										<?php if (isset($errors['product_image'])): ?>
+											<small class="text-danger"><?= View::escape($errors['product_image']) ?></small>
+										<?php endif; ?>
+										<small id="image-error" class="text-danger"></small>
 									</div>
 								</div>
                                 
@@ -89,6 +93,10 @@
 							<label for="product-description" class="col-form-label">Description</label>
 							<div id="editor"><?= $old['product-description'] ?? '' ?></div>
 							<input type="hidden" name="product-description" id="product-description">
+							<?php if (isset($errors['description_plain_text'])): ?>
+								<small class="text-danger"><?= View::escape($errors['description_plain_text']) ?></small>
+							<?php endif; ?>
+							<small id="description-error" class="text-danger"></small>
 						</div>
 
                         <div class="btn-container d-flex justify-content-end">
