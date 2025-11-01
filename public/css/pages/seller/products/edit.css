@@ -201,3 +201,89 @@ form .row > [class*="col-"] {
 form[action^="/seller/products/update"] small.text-danger { 
 	display: none !important; 
 }
+
+.confirm-modal {
+	position: fixed;
+	inset: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.65);
+	z-index: 3000;
+	animation: fadeIn 0.25s ease;
+}
+
+.confirm-modal-content {
+	background: #fff;
+	border-radius: 12px;
+	padding: 30px 35px;
+	width: 420px;
+	max-width: 90%;
+	text-align: center;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+	animation: slideIn 0.25s ease;
+}
+
+.confirm-modal-content h3 {
+	font-size: 1.5rem;
+	color: #2d3748;
+	margin-bottom: 10px;
+}
+
+.confirm-modal-content p {
+	font-size: 1rem;
+	color: #4a5568;
+	margin-bottom: 25px;
+}
+
+.confirm-modal-actions {
+	display: flex;
+	justify-content: center;
+	gap: 15px;
+}
+
+.btn-confirm {
+	background-color: #38a169;
+	color: white;
+	padding: 10px 24px;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.25s ease;
+	box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+}
+
+.btn-confirm:hover {
+	background-color: #2f855a;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 18px rgba(56, 161, 105, 0.4);
+}
+
+.btn-cancel {
+	background-color: #e53e3e;
+	color: white;
+	padding: 10px 24px;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.25s ease;
+	box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.btn-cancel:hover {
+	background-color: #c53030;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 18px rgba(229, 62, 62, 0.4);
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes slideIn {
+	from { transform: translateY(10px); opacity: 0.95; }
+	to { transform: translateY(0); opacity: 1; }
+}
