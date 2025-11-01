@@ -43,6 +43,14 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
             </header>
             
             <div class="store-products-content">
+                <?php
+                echo View::component('product-filter', [
+                    'actionUrl' => '/store',
+                    'categories' => $categories ?? [],
+                    'filters' => $filters ?? [],
+                    'extraHiddenFields' => ['id' => $store['store_id']] // <-- PENTING
+                ]);
+                ?>
                 <?php if (empty($productsData['data'])): ?>
                     <div class="store-empty-state">
                         <h3>Tidak Ada Produk</h3>

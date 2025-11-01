@@ -4,11 +4,13 @@ class StoreController extends BaseController {
     
     private $productService;
     private $storeRepository;
+    private $categoryService;
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService(); 
         $this->storeRepository = new StoreRepository(); 
+        $this->categoryService = new CategoryService();
     }
 
     /**
@@ -27,28 +29,50 @@ class StoreController extends BaseController {
             return;
         }
 
-        $options = [
+        $allowedPerPag = [4, 8, 12, 20];
+        $perPage = (int)$this->getQuery('perPage', 8);
+        if (!in_array($perPage, $allowedPerPag)) {
+            $perPage = 8;
+        }
+
+        $priceRange = $this->getQuery('priceRange');
+        $minPrice = null;
+        $maxPrice = null;
+        
+        if ($priceRange && str_contains($priceRange, '-')) {
+            list($min, $max) = explode('-', $priceRange);
+            $minPrice = ($min !== '') ? (int)$min : null;
+            $maxPrice = ($max !== '') ? (int)$max : null;
+        }
+
+        $filters = [
             'page'       => (int)$this->getQuery('page', 1),
-            'perPage'    => (int)$this->getQuery('perPage', 8),
-            'searchTerm' => $this->getQuery('search'),
-            'categoryId' => $this->getQuery('category'),
-            'minPrice'   => $this->getQuery('min_price'),
-            'maxPrice'   => $this->getQuery('max_price'),
+            'perPage'    => $perPage,
+            'searchTerm' => $this->getQuery('searchTerm'),
+            'categoryId' => $this->getQuery('categoryId'),
+            'minPrice'   => $minPrice,
+            'maxPrice'   => $maxPrice,
+            'priceRange' => $priceRange,
             'store_id'   => $storeId
         ];
 
-        $productsData = $this->productService->getAllProducts($options);
+        $productsData = $this->productService->getAllProducts($filters);
+        $categories = $this->categoryService->getForDropdown();
 
         $this->render('pages/stores/detail', [
             'store'        => $storeInfo,
             'productsData' => $productsData,
+            'categories'   => $categories,
+            'filters'      => $filters,
             'pageTitle'    => View::escape($storeInfo['store_name']),
             'cssFiles' => [
-                '/css/pages/store-detail.css'
+                '/css/pages/store-detail.css',
+                '/css/components/product-filter.css'
             ],
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js'
+                '/js/pages/products/index.js',
+                '/js/components/product-filter.js'
             ],
         ]);
     }
