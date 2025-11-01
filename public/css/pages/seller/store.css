@@ -34,9 +34,9 @@ body.edit-mode #store-edit { display: block; }
     object-fit: cover;
 }
 .flex-preview {
+	margin-top: 13px;
 	display : flex;
 	justify-content: center;
-	align-items: center;
 	align-items: stretch;
 }
 
