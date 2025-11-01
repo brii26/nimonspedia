@@ -57,9 +57,7 @@ class HomeController extends BaseController {
 
         $allowedPerPag = [4, 8, 12, 20];
         $perPage = (int)$this->getQuery('perPage', 8);
-        if (!in_array($perPage, $allowedPerPag)) {
-            $perPage = 8;
-        }
+        if (!in_array($perPage, $allowedPerPag)) $perPage = 8;
 
         $priceRange = $this->getQuery('priceRange');
         $minPrice = null;
@@ -83,15 +81,36 @@ class HomeController extends BaseController {
 
         $productsData = $this->productService->getAllProducts($filters);
         $categories = $this->categoryService->getForDropdown();
+        
+        // Cek apakah ini AJAX request?
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+                  
+        $actionUrl = '/'; // Definisikan actionUrl untuk partial
+
+        if ($isAjax) {
+            // Jika AJAX, render HANYA partial-nya
+            $html = View::render('components/product-list', [
+                'productsData' => $productsData,
+                'filters' => $filters,
+                'actionUrl' => $actionUrl
+            ]);
+            // Kirim sebagai JSON
+            $this->json(['html' => $html]);
+            return;
+        }
+
+        // Jika bukan AJAX (full page load), render seperti biasa
         $this->render('pages/products/index', [
             'productsData' => $productsData,
             'categories'   => $categories,
             'filters'      => $filters,
+            'actionUrl'    => $actionUrl,
             'pageTitle' => 'Browse Products',
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/products/index.js',
-                '/js/components/product-filter.js'
+                '/js/components/product-filter.js',
             ],
             'cssFiles'=> [
                 'css/pages/products-index.css',

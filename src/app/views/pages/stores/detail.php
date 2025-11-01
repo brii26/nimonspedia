@@ -45,64 +45,25 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
             <div class="store-products-content">
                 <?php
                 echo View::component('product-filter', [
-                    'actionUrl' => '/store',
+                    'actionUrl' => $actionUrl ?? '/store',
                     'categories' => $categories ?? [],
                     'filters' => $filters ?? [],
-                    'extraHiddenFields' => ['id' => $store['store_id']] // <-- PENTING
+                    'extraHiddenFields' => ['id' => $store['store_id']]
                 ]);
                 ?>
-                <?php if (empty($productsData['data'])): ?>
-                    <div class="store-empty-state">
-                        <h3>Tidak Ada Produk</h3>
-                        <p>Toko ini belum memiliki produk untuk dijual.</p>
-                    </div>
-                <?php else: ?>
-                    <div class="products-grid">
-                        <?php foreach ($productsData['data'] as $product): ?>
-                            <div class="product-card">
-                                <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-image-link">
-                                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
-                                         alt="<?= View::escape($product['product_name']) ?>" 
-                                         class="product-image">
-                                </a>
-                                <div class="product-info">
-                                    <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-name-link">
-                                        <h3 class="product-name"><?= View::escape($product['product_name']) ?></h3>
-                                    </a>
-                                    <p class="product-price"><?= View::currency($product['price']) ?></p>
-                                    
-                                    <form class="add-to-cart-listing" data-product-id="<?= View::escape($product['product_id']) ?>">
-                                        <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
-                                        <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary" style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
-                                            <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    
-                    <?php if ($productsData['total_pages'] > 1): ?>
-                        <nav style="margin-top: 2rem;">
-                            <ul class="pagination" style="justify-content: center;">
-                                <?php 
-                                $queryParams = $_GET;
-                                unset($queryParams['page']);
-                                $baseQuery = http_build_query($queryParams);
-                                $baseUrl = "/store?" . $baseQuery;
-                                ?>
-                                <?php for ($i = 1; $i <= $productsData['total_pages']; $i++): ?>
-                                    <li class="page-item <?= ($i == $productsData['current_page']) ? 'active' : '' ?>">
-                                        <a class="page-link" href="<?= $baseUrl ?>&page=<?= $i ?>"><?= $i ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
-                    <?php endif; ?>
-                    
-                <?php endif; ?>
+                
+                <div id="product-list-container">
+                     <?php
+                    // Load partial-nya untuk pertama kali
+                    echo View::render('components/product-list', [
+                        'productsData' => $productsData,
+                        'filters' => $filters,
+                        'actionUrl' => $actionUrl ?? '/store',
+                        'extraHiddenFields' => ['id' => $store['store_id']]
+                    ]);
+                    ?>
+                </div>
+
             </div>
         </section>
 
