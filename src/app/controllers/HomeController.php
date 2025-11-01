@@ -90,7 +90,8 @@ class HomeController extends BaseController {
             'pageTitle' => 'Browse Products',
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js'
+                '/js/pages/products/index.js',
+                '/js/components/product-filter.js'
             ],
             'cssFiles'=> [
                 'css/pages/products-index.css',

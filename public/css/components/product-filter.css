@@ -28,7 +28,6 @@
 
 .filter-form {
     display: grid;
-    gap: 1.5rem;
 }
 
 .filter-form .form-group {
@@ -38,6 +37,7 @@
 /* Search Group - Full Width */
 .filter-form .search-group {
     grid-column: 1 / -1;
+    margin-bottom: 0.5rem;
 }
 
 .search-group .search-wrapper {
@@ -49,9 +49,71 @@
 /* Filter Row */
 .filter-row {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr auto;
     gap: 1rem;
     align-items: end;
+}
+.reset-group {
+    margin: 0;
+}
+
+.reset-group .btn-secondary {
+    height: 44px;
+    padding: 0 1.5rem;
+}
+
+.toggle-wrapper {
+    text-align: right;
+    margin-top: 0.5rem;
+    grid-column: 1 / -1;
+    padding-right: 0rem;
+}
+
+.btn-toggle-advanced {
+    background: none;
+    border: none;
+    color: var(--primary-color, #667eea);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle-advanced:hover {
+    background: rgba(102, 126, 234, 0.1);
+    text-decoration: underline;
+}
+
+#advanced-filters-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out, margin-top 0.4s ease-out;
+    margin-top: 0;
+    
+    display: grid;
+    gap: 1.5rem; /* Jarak antar .filter-row dan .filter-actions */
+}
+
+#advanced-filters-container.open {
+    max-height: 500px; /* Atur ke nilai yang pasti lebih tinggi dari kontennya */
+    margin-top: 1.5rem; /* Beri jarak dari tombol toggle */
+}
+
+.search-input-wrapper {
+    display: flex;
+    align-items: stretch;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-input-wrapper:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
 .search-group input[type="text"] {
@@ -59,21 +121,28 @@
     padding: 1rem 1.25rem;
     padding-right: 3.5rem;
     border: 2px solid #e2e8f0;
-    border-radius: 50px;
+    border-radius: 12px;
     font-size: 1rem;
     background: white;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    flex-grow: 1; /* Input mengambil sisa ruang */
+    min-width: 0;
+    
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+    
+    position: relative;
+    z-index: 2;
 }
 
 .search-group input[type="text"]:focus {
     outline: none;
     border-color: var(--primary-color, #667eea);
     background: white;
-    box-shadow: 
-        0 0 0 4px rgba(102, 126, 234, 0.1),
-        0 8px 25px rgba(102, 126, 234, 0.15);
-    transform: translateY(-2px);
+
+    border-right: none;
+    z-index: 2;
 }
 
 .search-group .search-icon {
@@ -166,6 +235,43 @@
 
 .filter-form select:focus {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23667eea' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+}
+
+.btn-search {
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Warna primary */
+    background: #667eea;
+    color: white;
+    
+    /* Tempelkan ke input */
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 12px; /* Sesuaikan dengan radius input Anda */
+    border-bottom-right-radius: 12px; /* Sesuaikan dengan radius input Anda */
+    
+    transition: all 0.3s ease;
+    
+    /* Trik agar menempel sempurna */
+    margin-left: -2px; 
+    position: relative;
+    z-index: 1;
+}
+
+.btn-search:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
 }
 
 /* Price Range Special Styling */
@@ -193,6 +299,9 @@
     display: flex;
     gap: 0.5rem;
     align-items: end;
+    margin-top: 0;
+
+    display: none;
 }
 
 .filter-actions .btn {

@@ -4,13 +4,13 @@ class StoreController extends BaseController {
     
     private $productService;
     private $storeRepository;
-    private $categoryService; // <-- TAMBAHKAN INI
+    private $categoryService;
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService(); 
         $this->storeRepository = new StoreRepository(); 
-        $this->categoryService = new CategoryService(); // <-- TAMBAHKAN INI
+        $this->categoryService = new CategoryService();
     }
 
     /**
@@ -29,16 +29,12 @@ class StoreController extends BaseController {
             return;
         }
 
-        // --- MULAI PERUBAHAN ---
-
-        // 1. Validasi perPage
         $allowedPerPag = [4, 8, 12, 20];
         $perPage = (int)$this->getQuery('perPage', 8);
         if (!in_array($perPage, $allowedPerPag)) {
-            $perPage = 8; // Default
+            $perPage = 8;
         }
 
-        // 2. Parsing Price Range
         $priceRange = $this->getQuery('priceRange');
         $minPrice = null;
         $maxPrice = null;
@@ -49,7 +45,6 @@ class StoreController extends BaseController {
             $maxPrice = ($max !== '') ? (int)$max : null;
         }
 
-        // 3. Bangun array filter
         $filters = [
             'page'       => (int)$this->getQuery('page', 1),
             'perPage'    => $perPage,
@@ -58,14 +53,12 @@ class StoreController extends BaseController {
             'minPrice'   => $minPrice,
             'maxPrice'   => $maxPrice,
             'priceRange' => $priceRange,
-            'store_id'   => $storeId // <-- Kunci untuk toko ini
+            'store_id'   => $storeId
         ];
 
-        // 4. Ambil produk DAN kategori
         $productsData = $this->productService->getAllProducts($filters);
         $categories = $this->categoryService->getForDropdown();
 
-        // 5. Render view dengan data baru
         $this->render('pages/stores/detail', [
             'store'        => $storeInfo,
             'productsData' => $productsData,
@@ -78,7 +71,8 @@ class StoreController extends BaseController {
             ],
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js'
+                '/js/pages/products/index.js',
+                '/js/components/product-filter.js'
             ],
         ]);
     }
