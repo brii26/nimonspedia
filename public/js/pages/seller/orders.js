@@ -1,170 +1,95 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const rejectForm = document.getElementById('reject-form');
-    if (rejectForm) {
-        rejectForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const form = new FormData(rejectForm);
-
-            try {
-                const res = await fetchXhr('/seller/orders/reject', {
-                    method: 'POST',
-                    body: form,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    closeModal('reject-popup');
-                    App.showAlert('Order rejected successfully', 'success');
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    App.showAlert(data.message || 'Failed to reject order', 'error');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-                App.showAlert('Error rejecting order', 'error');
-            }
-        });
-    }
-});
-
-function showOrderDetail(orderId) {
-    const detPopup = document.getElementById('detail-popup');
-    const content = document.getElementById('order-detail-content');
-    detPopup.style.display = 'flex';
-    content.innerHTML = 'Loading...';
-
-    fetchXhr(`/seller/orders/show?id=${orderId}&format=json`, {
-        method: 'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const order = data.data;
-                content.innerHTML = `
-                    <div class="order-detail">
-                        <div class="section">
-                            <h4>Buyer Information</h4>
-                            <p>Name: ${order.buyer_name}</p>
-                            <p>Email: ${order.buyer_email}</p>
-                            <p>Shipping Address: ${order.shipping_address}</p>
-                        </div>
-                        
-                        <div class="section">
-                            <h4>Order Information</h4>
-                            <p>Order ID: #${order.order_id}</p>
-                            <p>Date: ${new Date(order.created_at).toLocaleString()}</p>
-                            <p>Status: ${order.status.replace('_', ' ').toUpperCase()}</p>
-                            <p>Total: Rp ${order.total_price.toLocaleString()}</p>
-                        </div>
-
-                        <div class="section">
-                            <h4>Products</h4>
-                            <ul>
-                                ${order.items.map(item => `
-                                    <li>
-                                        ${item.product_name} 
-                                        (x${item.quantity}) - 
-                                        Rp ${item.price_at_order.toLocaleString()}
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-
-                        ${order.status === 'rejected' ? `
-                            <div class="section">
-                                <h4>Rejection Reason</h4>
-                                <p>${order.reject_reason}</p>
-                            </div>
-                        ` : ''}
-
-                        ${order.status === 'on_delivery' ? `
-                            <div class="section">
-                                <h4>Delivery Information</h4>
-                                <p>Delivery Date: ${new Date(order.delivery_time).toLocaleDateString()}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            } else {
-                content.innerHTML = 'Error loading order details';
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            content.innerHTML = 'Error loading order details';
-        });
-}
-
-function showRejectModal(orderId) {
-    const input = document.getElementById('reject-order-id');
-    if (input) input.value = orderId;
-    const popup = document.getElementById('reject-popup');
-    if (popup) popup.style.display = 'flex';
-    setTimeout(() => document.getElementById('reject-reason')?.focus(), 50);
-}
-
-function showDeliveryModal(orderId) {
-    document.getElementById('delivery-order-id').value = orderId;
-    document.getElementById('delivery-popup').style.display = 'flex';
-}
-
-function closeModal(popupId) {
-    document.getElementById(popupId).style.display = 'none';
-}
-
-function approveOrder(orderId) {
-    const form = new FormData();
-    form.append('order_id', orderId);
-    form.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-
-    fetchXhr('/seller/orders/approve', {
-        method: 'POST',
-        body: form,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                App.showAlert('Order approved successfully', 'success');
-            } else {
-                App.showAlert(data.message || 'Failed to approve order', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            App.showAlert('Error approving order', 'error');
-        });
-}
-
-document.getElementById('delivery-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const form = new FormData(this);
-
-    fetchXhr('/seller/orders/delivery', {
-        method: 'POST',
-        body: form,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                closeModal('delivery-popup');
-                App.showAlert('Delivery time set successfully', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                App.showAlert(data.message || 'Failed to set delivery time', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            App.showAlert('Error setting delivery time', 'error');
-        });
-});
-
-window.onclick = function(event) {
-    if (event.target.className === 'orders-popup') {
-        event.target.style.display = 'none';
-    }
-};
+document.addEventListener('DOMContentLoaded', () => {
+	const MAX_SIZE_BYTES = 2 * 1024 * 1024;
+  
+	const quill = createEditor('#editor', 'product-description');
+	const form = document.querySelector('form[action^="/seller/products/update"]') || document.getElementById('product-form');
+	const fileInput = document.getElementById('input_file');
+	const previewWrapper = document.getElementById('preview-wrapper');
+	const previewImage = document.getElementById('image-preview');
+	const saveBtn = form ? form.querySelector('button[type="submit"]') : null;
+  
+	const modal = document.getElementById('confirm-modal');
+	const confirmBtn = document.getElementById('confirm-update');
+	const cancelBtn = document.getElementById('cancel-update');
+  
+	const showModal = () => { if (modal) modal.style.display = 'flex'; };
+	const hideModal = () => { if (modal) modal.style.display = 'none'; };
+  
+	const clearPreview = () => {
+	  if (previewImage) previewImage.src = '';
+	  if (previewWrapper) previewWrapper.classList.remove('has-image');
+	};
+  
+	if (fileInput) {
+	  fileInput.addEventListener('change', function () {
+		const file = this.files[0];
+		this.classList.remove('is-invalid');
+		if (!file) return;
+		if (file.size > MAX_SIZE_BYTES) {
+		  this.value = '';
+		  this.classList.add('is-invalid');
+		  App.showAlert('File exceeded 2MB.', 'error');
+		  return;
+		}
+		const reader = new FileReader();
+		reader.onload = e => {
+		  if (previewImage) previewImage.src = e.target.result;
+		  if (previewWrapper) previewWrapper.classList.add('has-image');
+		};
+		reader.readAsDataURL(file);
+	  });
+	}
+  
+	let confirmed = false;
+  
+	if (form) {
+	  form.addEventListener('submit', e => {
+		if (confirmed) { if (saveBtn) App.showLoading(saveBtn, 'Saving...'); return; }
+		e.preventDefault();
+  
+		const file = fileInput && fileInput.files[0];
+		if (file && file.size > MAX_SIZE_BYTES) {
+		  clearPreview();
+		  fileInput.value = '';
+		  App.showAlert('File exceeded 2MB.', 'error');
+		  return;
+		}
+  
+		if (quill) {
+		  const hidden = form.querySelector('input[name="product-description"]');
+		  if (hidden) hidden.value = quill.root.innerHTML;
+		}
+  
+		showModal();
+	  });
+	}
+  
+	if (confirmBtn) {
+	  confirmBtn.addEventListener('click', () => {
+		confirmed = true;
+		hideModal();
+		if (saveBtn) App.showLoading(saveBtn, 'Saving...');
+		form.submit();
+	  });
+	}
+  
+	if (cancelBtn) {
+	  cancelBtn.addEventListener('click', hideModal);
+	}
+  
+	const serverAlert = document.querySelector('.alert.alert-danger');
+	if (serverAlert && serverAlert.textContent.trim()) {
+	  App.showAlert(serverAlert.textContent.trim(), 'error');
+	  serverAlert.remove();
+	} else {
+	  const inlineErrors = document.querySelectorAll('form[action^="/seller/products/update"] small.text-danger');
+	  let firstMsg = '';
+	  inlineErrors.forEach(el => {
+		const msg = el.textContent.trim();
+		if (!firstMsg && msg) firstMsg = msg;
+		el.remove();
+	  });
+	  if (firstMsg) App.showAlert(firstMsg, 'error');
+	}
+  });
+  

@@ -48,9 +48,6 @@ class SellerController extends BaseController {
     }
 
     public function listProducts() {
-		if (isset($_GET['status']) && $_GET['status'] === 'product_created') {
-			echo "<div class='alert alert-success'>Product created successfully!</div>";
-		}
 		$storeId = $this->getSellerStoreId();
         $options = [
             'page' => $this->getQuery('page', 1),
