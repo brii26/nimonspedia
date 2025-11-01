@@ -38,28 +38,61 @@ $sisaSaldo = $saldoUser - $totalBelanja;
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h4 class="mb-0">Ringkasan Pesanan</h4>
+                            <small class="text-muted">Tergrup per toko</small>
                         </div>
                         <div class="card-body">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Produk</th>
-                                        <th class="text-center">Jumlah</th>
-                                        <th class="text-end">Harga Satuan</th>
-                                        <th class="text-end">Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($cart['items'] as $item): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($item['product_name'] ?? 'Nama Produk') ?></td>
-                                            <td class="text-center"><?= (int)($item['quantity'] ?? 0) ?></td>
-                                            <td class="text-end">Rp <?= number_format($item['product_price'] ?? 0, 0, ',', '.') ?></td>
-                                            <td class="text-end fw-bold">Rp <?= number_format($item['subtotal'] ?? 0, 0, ',', '.') ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                            <?php
+                                $groups = [];
+                                foreach ($cart['items'] as $it) {
+                                    $sid = $it['store_id'] ?? 0;
+                                    $groups[$sid]['store_name'] = $it['store_name'] ?? 'Unknown Store';
+                                    $groups[$sid]['items'][] = $it;
+                                }
+                                $grandTotal = 0;
+                            ?>
+
+                            <?php if (empty($groups)): ?>
+                                <p class="text-muted">Keranjang Anda kosong.</p>
+                            <?php endif; ?>
+
+                            <?php foreach ($groups as $storeId => $g): ?>
+                                <?php $storeTotal = 0; ?>
+                                <div class="mb-3">
+                                    <h5 class="mb-2">Toko: <?= htmlspecialchars($g['store_name']) ?></h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Produk</th>
+                                                <th class="text-center">Jumlah</th>
+                                                <th class="text-end">Harga Satuan</th>
+                                                <th class="text-end">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($g['items'] as $item): ?>
+                                                <?php $storeTotal += ($item['subtotal'] ?? (($item['product_price'] ?? 0) * ($item['quantity'] ?? 0))); ?>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($item['product_name'] ?? 'Nama Produk') ?></td>
+                                                    <td class="text-center"><?= (int)($item['quantity'] ?? 0) ?></td>
+                                                    <td class="text-end">Rp <?= number_format($item['product_price'] ?? 0, 0, ',', '.') ?></td>
+                                                    <td class="text-end fw-bold">Rp <?= number_format($item['subtotal'] ?? (($item['product_price'] ?? 0) * ($item['quantity'] ?? 0)), 0, ',', '.') ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3" class="text-end"><strong>Total Toko:</strong></td>
+                                                <td class="text-end"><strong>Rp <?= number_format($storeTotal, 0, ',', '.') ?></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <?php $grandTotal += $storeTotal; ?>
+                            <?php endforeach; ?>
+
+                            <div class="text-end mt-3">
+                                <h5>Grand Total: <strong>Rp <?= number_format($grandTotal, 0, ',', '.') ?></strong></h5>
+                            </div>
                         </div>
                     </div>
 
@@ -103,13 +136,18 @@ $sisaSaldo = $saldoUser - $totalBelanja;
 
                             <hr>
 
+                            <div class="mb-3">
+                                <label for="shipping_address" class="form-label">Alamat Pengiriman (editable)</label>
+                                <textarea id="shipping_address" name="shipping_address" class="form-control" rows="4"><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
+                            </div>
+
                             <?php if (!$saldoCukup): ?>
                                 <div class="alert alert-danger" role="alert">
                                     <strong>Saldo Tidak Cukup!</strong> Saldo Anda tidak mencukupi untuk melakukan transaksi ini.
                                 </div>
                             <?php endif; ?>
 
-                            <button type="submit" class="btn btn-primary btn-lg w-100" <?= !$saldoCukup ? 'disabled' : '' ?>>
+                            <button type="button" id="checkoutBtn" class="btn btn-primary btn-lg w-100" <?= !$saldoCukup ? 'disabled' : '' ?>>
                                 Konfirmasi & Bayar
                             </button>
                         </div>
@@ -119,6 +157,88 @@ $sisaSaldo = $saldoUser - $totalBelanja;
             </div>
         </form>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const checkoutForm = document.getElementById('checkoutForm');
+
+        function resetButton(btn, original) {
+            if (window.App && typeof window.App.hideLoading === 'function') {
+                window.App.hideLoading(btn);
+            } else if (btn) {
+                btn.disabled = false;
+                btn.textContent = original || 'Konfirmasi & Bayar';
+            }
+        }
+
+        if (!checkoutBtn || !checkoutForm) return;
+
+        checkoutBtn.addEventListener('click', function (e) {
+            const originalText = checkoutBtn.textContent;
+            if (checkoutBtn.disabled) return;
+            // show loading
+            if (window.App && typeof window.App.showLoading === 'function') {
+                window.App.showLoading(checkoutBtn, 'Processing...');
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.textContent = 'Processing...';
+            }
+
+            const formData = new FormData(checkoutForm);
+
+            // Use project's fetchXhr helper (no native fetch)
+            if (typeof fetchXhr !== 'function') {
+                // fallback to normal submit
+                checkoutForm.submit();
+                return;
+            }
+
+            fetchXhr('/checkout', { method: 'POST', body: formData, timeout: 15000 })
+            .then(response => {
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    return response.json().then(data => ({ json: data, url: response.url }));
+                }
+                return { json: null, url: response.url };
+            }).then(result => {
+                if (result.json) {
+                    if (result.json.redirect) {
+                        window.location = result.json.redirect;
+                        return;
+                    }
+                    if (result.json.success) {
+                        window.location = '/orders';
+                        return;
+                    }
+                    if (result.json.errors && Array.isArray(result.json.errors) && result.json.errors.length) {
+                        if (window.App && typeof window.App.showAlert === 'function') {
+                            window.App.showAlert(result.json.errors[0], 'error');
+                        } else {
+                            alert(result.json.errors[0]);
+                        }
+                        resetButton(checkoutBtn, originalText);
+                        return;
+                    }
+                }
+
+                if (result.url) {
+                    window.location = result.url;
+                } else {
+                    window.location.reload();
+                }
+            }).catch(err => {
+                console.error('Checkout error', err);
+                if (window.App && typeof window.App.showAlert === 'function') {
+                    window.App.showAlert('Terjadi kesalahan saat melakukan checkout. Silakan coba lagi.', 'error');
+                } else {
+                    alert('Terjadi kesalahan saat melakukan checkout. Silakan coba lagi.');
+                }
+                resetButton(checkoutBtn, originalText);
+            });
+        });
+    });
+    </script>
 
     </body>
 </html>

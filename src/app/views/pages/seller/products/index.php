@@ -20,12 +20,15 @@
                     <?php foreach ($productsData['data'] as $product): ?>
                         <tr>
 							<td>
-							<?php 
-							$imagePath = View::escape($product['main_image_path'] ?? '/images/product_placeholder.png'); 
-							?>
-							<img src="<?= '/storage/' . $imagePath ?>"
-								alt="<?= View::escape($product['product_name']) ?> Image" 
-								class="product-thumb">
+								<?php
+									$productPath = $product['main_image_path'] ?? null;
+									if ($productPath) {
+										$imageUrl = '/storage/' . View::escape($productPath);
+									} else {
+										$imageUrl = '/storage/' .'product_images/default-product.png'; 
+									}
+								?>
+								<img src="<?= $imageUrl ?>" alt="<?= View::escape($product['product_name']) ?> Image"  class="product-thumb">
 							</td>
                             <td><?= View::escape($product['product_name']) ?></td>
                             <td><?= View::currency($product['price']) ?></td>
@@ -42,7 +45,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <button type="button" class="btn go-back" onclick="window.location.href='/dashboard'">Back</button>
+            <button type="button" class="btn go-back">Back</button>
         </div>
     </div>
 </div>

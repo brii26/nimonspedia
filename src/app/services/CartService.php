@@ -111,7 +111,9 @@ class CartService {
 					'product_price' => $price,
 					'product_stock' => $r['product_stock'] ?? null,
 					'quantity' => $qty,
-					'subtotal' => $subtotal
+					'subtotal' => $subtotal,
+					'store_id' => $r['store_id'] ?? null,
+					'store_name' => $r['store_name'] ?? 'Unknown Store'
 				];
 				$total += $subtotal;
 			}

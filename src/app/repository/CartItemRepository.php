@@ -57,9 +57,12 @@ class CartItemRepository extends BaseRepository
     public function findByBuyerId(int $buyerId): array
     {
         $sql = "SELECT ci.cart_item_id, ci.buyer_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at,
-                       p.product_name, p.price as product_price, p.stock as product_stock
+                       p.product_name, p.price as product_price, p.stock as product_stock,
+                       p.store_id, s.store_name,
+                       (p.price * ci.quantity) as subtotal
                 FROM {$this->table} ci
                 LEFT JOIN products p ON p.product_id = ci.product_id
+                LEFT JOIN stores s ON p.store_id = s.store_id
                 WHERE ci.buyer_id = ?
                 ORDER BY ci.created_at DESC";
         

@@ -14,7 +14,7 @@
                                             $imageUrl = '/storage/' . View::escape($logoPath);
                                             $altText = View::escape($store['store_name'] ?? 'Store') . ' Logo';
                                         } else {
-                                            $imageUrl = '/images/default-logo-placeholder.png'; 
+                                            $imageUrl = '/storage/'. 'store_logos/default-store.png'; 
                                             $altText = 'Default Store Logo';
                                         }
                                     ?>
@@ -23,14 +23,14 @@
                             </div>
                             
                             <div class="display-col-details">
-                                <span class="store-badge">Profil Toko</span>
+                                <span class="store-badge">Store Profile</span>
                                 <h2 id='store-name-display'><?= View::escape($store['store_name'] ?? 'My Store') ?></h2>
                                 <div id="store-description-display">
                                     <?= $store['store_description'] ?? '<p><i>Tidak ada deskripsi. Klik "Edit" untuk menambahkan.</i></p>' ?>
                                 </div>
                                 <button type="button" id="edit-store-button" class="btn-edit-custom">
                                     <i class="icon-edit"></i> 
-                                    Edit Store Info
+                                    Edit Store
                                 </button>
                             </div>
                         </div>
@@ -41,38 +41,36 @@
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                             
                             <div class="edit-layout-simple">
-
-                                <div class="edit-col-image-simple">
-                                    <div class="form-group mb-3">
-                                        <label>Logo Toko</label>
-                                        <label for="edit_file" class="file-upload-label btn-secondary-custom">
-                                            <span>Ganti Logo</span>
-                                            <input type="file" id="edit_file" name="store_logo" accept="image/*">
-                                        </label>
-                                    </div>
-                                    
-                                    <div class="form-group mb-3" id="preview-wrapper">
-                                        <img id="image-preview" src="#" alt="Image preview">
-                                    </div>
-                                </div>
-
                                 <div class="edit-col-details-simple">
                                     <div class="form-group mb-3">
-                                        <label for="store_name">Nama Toko</label>
+                                        <label for="store_name">Store Name</label>
                                         <input type="text" id="store_name" name="store_name" class="form-control-custom" value="<?= View::escape($store['store_name'] ?? '') ?>" required>
                                     </div>
-                                    
                                     <div class="form-group mb-3">
-                                        <label for="store_description">Deskripsi Toko</label>
+                                        <label for="store_description">Store Description</label>
                                         <div id="editor"><?= $store['store_description'] ?? '' ?></div>
                                         <input type="hidden" name="store_description" id="store_description">
                                     </div>
+									<div class="form-group mb-3">
+										<label for="edit_file" class="file-upload-label btn-secondary-custom">
+											<span>Edit Logo</span>
+											<input type="file" id="edit_file" name="store_logo" accept="image/*">
+										</label>
+									</div>
                                 </div>
+
+								<div class="flex-preview">
+									<div class="edit-col-image-simple">
+										<div class="form-group mb-3" <?php echo !empty($product['store_logo']) ? 'has-image' : '' ?>" id="preview-wrapper">
+											<img id="image-preview"  src="<?php echo !empty($product['store_logo']) ? View::escape('/storage/' . $product['store_logo']) : '#' ?>"  alt="Image preview">
+										</div>
+									</div>		
+								</div>						
 
                             </div> 
                             <div class="edit-actions">
-                                <button type="button" id="cancel-button" class="btn-cancel">Batal</button>
-                                <button type="submit" id="save-button" class="btn-save">Simpan Perubahan</button>
+                                <button type="button" id="cancel-button" class="btn-cancel">Cancel</button>
+                                <button type="submit" id="save-button" class="btn-save">Update Store</button>
                             </div>
                         </form>
                     </div>

@@ -8,6 +8,53 @@ class FileService
         'product_image' => 'product_images'
     ];
 
+    public static function validateImageMime(array $file, array $allowedMimes): ?string
+    {
+        $fileName = $file['name'] ?? '';
+        
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedMimes)) {
+            return "File type is invalid. Allowed types: " . implode(', ', $allowedMimes);
+        }
+
+        if (extension_loaded('fileinfo')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo === false) {
+                 return null;
+            }
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            $mimeToExtMap = [
+                'image/jpeg' => 'jpeg', 'image/png' => 'png', 
+                'image/gif' => 'gif', 'image/webp' => 'webp',
+                'image/pjpeg' => 'jpeg' 
+            ];
+
+            $detectedExt = $mimeToExtMap[$mimeType] ?? null;
+            if (!in_array($detectedExt, $allowedMimes)) {
+                return "File content type is not supported.";
+            }
+        }
+        return null;
+    }
+
+    public static function validateImageSize(array $file, int $maxSizeBytes): ?string
+    {
+        if ($file['error'] === UPLOAD_ERR_INI_SIZE || $file['error'] === UPLOAD_ERR_FORM_SIZE) {
+            $maxMB = round($maxSizeBytes / 1024 / 1024);
+            return "File size exceeds the server limit (max {$maxMB} MB).";
+        }
+        
+        if ($file['size'] > $maxSizeBytes) {
+            $maxMB = round($maxSizeBytes / 1024 / 1024);
+            return "File size must not exceed {$maxMB} MB.";
+        }
+        
+        return null;
+    }
+
+
 	private static function reencodeWithoutMetadata(string $path): void {
     if (!extension_loaded('gd')) return;
 
@@ -32,21 +79,21 @@ class FileService
     if (!$img) return;
     switch ($mime) {
         case 'image/jpeg':
-            imagejpeg($img, $path, 70);
+            imagejpeg($img, $path, 35);
             break;
         case 'image/png':
             imagesavealpha($img, true);
-            imagepng($img, $path, 3);
+            imagepng($img, $path, 6);
             break;
 		case 'image/webp':
-			imagewebp($img, $path, 70); 
+			imagewebp($img, $path, 35); 
 			break;
     }
 
     imagedestroy($img);
 }
 
-    public static function saveUploadedImage(array $file, string $type, string $oldFile = ''){
+    public static function saveUploadedImage(array $file, string $type, ?string $oldFile = ''){
         if (!isset(self::$map[$type])) {
             throw new InvalidArgumentException("Unknown type '{$type}'. Allowed: " . implode(', ', array_keys(self::$map)));
         }
@@ -75,16 +122,22 @@ class FileService
 
 		self::reencodeWithoutMetadata($destinationPath);
 
+		if ($oldFile) {
+			    self::deleteFile($oldFile);
+			}
+
         $relative = $subfolder . '/' . $finalFilename;
         return $relative;
     }
 
-    public static function deleteFile(string $relativePath): void 
+    public static function deleteFile(?string $relativePath): void 
     {
         $fullPath = rtrim(self::$basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $relativePath;
         
         if (!file_exists($fullPath)) {
             return;
         }
+
+		@unlink($fullPath);
     }
 }

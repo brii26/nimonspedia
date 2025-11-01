@@ -7,20 +7,24 @@ window.App = {
     /**
      * Spinner loading
      */
-    showLoading: function(element, loadingText = 'Loading...') {
-        if (element) {
-            element.dataset.originalText = element.textContent;
-            element.textContent = loadingText;
-            element.disabled = true;
-        }
-    },
-    
-    hideLoading: function(element) {
-        if (element && element.dataset.originalText) {
-            element.textContent = element.dataset.originalText;
-            element.disabled = false;
-        }
-    },
+	showLoading: function (el, loadingText = 'Loading...') {
+		if (!el) return;
+		if (!el.hasAttribute('data-original-html')) {
+			el.setAttribute('data-original-html', el.innerHTML);
+		}
+		el.innerHTML = loadingText;
+		el.disabled = true;
+	},
+	
+	hideLoading: function (el) {
+		if (!el) return;
+		if (el.hasAttribute('data-original-html')) {
+			el.innerHTML = el.getAttribute('data-original-html');
+			el.removeAttribute('data-original-html');
+		}
+		el.disabled = false;
+	},
+	
     
     showAlert: function(message, type = 'info') {
         const alert = document.createElement('div');

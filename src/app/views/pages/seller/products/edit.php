@@ -1,85 +1,113 @@
 <div class="container mt-4">
-	<div class="row justify-content-center">
-		<div class="col-md-8">
-			<div class="card">
-				<div class="card-header">
-					<h3>Edit Product</h3>
-				</div>
-				<div class="card-body">
-					<?php if (isset($error)): ?>
-						<div class="alert alert-danger"><?= View::escape($error) ?></div>
-					<?php endif; ?>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card product-form-card">
+                <div class="card-header">
+                    <h3>Edit Product</h3>
+                </div>
+                <div class="card-body">
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger"><?= View::escape($error) ?></div>
+                    <?php endif; ?>
 
-					<form action="/seller/products/update?id=<?= View::escape($product['product_id']) ?>" method="POST" enctype="multipart/form-data">
-						<input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-						<input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
+                    <form action="/seller/products/update?id=<?= View::escape($product['product_id']) ?>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                        <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
 
-						<div class="form-group mb-3">
-							<label for="product_name">Product Name</label>
-							<input type="text" id="product_name" name="product_name" class="form-control" value="<?= View::escape($old['product_name'] ?? $product['product_name'] ?? '') ?>">
-							<?php if (isset($errors['product_name'])): ?>
-								<small class="text-danger"><?= View::escape($errors['product_name']) ?></small>
+                        <div class="row">
+                            
+                            <div class="col-md-7"> 
+                                
+                                <div class="row mb-3 align-items-center">
+                                    <label for="product_name" class="col-md-3 col-form-label">Product Name</label>
+                                    <div class="col-md-9">
+                                        <input type="text" id="product_name" name="product_name" class="form-control" value="<?= View::escape($old['product_name'] ?? $product['product_name'] ?? '') ?>" required maxlength="200">
+                                        <?php if (isset($errors['product_name'])): ?>
+                                            <small class="text-danger"><?= View::escape($errors['product_name']) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label for="price" class="col-md-3 col-form-label">Price</label>
+                                    <div class="col-md-9">
+                                        <input type="number" id="price" name="price" class="form-control" value="<?= View::escape($old['price'] ?? $product['price'] ?? '') ?>" required min="1000">
+                                        <?php if (isset($errors['price'])): ?>
+                                            <small class="text-danger"><?= View::escape($errors['price']) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label for="stock" class="col-md-3 col-form-label">Stock</label>
+                                    <div class="col-md-9">
+                                        <input type="number" id="stock" name="stock" class="form-control" value="<?= View::escape($old['stock'] ?? $product['stock'] ?? '') ?>" required min="0">
+                                        <?php if (isset($errors['stock'])): ?>
+                                            <small class="text-danger"><?= View::escape($errors['stock']) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label for="category_id" class="col-md-3 col-form-label">Category</label>
+                                    <div class="col-md-9">
+                                        <select id="category_id" name="category_id" class="form-select" required>
+                                            <option value="">Select Category</option>
+                                            <?php
+                                            $selectedValue = (string)($old['category_id']
+                                                ?? (isset($assigned_category_ids) ? (string)($assigned_category_ids[0] ?? '') : '')
+                                                ?? '');
+                                            foreach ($categories as $cat):
+                                            ?>
+                                                <option value="<?= View::escape($cat['category_id']) ?>"
+                                                    <?= $selectedValue === (string)$cat['category_id'] ? 'selected' : '' ?>>
+                                                    <?= View::escape($cat['name']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label for="input_file" class="col-md-3 col-form-label">Product Image</label>
+                                    <div class="col-md-9">
+                                        <input type="file" id="input_file" name="product_image" class="form-control" accept="image/*">
+										<?php if (isset($errors['product_image'])): ?>
+											<small class="text-danger"><?= View::escape($errors['product_image']) ?></small>
+										<?php endif; ?>
+										<small id="image-error" class="text-danger"></small>
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+							<div class="col-md-5">
+								<div class="mb-3 <?php echo !empty($product['main_image_path']) ? 'has-image' : '' ?>" id="preview-wrapper">
+									<img id="image-preview"  src="<?php echo !empty($product['main_image_path']) ? View::escape('/storage/' . $product['main_image_path']) : '#' ?>"  alt="Image preview">
+								</div>
+							</div>
+
+                        </div>
+                            
+
+                        <div class="mb-4">
+                            <label for="product-description" class="col-form-label">Description</label>
+                            <div id="editor"><?= $old['product-description'] ?? $product['description'] ?? '' ?></div>
+                            <input type="hidden" name="product-description" id="product-description">
+							<?php if (isset($errors['description_plain_text'])): ?>
+								<small class="text-danger"><?= View::escape($errors['description_plain_text']) ?></small>
 							<?php endif; ?>
-						</div>
+							<small id="description-error" class="text-danger"></small>
+                        </div>
 
-						<div class="form-group mb-3">
-							<label for="price">Price</label>
-							<input type="number" id="price" name="price" class="form-control" value="<?= View::escape($old['price'] ?? $product['price'] ?? '') ?>">
-							<?php if (isset($errors['price'])): ?>
-								<small class="text-danger"><?= View::escape($errors['price']) ?></small>
-							<?php endif; ?>
-						</div>
+                        <div class="btn-container d-flex justify-content-end">
+                            <a href="/seller/products" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Product</button>
+                        </div>
 
-						<div class="form-group mb-3">
-							<label for="stock">Stock</label>
-							<input type="number" id="stock" name="stock" class="form-control" value="<?= View::escape($old['stock'] ?? $product['stock'] ?? '') ?>">
-							<?php if (isset($errors['stock'])): ?>
-								<small class="text-danger"><?= View::escape($errors['stock']) ?></small>
-							<?php endif; ?>
-						</div>
-
-						<div class="form-group mb-3">
-							<label for="product_image">Edit Product Image:  </label>
-							<input type="file" id="product_image" name="product_image" class="form-control" accept="image/*">
-							<?php if (isset($errors['product_image'])): ?>
-								<small class="text-danger"><?= View::escape($errors['product_image']) ?></small>
-							<?php endif; ?>
-						</div>
-
-						<div class="form-group mb-3" id="preview-wrapper">
-							<img id="image-preview" src="#" alt="Image preview">
-						</div>
-
-
-						<div class="form-group mb-3">
-						<label for="category_id">Category: </label>
-						<select id="category_id" name="category_id" class="form-control" style="max-width:420px;">
-							<option value="">Select Category</option>
-							<?php
-								$selectedValue = (string)($old['category_id']
-									?? (isset($assigned_category_ids) ? (string)($assigned_category_ids[0] ?? '') : '')
-									?? '');
-								foreach ($categories as $cat):
-							?>
-								<option value="<?= View::escape($cat['category_id']) ?>"
-									<?= $selectedValue === (string)$cat['category_id'] ? 'selected' : '' ?>>
-									<?= View::escape($cat['name']) ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-						</div>
-
-						<div class="form-group mb-3">
-							<label for="product-description">Description</label>
-							<div id="editor"><?= $product['description'] ?? '' ?></div>
-							<input type="hidden" name="product-description" id="product-description">
-						</div>
-
-						<button type="submit" class="btn btn-primary">Update Product</button>
-						<a href="/seller/products" class="btn btn-secondary">Cancel</a>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
