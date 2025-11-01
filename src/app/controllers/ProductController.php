@@ -62,7 +62,7 @@ class ProductController extends BaseController {
                 '/js/pages/products/show.js'
             ],
             'cssFiles' => [
-                '/css/pages/store-detail.css'
+                '/css/pages/product-detail.css'
             ]
         ]);
     }
