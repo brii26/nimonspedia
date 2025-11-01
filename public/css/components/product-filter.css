@@ -51,15 +51,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr auto;
     gap: 1rem;
-    align-items: end;
-}
-.reset-group {
-    margin: 0;
+    align-items: center;
 }
 
-.reset-group .btn-secondary {
-    height: 44px;
-    padding: 0 1.5rem;
+.filter-form .reset-group {
+    margin-top: 2rem;
 }
 
 .toggle-wrapper {
@@ -143,28 +139,6 @@
 
     border-right: none;
     z-index: 2;
-}
-
-.search-group .search-icon {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2rem;
-    height: 2rem;
-    background: linear-gradient(135deg, var(--primary-color, #667eea) 0%, #764ba2 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-group .search-icon:hover {
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* Form Labels */
@@ -274,6 +248,11 @@
     transform: translateY(-1px);
 }
 
+.lucide-search-icon{
+    stroke: #fff;
+    fill: none;
+}
+
 /* Price Range Special Styling */
 .price-group {
     display: flex;
@@ -319,25 +298,24 @@
     justify-content: center;
 }
 
-.filter-actions .btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.filter-actions .btn-primary:hover {
-    background: #5a67d8;
-    transform: translateY(-1px);
-}
-
-.filter-actions .btn-secondary {
-    background: #f8f9fa;
+.btn-secondary {
+    background: none;
     color: #6c757d;
-    border: 1px solid #ddd;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
-.filter-actions .btn-secondary:hover {
-    background: #e9ecef;
+.btn-secondary:hover {
     color: #495057;
+    text-decoration: none;
     transform: translateY(-1px);
 }
 
@@ -456,6 +434,12 @@
     .filter-actions .btn {
         width: 120px;
     }
+
+    .filter-form .reset-group {
+        margin-top: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
 }
 
 @media (max-width: 480px) {
