@@ -275,7 +275,7 @@ class SellerController extends BaseController {
         try {
             $this->verifyCsrf();
             $this->validate($post, [
-                'store_name'        => ['required', 'min:3', 'max:255'],
+                'store_name'        => ['required', 'min:0', 'max:100'],
                 'store_description' => ['max:1000'],
             ]);
 

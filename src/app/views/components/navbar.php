@@ -86,7 +86,7 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">📋</span>
                             <span class="nav-text">Orders</span>
                         </a>
-                        <a href="/seller/products/create" class="nav-link nav-link-primary <?= $activePage === 'add-product' ? 'active' : '' ?>">
+                        <a href="/seller/products/create" class="nav-link <?= $activePage === 'add-product' ? 'active' : '' ?>">
                             <span class="nav-icon">➕</span>
                             <span class="nav-text">Add Product</span>
                         </a>

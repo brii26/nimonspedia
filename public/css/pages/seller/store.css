@@ -1,9 +1,8 @@
-/* --- Toggling Mode --- */
 #store-edit { 
     display: none; 
     background-color: #f9f9f9; 
     border-radius: 8px;
-    padding: 2rem;
+    padding: 4rem;
 }
 body.edit-mode #store-display { display: none; }
 body.edit-mode #store-edit { display: block; }
@@ -33,6 +32,12 @@ body.edit-mode #store-edit { display: block; }
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+.flex-preview {
+	display : flex;
+	justify-content: center;
+	align-items: center;
+	align-items: stretch;
 }
 
 /* --- Kolom Kanan: Info Display --- */
@@ -81,8 +86,8 @@ body.edit-mode #store-edit { display: block; }
 
 .edit-layout-simple {
     display: grid;
-    grid-template-columns: 200px 1fr; 
-    gap: 0 1.5rem; 
+    grid-template-columns: 500px 1fr; 
+    gap: 0 4rem; 
 }
 
 /* --- Kolom Kiri (Logo & Preview) --- */
@@ -91,11 +96,11 @@ body.edit-mode #store-edit { display: block; }
     font-size: 0.95rem;
     color: #333;
     margin-bottom: 8px;
-    display: block; 
 }
 
 input[type="file"]#edit_file { display: none; }
 #store-edit .file-upload-label {
+	margin-top : 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -107,35 +112,66 @@ input[type="file"]#edit_file { display: none; }
     cursor: pointer;
     font-weight: 600;
     transition: all 0.2s ease;
-    background-color: #e9ecef; 
-    color: #343a40;
-}
-.file-upload-label:hover {
-    background-color: #dde1e4;
+    background-color: var(--primary-hover);
+    color: white;
 }
 
-/* --- preview image --- */
+#store-edit .file-upload-label:hover { 
+    text-decoration: underline;
+    color: white;
+    transform: translateY(-0.5px); 
+}
+
 #preview-wrapper {
-    display: none; 
-    margin-top: 1rem;
-	justify-content: center;
-}
-.preview-label {
-    font-weight: 500 !important;
-    font-size: 0.9rem !important;
-    color: #6c757d !important;
-    margin-bottom: 6px !important;
-}
-#image-preview {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    padding: 1rem;
+    border: 2px dashed #ced4da;
     border-radius: 8px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    background-color: #f8f9fa;
+    position: relative;
+    box-sizing: border-box;
 }
 
+#preview-wrapper::before {
+    content: 'Logo Preview';
+    color: #aaa;
+    font-size: 0.8rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#image-preview {
+    display: none;
+    width: 100%;
+	height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    background-color: #fff;
+    z-index: 10;
+}
+
+.edit-col-image-simple {
+	max-width: 300px;
+	aspect-ratio: 1/1;
+}
+
+#preview-wrapper.has-image #image-preview {
+    display: block;
+}
+
+.text-danger-custom {
+    color: #dc3545; 
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: block;
+}
 
 /* --- Kolom Kanan (Teks) --- */
 .edit-col-details-simple .form-group label {
@@ -178,13 +214,24 @@ input[type="file"]#edit_file { display: none; }
 /* --- Action tombol --- */
 .edit-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 12px;
     padding-top: 1.5rem;
     margin-top: 1.5rem;
     border-top: 1px solid #e9ecef;
 }
+
+.btn {
+    padding: 0.85rem 1.75rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
 .btn-cancel, .btn-save {
+	color: white; 
     padding: 12px 28px;
     border: none;
     border-radius: 8px;
@@ -194,16 +241,27 @@ input[type="file"]#edit_file { display: none; }
     transition: all 0.2s ease;
 }
 .btn-cancel {
-    background-color: transparent;
-    color: #6c757d;
+    background-color: rgb(228, 62, 62);
+    border-color: rgb(228, 62, 62);
 }
-.btn-cancel:hover { background-color: #f1f3f5; }
+.btn-cancel:hover {
+	background-color: red;
+    border-color: red;
+	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
 
 .btn-save {
-    background-color: #28a745;
-    color: white;
+    background-color:rgb(33, 161, 33);
+    border-color: rgb(33, 161, 33);
+    box-shadow: 0 4px 15px var(--primary-shadow);
 }
-.btn-save:hover { background-color: #218838; }
+.btn-save:hover {
+	background-color: rgb(13, 192, 13);;
+    border-color: rgb(13, 192, 13);;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
 .btn-save:disabled {
     background-color: #218838;
     opacity: 0.7;

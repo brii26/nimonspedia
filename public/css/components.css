@@ -126,16 +126,6 @@
     font-weight: 600;
 }
 
-.nav-link-primary {
-    background: var(--primary) !important;
-    color: var(--white) !important;
-}
-
-.nav-link-primary:hover {
-    background: var(--primary-dark) !important;
-    color: var(--white) !important;
-}
-
 .nav-link-cart {
     position: relative;
 }

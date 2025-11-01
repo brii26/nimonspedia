@@ -197,3 +197,5 @@ form .row > [class*="col-"] {
     width: 100%;
     margin-right: 33px;
 }
+
+#product-form small.text-danger { display: none !important; }

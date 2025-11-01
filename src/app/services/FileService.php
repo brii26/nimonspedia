@@ -79,14 +79,14 @@ class FileService
     if (!$img) return;
     switch ($mime) {
         case 'image/jpeg':
-            imagejpeg($img, $path, 70);
+            imagejpeg($img, $path, 35);
             break;
         case 'image/png':
             imagesavealpha($img, true);
-            imagepng($img, $path, 3);
+            imagepng($img, $path, 6);
             break;
 		case 'image/webp':
-			imagewebp($img, $path, 70); 
+			imagewebp($img, $path, 35); 
 			break;
     }
 

@@ -159,7 +159,7 @@ class ProductRepository extends BaseRepository {
     }
 
 	public function getLowStocks($storeId) {
-        $sql = "SELECT COUNT(product_id) AS low_stocks FROM {$this->table} WHERE store_id = ? AND stock > 0 AND stock < 10";
+        $sql = "SELECT COUNT(product_id) AS low_stocks FROM {$this->table} WHERE store_id = ? AND stock > 0 AND stock < 10 AND deleted_at IS NULL";
         $row = $this->db->selectOne($sql, [$storeId]);
         return isset($row['low_stocks']) ? (int)$row['low_stocks'] : 0;
     }

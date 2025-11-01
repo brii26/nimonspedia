@@ -197,3 +197,7 @@ form .row > [class*="col-"] {
     width: 100%;
     margin-right: 33px;
 }
+
+form[action^="/seller/products/update"] small.text-danger { 
+	display: none !important; 
+}
