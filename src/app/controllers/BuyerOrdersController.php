@@ -123,7 +123,9 @@ class BuyerOrdersController extends BaseController {
             
             $this->render('pages/orders/checkout', [
                 'cart' => $cartData,
-                'user' => $user
+                'user' => $user,
+                'cssFiles' => ['/css/components/modal.css'],
+                'jsFiles' => ['/js/components/confirm-modal.js']
             ]);
             
         } catch (Exception $e) {
