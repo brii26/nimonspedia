@@ -1,0 +1,197 @@
+/*
+ * File: /public/css/pages/checkout.css
+ * Styling untuk halaman checkout baru Anda.
+ */
+
+/* * ============================================
+ * STYLING CARD DASAR (Meniru cart.css)
+ * ============================================
+ */
+
+.checkout-card,
+.checkout-summary-card {
+    background: #ffffff;
+    border-radius: 8px; /* Sudut melengkung */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Shadow tipis */
+    margin-bottom: 20px;
+    overflow: hidden; /* Penting agar border-radius rapi */
+}
+
+.checkout-card-header {
+    background-color: #fafafa; /* Header abu-abu muda */
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.checkout-card-body {
+    padding: 24px;
+}
+
+/* * ============================================
+ * STYLING SPESIFIK PER BAGIAN
+ * ============================================
+ */
+
+/* 1. Card Alamat */
+.address-details {
+    line-height: 1.6;
+}
+.address-details strong {
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 5px;
+}
+.address-details p {
+    margin: 0;
+    color: #555;
+}
+
+/* 2. Card Ringkasan Pesanan (Tabel) */
+/* (Kita pakai ulang class dari cart.css agar konsisten) */
+
+.checkout-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.checkout-items-table th {
+    background-color: #fafafa;
+    padding: 12px 24px;
+    text-align: left;
+    font-size: 0.85rem;
+    color: #555;
+    text-transform: uppercase;
+}
+.checkout-items-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+.checkout-items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* * (PAKAI ULANG DARI cart.css) 
+ * Pastikan style ini ada di file CSS global atau cart.css Anda
+ * agar gambar & nama produk tampil rapi.
+ */
+.cart-product {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.cart-product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+.cart-product-name {
+    font-size: 1rem;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+.cart-product-price {
+    font-weight: 500;
+}
+
+.cart-store-footer {
+    background-color: #fafafa;
+    padding: 16px 24px;
+    text-align: right;
+    border-top: 1px solid #f0f0f0;
+    font-size: 1.1rem;
+}
+
+
+/* 3. Card Ringkasan Pembayaran */
+.payment-summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.payment-summary li {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.payment-summary li:last-child {
+    border-bottom: none;
+}
+.payment-summary li span:first-child {
+    color: #555; /* Teks abu-abu untuk label */
+}
+.payment-summary li .grand-total {
+    color: #4fd978; 
+    font-weight: bold;
+}
+.payment-summary li.sisa-saldo {
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding-top: 16px;
+}
+
+/* Style khusus jika saldo tidak cukup */
+.payment-summary li.saldo-kurang {
+    font-weight: bold;
+    color: #d9534f; /* Merah */
+    background-color: #fff2f2; /* Latar pink muda */
+    margin: 0 -24px; /* Lebarkan highlight */
+    padding: 12px 24px;
+    border-bottom: none;
+}
+
+
+/* 4. Tombol Aksi Pembayaran */
+.checkout-action {
+    padding: 24px;
+    border-top: 1px solid #f0f0f0;
+    background-color: #fafafa; /* Latar abu-abu muda */
+}
+
+/* Tombol Bayar Sekarang (Tombol Utama) */
+.checkout-action .btn-checkout {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    background-color: #667EEA; /* Merah */
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+.checkout-action .btn-checkout:hover {
+    background-color: #5368c4;
+}
+
+/* Tombol saat disabled (saldo kurang) */
+.checkout-action .btn-checkout:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Link untuk Top Up */
+.btn-top-up {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff; /* Biru */
+    font-weight: bold;
+    text-decoration: none;
+}
+.btn-top-up:hover {
+    text-decoration: underline;
+}
