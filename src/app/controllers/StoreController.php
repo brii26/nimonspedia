@@ -85,12 +85,13 @@ class StoreController extends BaseController {
             'pageTitle'    => View::escape($storeInfo['store_name']),
             'cssFiles' => [
                 '/css/pages/store-detail.css',
-                '/css/components/product-filter.css'
+                '/css/components/product-filter.css',
+                'css/components/modal.css'
             ],
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js', // (Ini untuk 'add to cart')
-                '/js/components/product-filter.js', // (Ini untuk toggle)
+                '/js/pages/products/index.js',
+                '/js/components/product-filter.js',
             ],
         ]);
     }

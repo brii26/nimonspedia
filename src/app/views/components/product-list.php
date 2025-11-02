@@ -32,9 +32,11 @@ $products = $productsData['data'] ?? [];
                         <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                         <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-primary" style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
-                            <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
-                        </button>
+                        <?php if (Auth::check()):?>
+                            <button type="submit" class="btn badd to carttn-primary" style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
+                                <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
+                            </button>
+                        <?php endif; ?>
                     </form>
                 </div>
             </div>
@@ -46,7 +48,6 @@ $products = $productsData['data'] ?? [];
         <nav style="margin-top: 2rem;">
             <div class="pagination" style="justify-content: center;">
                 <?php 
-                // Kita perlu baseUrl dari controller, tapi kita bisa tebak dari $filters
                 $queryParams = $filters ?? [];
                 unset($queryParams['page']);
                 $baseQuery = http_build_query($queryParams);

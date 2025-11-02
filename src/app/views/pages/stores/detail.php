@@ -68,4 +68,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
         </section>
 
     </div>
-</div>
+</div><?php
+echo View::component('cart-success-modal', ['recommendations' => []]);
+echo View::component('error-modal');
+?>
