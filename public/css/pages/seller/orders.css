@@ -153,6 +153,51 @@
     text-overflow: ellipsis;
 }
 
+/* --- Tambahan untuk Preview Produk di Halaman Buyer --- */
+
+.order-item-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.order-item-thumbnail {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.order-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.order-item-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    
+    /* Truncate jika terlalu panjang */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px; /* Batasi lebar agar tidak merusak layout tabel */
+}
+
+.order-item-qty {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.order-item-more {
+    font-size: 0.8rem;
+    color: #777;
+    font-style: italic;
+}
+
 /* Status Badges */
 .status-badge {
     display: inline-flex; 
@@ -179,7 +224,6 @@
 /* Action Buttons */
 .orders-table td:last-child {
     white-space: nowrap;
-    text-align: right;
 }
 
 .orders-table td .btn-detail,
@@ -193,7 +237,6 @@
     font-weight: 600;
     border: none;
     transition: all 0.3s ease;
-    margin-left: 5px; 
 }
 
 .btn-detail {

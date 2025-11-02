@@ -40,14 +40,16 @@ class BuyerOrdersController extends BaseController {
                 'orders' => $orders['data'],
                 'current_page' => $page,
                 'total_pages' => $orders['total_pages'],
-                'status_filter' => $status
+                'status_filter' => $status,
+                'cssFiles' => ['/css/pages/seller/orders.css']
             ]);
             
         } catch (Exception $e) {
             error_log('Error fetching orders: ' . $e->getMessage());
             $this->render('pages/orders/index', [
                 'orders' => [],
-                'error' => 'Failed to load orders'
+                'error' => 'Failed to load orders',
+                'cssFiles' => ['/css/pages/seller/orders.css']
             ]);
         }
     }

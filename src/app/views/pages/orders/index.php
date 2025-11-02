@@ -3,8 +3,6 @@ $currentStatus = $status_filter ?? 'all';
 $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 ?>
 
-<style>@import url('/css/pages/seller/orders.css');</style>
-
 <div class="orders-container">
     <h1 class="mb-4">Pesanan Saya</h1>
 
@@ -27,7 +25,7 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
                     <tr>
                         <th>Order ID</th>
                         <th>Tanggal</th>
-                        <th>Toko</th>
+                        <th>Detail Produk</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -37,16 +35,48 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
                     <?php foreach ($orders as $order): ?>
                         <tr>
                             <td>#<?= View::escape($order['order_id']) ?></td>
+                            
                             <td><?= View::date($order['created_at']) ?></td>
-                            <td><?= View::escape($order['store_name']) ?></td>
+
+                            <td>
+                                <?php if (!empty($order['items'])): ?>
+                                    <?php $firstItem = $order['items'][0]; // Ambil 1 item sebagai preview ?>
+                                    <div class="order-item-preview">
+                                        <img src="/storage/<?= View::escape($firstItem['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                                            alt="<?= View::escape($firstItem['product_name']) ?>" 
+                                            class="order-item-thumbnail">
+
+                                        <div class="order-item-info">
+                                            <div class="order-item-name">
+                                                <?= View::escape($firstItem['product_name']) ?>
+                                            </div>
+                                            <div class="order-item-qty">
+                                                <?= View::escape($firstItem['quantity']) ?> barang
+                                            </div>
+                                            <?php if (count($order['items']) > 1): ?>
+                                                <div class="order-item-more">
+                                                    +<?= (count($order['items']) - 1) ?> produk lainnya
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <span style="color: #888;">(Produk tidak ditemukan)</span>
+                                <?php endif; ?>
+                            </td>
+
                             <td><?= View::currency($order['total_price']) ?></td>
+
                             <td>
                                 <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
-                                    <?= ucfirst(str_replace('_', ' ', $order['status'])) ?>
+                                    <?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
                                 </span>
                             </td>
-                            <td style="text-align: right;">
-                                <button type="button" onclick="window.location='/orders/show?id=<?= $order['order_id'] ?>'" class="btn-detail">Detail</button>
+                            
+                            <td>
+                                <a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn-detail" style="text-decoration: none;">
+                                    View Details
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
