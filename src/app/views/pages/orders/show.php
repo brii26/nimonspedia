@@ -61,7 +61,7 @@ $statusClasses = [
 
             <div class="section mt-4">
                 <h4>Item Pesanan</h4>
-                <div class="table-responsive">
+                <div class="table-responsive-stack">
                     <table class="table">
                         <thead>
                             <tr>
@@ -74,7 +74,7 @@ $statusClasses = [
                         <tbody>
                             <?php foreach ($order['items'] as $item): ?>
                                 <tr>
-                                    <td>
+                                    <td data-label="Produk">
                                         <div class="order-item-preview">
                                             <img src="/storage/<?= View::escape($item['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
                                                  alt="<?= View::escape($item['product_name']) ?>" 
@@ -86,16 +86,19 @@ $statusClasses = [
                                             </div>
                                         </div>
                                     </td>
-                                    <td><?= View::currency($item['price_at_order']) ?></td>
-                                    <td><?= View::escape($item['quantity']) ?></td>
-                                    <td><?= View::currency($item['subtotal']) ?></td>
+                                    
+                                    <td data-label="Harga Satuan"><?= View::currency($item['price_at_order']) ?></td>
+                                    
+                                    <td data-label="Jumlah"><?= View::escape($item['quantity']) ?></td>
+                                    
+                                    <td data-label="Subtotal"><?= View::currency($item['subtotal']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                <td><strong><?= View::currency($order['total_price']) ?></strong></td>
+                                <td data-label="Total"><strong><?= View::currency($order['total_price']) ?></strong></td>
                             </tr>
                         </tfoot>
                     </table>

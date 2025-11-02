@@ -1022,4 +1022,75 @@ footer .copyright {
         align-items: flex-start;
         gap: 0.5rem;
     }
+
+    .table-responsive-stack .table thead {
+        display: none;
+    }
+
+    /* Ubah <tr> jadi block */
+    .table-responsive-stack .table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .table-responsive-stack .table tfoot tr {
+        border: none;
+        box-shadow: none;
+        margin-bottom: 0;
+    }
+
+    /* Ubah <td> jadi block */
+    .table-responsive-stack .table td {
+        display: flex; /* Ganti ke flexbox */
+        justify-content: space-between; /* Label kiri, konten kanan */
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: right; /* Konten rata kanan */
+    }
+    
+    .table-responsive-stack .table tr:last-child td:last-child {
+        border-bottom: none;
+    }
+
+    .table-responsive-stack .table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #5d6d7e;
+        text-align: left;
+    }
+
+    .table-responsive-stack .table td[data-label="Produk"] {
+        display: block;
+        text-align: left;
+    }
+
+    .table-responsive-stack .table td[data-label="Produk"]::before {
+        display: none;
+    }
+    
+    .table-responsive-stack .table tfoot td {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .table-responsive-stack .table tfoot td[colspan="3"] {
+        display: none;
+    }
+    
+    .table-responsive-stack .table tfoot td:not([colspan="3"]) {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .table-responsive-stack .table tfoot td:not([colspan="3"])::before {
+        content: 'Total:';
+        font-weight: 700;
+        color: #2c3e50;
+    }
 }
