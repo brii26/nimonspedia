@@ -171,3 +171,23 @@ CREATE TRIGGER trg_orders_received_update_balance
     AFTER UPDATE ON orders
     FOR EACH ROW
     EXECUTE FUNCTION update_store_balance_on_order_received();
+
+ALTER TABLE products ADD COLUMN search_vector tsvector;
+ALTER TABLE products ADD COLUMN manual_keywords TEXT;
+
+CREATE INDEX idx_products_search_vector ON products USING GIN(search_vector);
+
+CREATE OR REPLACE FUNCTION update_product_search_vector()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.search_vector = 
+        to_tsvector('simple', COALESCE(NEW.product_name, '')) ||
+        to_tsvector('simple', COALESCE(NEW.description, '')) ||
+        to_tsvector('simple', COALESCE(NEW.manual_keywords, ''));
+    RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql';
+
+CREATE TRIGGER trg_update_product_search
+BEFORE INSERT OR UPDATE ON products
+FOR EACH ROW EXECUTE FUNCTION update_product_search_vector();
