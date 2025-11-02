@@ -4,6 +4,7 @@ class BuyerOrdersController extends BaseController {
     private $buyerOrderService;
     private $cartService;
     private $orderRepository;
+    private $authService;
     
     public function __construct() {
         parent::__construct();
@@ -14,6 +15,7 @@ class BuyerOrdersController extends BaseController {
             $this->orderRepository,
             $this->cartService
         );
+        $this->authService = new AuthService();
     }
     
     /**
@@ -124,7 +126,7 @@ class BuyerOrdersController extends BaseController {
             $this->render('pages/orders/checkout', [
                 'cart' => $cartData,
                 'user' => $user,
-                'jsFiles' => ['/js/components/confirm-modal.js']
+                'jsFiles' => ['/js/components/confirm-modal.js', '/js/utils/fetchXhr.js',]
             ]);
             
         } catch (Exception $e) {
@@ -154,6 +156,8 @@ class BuyerOrdersController extends BaseController {
             $order = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
             
             if ($order) {
+                $updatedUser = $this->authService->getUserById($userId);
+                Auth::updateSession($updatedUser);
                 $this->redirect('/orders/show?id=' . $order['order_id']);
                 return;
             } else {

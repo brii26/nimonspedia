@@ -161,15 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!checkoutBtn || !checkoutForm) return;
 
     checkoutBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // <-- Penting! Hentikan submit form
+        e.preventDefault();
         const originalText = checkoutBtn.textContent;
         if (checkoutBtn.disabled) return;
 
-        // --- KODE BARU (Async) ---
-        
-        // 1. Definisikan apa yang terjadi jika user klik "OK"
         const onConfirm = () => {
-            // Tampilkan loading
             if (window.App && typeof window.App.showLoading === 'function') {
                 window.App.showLoading(checkoutBtn, 'Processing...');
             } else {
@@ -183,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Kirim AJAX
             fetchXhr('/checkout', { method: 'POST', body: formData, timeout: 15000 })
             .then(response => {
-                // ... (sisa logika fetchXhr kamu biarkan SAMA) ...
                 const contentType = response.headers.get('content-type') || '';
                 if (contentType.includes('application/json')) {
                     return response.json().then(data => ({ json: data, url: response.url }));
@@ -215,23 +210,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetButton(checkoutBtn, originalText);
             });
             
-            // Hapus listener setelah dipakai
             document.removeEventListener('confirm:ok', onConfirm);
         };
 
-        // 2. Pasang listener
         document.addEventListener('confirm:ok', onConfirm, { once: true });
         
-        // 3. Panggil modal
         if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
             window.AppConfirm.ask('Anda yakin ingin melanjutkan pembayaran? Saldo Anda akan dipotong.');
         } else {
-            // Fallback jika JS modal gagal loading
             if (confirm('Anda yakin ingin melanjutkan pembayaran? Saldo Anda akan dipotong.')) {
                 onConfirm();
             }
         }
-        // --- AKHIR KODE BARU ---
     });
 });
 </script>

@@ -77,6 +77,7 @@ class BuyerOrderService {
             throw new Exception("Gagal membuat pesanan karena kesalahan sistem.");
         }
         $this->cartService->clearCart($buyerId);
+        $_SESSION['cart_count'] = 0;
 
         return $createdOrders[0];
     }
