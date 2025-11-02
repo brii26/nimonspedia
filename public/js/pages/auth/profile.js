@@ -287,15 +287,13 @@ document.addEventListener('DOMContentLoaded', () => {
         changePassword.addEventListener("submit", (e) => {
             e.preventDefault();
             
-            const formData = new FormData(changePassword);
             const resultDiv = document.getElementById("passwordResult");
             const submitButton = document.getElementById('changePasswordButton');
-            
             resultDiv.innerHTML = '';
             
             const isPasswordValid = validatePasswordLive();
-            const newPass = formData.get('new_password');
-            const confirmPass = formData.get('confirm_password');
+            const newPass = newPasswordInput.value;
+            const confirmPass = confirmPasswordInput.value;
 
             if (!isPasswordValid) {
                 resultDiv.innerHTML = '<div class="alert alert-error">Password baru tidak memenuhi kriteria.</div>';
@@ -308,27 +306,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (submitButton) App.hideLoading(submitButton);
                 return; 
             }
+            
+            const submitPasswordAjax = () => {
+                if (submitButton) App.showLoading(submitButton, 'Saving...');
+                
+                const formData = new FormData(changePassword);
+                formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
 
-            formData.append("csrf_token", changePassword.querySelector('input[name="csrf_token"]').value);
+                fetchXhr("profile/password", {
+                    method: "POST",
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+                        changePassword.reset();
+                        validatePasswordLive();
+                    } else {
+                        resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+                    }
+                    reset(submitButton, resultDiv);
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = '<div class="alert alert-error">An error occurred: '+ error +'</div>';
+                    reset(submitButton, resultDiv);
+                });
+            };
+            
+            const onConfirm = () => {
+                submitPasswordAjax();
+                cleanupListeners();
+            };
 
-            fetchXhr("profile/password", {
-                method: "POST",
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-                    changePassword.reset();
-                } else {
-                    resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
-                }
+            const onCancel = () => {
                 reset(submitButton, resultDiv);
-            })
-            .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-error">An error occurred: '+ error +'</div>';
-                reset(submitButton, resultDiv);
-            });
+                cleanupListeners();
+            };
+
+            const cleanupListeners = () => {
+                document.removeEventListener('confirm:ok', onConfirm);
+                document.removeEventListener('confirm:cancel', onCancel);
+            };
+
+            document.addEventListener('confirm:ok', onConfirm, { once: true });
+            document.addEventListener('confirm:cancel', onCancel, { once: true });
+
+            // Panggil modal
+            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                window.AppConfirm.ask('Anda yakin ingin mengubah password?');
+            } else {
+                confirm('Anda yakin ingin mengubah password?') ? onConfirm() : onCancel();
+            }
         });
     }
 });

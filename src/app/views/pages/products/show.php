@@ -4,6 +4,8 @@ $productName = View::escape($product['product_name']);
 $productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'images/product_placeholder.png');
 $storeLink = "/store?id=" . View::escape($product['store_id']);
 $storeName = View::escape($product['store_name']);
+$storeDescription = $product['store_description'] ?? '<i>Toko ini belum memiliki deskripsi.</i>';
+
 $productPrice = $product['price'];
 $stock = (int)$product['stock'];
 $isOutOfStock = $stock <= 0;
@@ -37,6 +39,8 @@ $isOutOfStock = $stock <= 0;
 
             <hr class="info-divider">
 
+            <!-- Deskripsi Toko sudah dipindah ke sidebar -->
+
             <div class="product-description-section">
                 <h2 class="section-title">Deskripsi Produk</h2>
                 <div class="product-description-html">
@@ -55,6 +59,13 @@ $isOutOfStock = $stock <= 0;
                     <div class="store-info-simple">
                         <img src="<?= '/storage/' . View::escape($product['store_logo_path'] ?? 'store_logos/default-store.png') ?>" alt="Logo <?= $storeName ?>" class="store-logo-small">
                         <a href="<?= $storeLink ?>" class="store-link"><?= $storeName ?></a>
+                    </div>
+                    
+                    <!-- ============================================== -->
+                    <!--     DESKRIPSI TOKO DITAMBAHKAN DI SINI     -->
+                    <!-- ============================================== -->
+                    <div class="sidebar-store-description">
+                        <?= $storeDescription ?>
                     </div>
                     
                     <hr class="card-divider">

@@ -176,6 +176,7 @@ class ProductRepository extends BaseRepository {
 			SELECT 
 				p.*,
 				s.store_name,
+                s.store_description,
 				COALESCE(string_agg(c.name, ', ' ORDER BY c.name), '') AS categories
 			FROM 
 				products p
@@ -188,7 +189,7 @@ class ProductRepository extends BaseRepository {
 			WHERE 
 				p.product_id = ? AND p.deleted_at IS NULL
 			GROUP BY
-				p.product_id, s.store_name
+				p.product_id, s.store_name, s.store_logo_path, s.store_description
 		";
         
         return $this->db->selectOne($sql, [$productId]);
