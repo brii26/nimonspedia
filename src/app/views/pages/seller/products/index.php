@@ -6,7 +6,7 @@
     
     <div class="card">
         <div class="card-body">
-            <table class="table">
+            <table class="table" id="products-table">
                 <thead>
                     <tr>
                         <th>Pict</th>
@@ -38,7 +38,7 @@
                                 <form action="/seller/products/delete" method="POST" style="display:inline;">
                                     <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
                                     <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-danger" id="delete-button">Delete</button>
                                 </form>
                             </td>
                         </tr>
