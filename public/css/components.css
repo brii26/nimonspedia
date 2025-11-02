@@ -716,8 +716,7 @@
 /* Konten utama footer, menggunakan grid */
 .footer-content {
     display: grid;
-    /* Buat 3 kolom di desktop, 1 kolom di mobile */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* <-- UBAH BARIS INI */
     gap: 2rem;
     padding-bottom: 2rem;
 }
@@ -818,28 +817,11 @@
     background-color: #cbd2d8;
 }
 
-/* Penyesuaian untuk mobile */
-@media (max-width: 768px) {
-    .footer {
-        padding-top: 2rem;
-    }
-    .footer-content {
-        /* Di mobile, grid akan otomatis jadi 1 kolom */
-        text-align: center;
-    }
-    
-    .footer-section h4::after {
-        /* Pusatkan garis aksen di mobile */
-        left: 50%;
-        transform: translateX(-50%);
-    }
-}
-
 /* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     /* Mobile Navbar */
     .navbar-toggle {
         display: flex;
@@ -1023,5 +1005,21 @@
     .modal-body,
     .modal-footer {
         padding: 1rem;
+    }
+
+    .footer {
+        padding-top: 2rem;
+    }
+
+    .footer-content {
+        /* Di mobile, grid akan otomatis jadi 1 kolom */
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .footer-section h4::after {
+        /* Pusatkan garis aksen di mobile */
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
