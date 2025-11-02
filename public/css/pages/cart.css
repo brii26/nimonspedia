@@ -1,0 +1,165 @@
+/* * CSS untuk cart/index.php
+ * (Tambahkan ke file CSS Anda, misal: /public/css/cart.css)
+ */
+
+/* Card utama untuk setiap toko */
+.cart-store-card {
+    background: #ffffff;
+    border-radius: 8px; /* Mirip halaman pesanan */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Mirip halaman pesanan */
+    margin-bottom: 20px;
+    overflow: hidden; /* Penting agar border-radius berfungsi */
+}
+
+/* Header di dalam card (Nama Toko) */
+.cart-store-header {
+    background-color: #3498DB;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #FFF;
+}
+
+
+/* Tabel di dalam card */
+.cart-items-table {
+    width: 100%;
+    border-collapse: collapse; /* Hapus jarak antar sel */
+}
+
+.cart-items-table th {
+    background-color: #fafafa;
+    padding: 12px 24px;
+    text-align: left;
+    font-size: 0.85rem; /* Perkecil sedikit */
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px; /* Beri sedikit jarak */
+}
+
+.cart-items-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+/* Hapus border di baris terakhir setiap tabel */
+.cart-items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Styling input jumlah */
+.cart-quantity {
+    width: 70px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Tombol Hapus */
+.btn-remove {
+    background-color: #d9534f;
+    border: 0px solid #d9534f;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 10px;
+    transition: background-color 0.2s ease;
+}
+.btn-remove:hover {
+    background-color: #98332f
+}
+
+/* Footer di dalam card (Subtotal Toko) */
+.cart-store-footer {
+    background-color: #fafafa;
+    padding: 16px 24px;
+    text-align: right;
+    border-top: 1px solid #f0f0f0;
+    font-size: 1.1rem;
+}
+
+.cart-store-footer span {
+    color: #555;
+    margin-right: 10px;
+}
+
+/* Card terakhir untuk Total & Tombol Aksi */
+.cart-summary-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.cart-total .grand-total {
+    color: #d9534f; /* Beri warna pada total akhir */
+}
+
+.cart-actions {
+    display: flex;
+    justify-content: flex-end; /* Pindahkan tombol ke kanan */
+    gap: 10px; /* Beri jarak antar tombol */
+    margin-bottom: 10px;
+}
+
+/* Tombol "Lanjutkan Belanja" */
+.btn-continue-shopping {
+    display: inline-block;
+    padding: 12px 20px;
+    border: 1px solid #ddd; /* Border abu-abu */
+    color: white; /* Teks abu-abu */
+    background-color: #3498DB; /* Latar putih */
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-continue-shopping:hover {
+    background-color: #105f93; /* Efek hover */
+    text-decoration: none;
+}
+
+/* Styling umum tombol (sesuaikan dengan style Anda) */
+.btn-update, .btn-checkout {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-update {
+    background-color: #3498DB;
+    color: white;
+}
+
+.btn-update:hover {
+    background-color: #105f93; /* Warna utama */
+    color: white;
+}
+
+.btn-checkout {
+    background-color: #1bb04d; /* Warna utama */
+    color: white;
+}
+
+.btn-checkout:hover {
+    background-color: #177436; /* Warna utama */
+    color: white;
+}
