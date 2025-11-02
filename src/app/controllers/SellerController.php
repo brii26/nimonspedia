@@ -57,6 +57,7 @@ class SellerController extends BaseController {
 		$sortDir = strtoupper($_GET['sortDir'] ?? 'ASC');
 		$page    = (int)($_GET['page'] ?? 1);
 		$perPage = (int)($_GET['perPage'] ?? 8);
+		$stock   = $_GET['stock'] ?? '';
 	
 		$options = [
 			'store_id' => $storeId,
@@ -65,7 +66,8 @@ class SellerController extends BaseController {
 			'page' => max(1, $page),
 			'perPage' => in_array($perPage, [4, 8, 12, 20], true) ? $perPage : 8,
 			'sortBy' => in_array($sortBy, ['name', 'price', 'stock'], true) ? $sortBy : null,
-			'sortDir' => $sortDir === 'DESC' ? 'DESC' : 'ASC'
+			'sortDir' => $sortDir === 'DESC' ? 'DESC' : 'ASC',
+			'stock' => $stock
 		];
 	
 		$productsData = $this->productService->getAllProducts($options);
@@ -109,7 +111,8 @@ class SellerController extends BaseController {
 				'categoryId' => $catId,
 				'sortBy' => $sortBy,
 				'sortDir' => $sortDir,
-				'perPage' => $perPage
+				'perPage' => $perPage,
+				'stock' => $stock
 			],
 			'actionUrl' => '/seller/products',
 			'pageTitle' => 'Your Products',
