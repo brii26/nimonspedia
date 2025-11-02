@@ -24,47 +24,66 @@ class CartService {
 	 * @throws Exception
 	 */
 	public function addToCart(int $productId, int $quantity = 1) {
-		if ($quantity <= 0) {
-			throw new Exception('Quantity must be greater than zero');
-		}
+        if ($quantity <= 0) {
+            throw new ValidationException('Kuantitas harus lebih dari nol');
+        }
 
-		$product = $this->productRepository->findByIdWithDetails($productId);
-		if (!$product) {
-			throw new Exception('Product not found');
-		}
+        $product = $this->productRepository->findByIdWithDetails($productId);
+        if (!$product) {
+            throw new ValidationException('Produk tidak ditemukan');
+        }
 
-		$available = isset($product['stock']) ? (int)$product['stock'] : PHP_INT_MAX;
-		if ($available <= 0) {
-			throw new Exception('Product is out of stock');
-		}
+        $available = isset($product['stock']) ? (int)$product['stock'] : PHP_INT_MAX;
+        if ($available <= 0) {
+            throw new ValidationException('Produk habis');
+        }
 
-		if (Auth::isBuyer()) {
-			$buyerId = Auth::id();
-			$this->mergeSessionToPersistent($buyerId);
-			$qtyToAdd = min($quantity, $available);
-			$this->cartItemRepository->addOrUpdate($buyerId, $productId, $qtyToAdd);
-			return $this->cartItemRepository->countByBuyer($buyerId);
-		}
+        if (Auth::isBuyer()) {
+            $buyerId = Auth::id();
+            $this->mergeSessionToPersistent($buyerId);
 
-		if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-			$_SESSION['cart'] = [];
-		}
+            // --- INI PERBAIKANNYA ---
+            // 1. Cek kuantitas yang sudah ada di keranjang
+            $existingItem = $this->cartItemRepository->whereFirst('buyer_id = ? AND product_id = ?', [$buyerId, $productId]);
+            $existingQty = $existingItem ? (int)$existingItem['quantity'] : 0;
+            
+            // 2. Hitung total baru
+            $newTotalQty = $existingQty + $quantity;
 
-		$existingQty = isset($_SESSION['cart'][$productId]) ? (int)$_SESSION['cart'][$productId]['quantity'] : 0;
-		$newQty = $existingQty + $quantity;
-		if ($newQty > $available) {
-			$newQty = $available;
-		}
+            // 3. Bandingkan dengan stok
+            if ($newTotalQty > $available) {
+                // Lempar error jika stok tidak cukup
+                throw new ValidationException(['stock' => "Stok tidak mencukupi. Sisa stok: {$available}"]);
+            }
+            // --- AKHIR PERBAIKAN ---
 
-		$_SESSION['cart'][$productId] = [
-			'product_id' => $productId,
-			'quantity' => $newQty,
-			'product_name' => $product['product_name'] ?? ($product['name'] ?? ''),
-			'product_price' => $product['price'] ?? 0
-		];
+            // 4. Jika lolos, baru tambahkan ke repo
+            $this->cartItemRepository->addOrUpdate($buyerId, $productId, $quantity);
+            return $this->cartItemRepository->countByBuyer($buyerId);
+        }
 
-		return count($_SESSION['cart']);
-	}
+        // (Logika untuk Guest)
+        if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
+            $_SESSION['cart'] = [];
+        }
+
+        $existingQty = isset($_SESSION['cart'][$productId]) ? (int)$_SESSION['cart'][$productId]['quantity'] : 0;
+        $newQty = $existingQty + $quantity;
+        
+        // Perbaiki pengecekan stok untuk guest juga
+        if ($newQty > $available) {
+            $newQty = $available; // Cap di jumlah stok
+        }
+
+        $_SESSION['cart'][$productId] = [
+            'product_id' => $productId,
+            'quantity' => $newQty,
+            'product_name' => $product['product_name'] ?? ($product['name'] ?? ''),
+            'product_price' => $product['price'] ?? 0
+        ];
+
+        return count($_SESSION['cart']);
+    }
 
 	/**
 	 * Merge session cart into persistent DB cart for buyer.

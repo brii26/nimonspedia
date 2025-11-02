@@ -1,9 +1,5 @@
-// File: public/js/pages/products/show.js
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     
-    // --- (MULAI) Logika API Modal Sukses ---
-    // (Logika ini sekarang bersifat LOKAL untuk halaman show.js)
     const modalNode = document.getElementById('cart-success-modal');
     let lastActiveButton = null; // Untuk menyimpan tombol "+ Keranjang"
 
@@ -12,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
         modalNode.style.display = 'none';
         modalNode.setAttribute('aria-hidden', 'true');
 
-        // FIX BUG "LOADING...": Reset tombol yang tadi loading
         if (lastActiveButton && window.App && typeof App.hideLoading === 'function') {
             App.hideLoading(lastActiveButton);
             lastActiveButton = null; // Bersihkan
@@ -35,6 +30,32 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     // --- (SELESAI) Logika API Modal Sukses ---
 
+    const errorModalNode = document.getElementById('app-error-modal');
+    
+    const closeErrorModal = () => {
+        if (!errorModalNode) return;
+        errorModalNode.style.display = 'none';
+        errorModalNode.setAttribute('aria-hidden', 'true');
+    };
+
+    const showErrorModal = (message) => {
+        if (!errorModalNode) {
+            alert(message); // Fallback jika modal error tidak ada
+            return;
+        }
+        
+        errorModalNode.querySelector('#app-error-message').textContent = message;
+        errorModalNode.style.display = 'flex';
+        errorModalNode.setAttribute('aria-hidden', 'false');
+        
+        // Pasang event listener
+        errorModalNode.querySelector('.app-modal-close').onclick = closeErrorModal;
+        errorModalNode.querySelector('.app-modal-backdrop').onclick = closeErrorModal;
+        errorModalNode.querySelector('.app-modal-ok').onclick = closeErrorModal;
+        
+        errorModalNode.querySelector('.app-modal-ok').focus();
+    };
+
 
     // --- (MULAI) Logika Halaman (Add to Cart) ---
     const cartForm = document.getElementById('addToCartForm');
@@ -52,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (response.ok) return response.json();
-                return response.json().then(err => Promise.reject(err));
+                return response.json().then(err => Promise.reject(err)); 
             })
             .then(result => {
                 const badge = document.querySelector('.cart-badge');
@@ -65,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error adding to cart:', error);
-                alert(error.error || 'Gagal menambahkan item ke keranjang');
+                showErrorModal(error.error || 'Gagal menambahkan item ke keranjang');
                 App.hideLoading(button);
             });
         });

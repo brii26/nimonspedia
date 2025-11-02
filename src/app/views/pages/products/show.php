@@ -111,7 +111,8 @@ $isOutOfStock = $stock <= 0;
 
     </div>
 </div><?php
-    echo View::component('cart-success-modal', [
-        'recommendations' => $recommendations ?? []
+echo View::component('cart-success-modal', [
+    'recommendations' => $recommendations ?? []
 ]);
+echo View::component('error-modal');
 ?>

@@ -31,6 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // (SELESAI) Logika API Modal Sukses
 
+    const errorModalNode = document.getElementById('app-error-modal');
+    
+    const closeErrorModal = () => {
+        if (!errorModalNode) return;
+        errorModalNode.style.display = 'none';
+        errorModalNode.setAttribute('aria-hidden', 'true');
+    };
+
+    const showErrorModal = (message) => {
+        if (!errorModalNode) {
+            alert(message); // Fallback jika modal error tidak ada
+            return;
+        }
+        
+        errorModalNode.querySelector('#app-error-message').textContent = message;
+        errorModalNode.style.display = 'flex';
+        errorModalNode.setAttribute('aria-hidden', 'false');
+        
+        // Pasang event listener
+        errorModalNode.querySelector('.app-modal-close').onclick = closeErrorModal;
+        errorModalNode.querySelector('.app-modal-backdrop').onclick = closeErrorModal;
+        errorModalNode.querySelector('.app-modal-ok').onclick = closeErrorModal;
+        
+        errorModalNode.querySelector('.app-modal-ok').focus();
+    };
+
 
     // (MULAI) Logika Halaman (Add to Cart)
     const listContainer = document.getElementById('product-list-container');
@@ -53,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => {
             if (response.ok) return response.json();
-            return response.json().then(err => Promise.reject(err));
+            return response.json().then(err => Promise.reject(err)); 
         })
         .then(result => {
             const badge = document.querySelector('.cart-badge');
@@ -66,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             console.error('Error adding to cart:', error);
-            alert(error.error || 'Gagal menambahkan ke keranjang');
+            showErrorModal(error.error || 'Gagal menambahkan ke keranjang');
             App.hideLoading(btn);
         });
     });

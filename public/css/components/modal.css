@@ -66,6 +66,10 @@
     color: var(--primary-color, #667eea); /* <-- INI PERBAIKANNYA */
 }
 
+.app-modal-header.error h2 {
+    color: #dc3545;
+}
+
 .app-modal-close {
     background: none; border: none; font-size: 1.75rem;
     color: #adb5bd; cursor: pointer; line-height: 1; padding: 0;

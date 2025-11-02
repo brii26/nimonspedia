@@ -34,13 +34,15 @@ class CartController extends BaseController {
             $quantity = (int)($this->getPost('quantity', 1));
 
             if ($productId <= 0) {
-                return $this->error('Invalid product id', 422);
+                return $this->error('Produk tidak valid', 422);
             }
 
             $count = $this->cartService->addToCart($productId, $quantity);
-            return $this->success('Item added to cart', ['uniqueCount' => $count]);
+            return $this->success('Item berhasil ditambahkan', ['uniqueCount' => $count]);
+
         } catch (ValidationException $ve) {
-            return $this->error($ve->getFirstError(), 422);
+            return $this->error($ve->getFirstError(), 422);;
+        
         } catch (Exception $e) {
             return $this->error($e->getMessage(), 500);
         }
