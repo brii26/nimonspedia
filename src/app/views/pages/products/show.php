@@ -1,7 +1,7 @@
 <?php
 // Ambil data produk
 $productName = View::escape($product['product_name']);
-$productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'images/product_placeholder.png');
+$productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.png');
 $storeLink = "/store?id=" . View::escape($product['store_id']);
 $storeName = View::escape($product['store_name']);
 $storeDescription = $product['store_description'] ?? '<i>Toko ini belum memiliki deskripsi.</i>';

@@ -80,8 +80,24 @@ class ProductRepository extends BaseRepository {
         $params = [];
 
         if (!empty($options['searchTerm'])) {
-            $whereClauses[] = "p.product_name ILIKE ?";
-            $params[] = "%{$options['searchTerm']}%";
+            $terms = preg_split('/\s+/', trim($options['searchTerm']));
+            $processedTerms = [];
+            foreach ($terms as $term) {
+                if (!empty($term)) {
+                    $processedTerms[] = preg_replace('/[()|&!:]/', '', $term);
+                }
+            }
+            if (!empty($processedTerms)) {
+                // 2. Tambahkan operator prefix ':*' HANYA di kata terakhir
+                // Ini akan mengubah "kont" -> "kont:*" (cocok: kontroler, kontak)
+                // "laptop kont" -> "laptop & kont:*"
+                $lastTerm = array_pop($processedTerms);
+                $processedTerms[] = $lastTerm . ':*'; 
+                // 3. Gabungkan dengan '&' (AND)
+                $tsQueryParam = implode(' & ', $processedTerms);
+                $whereClauses[] = "p.search_vector @@ to_tsquery('simple', ?)";
+                $params[] = $tsQueryParam;
+            }
         }
         if (!empty($options['categoryId'])) {
             $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_items WHERE category_id = ?)";
@@ -90,6 +106,15 @@ class ProductRepository extends BaseRepository {
         if (!empty($options['store_id'])) {
             $whereClauses[] = "p.store_id = ?";
             $params[] = $options['store_id'];
+        }
+
+        if (isset($options['minPrice']) && $options['minPrice'] !== '') {
+            $whereClauses[] = "p.price >= ?";
+            $params[] = (int)$options['minPrice'];
+        }
+        if (isset($options['maxPrice']) && $options['maxPrice'] !== '') {
+            $whereClauses[] = "p.price <= ?";
+            $params[] = (int)$options['maxPrice'];
         }
 
         $whereSql = "WHERE " . implode(' AND ', $whereClauses);

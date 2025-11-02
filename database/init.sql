@@ -13,18 +13,18 @@ CREATE TABLE users (
     role user_role NOT NULL,
     name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
-    balance INTEGER DEFAULT 0,
+    balance BIGINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE stores (
     store_id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL UNIQUE,
     store_name VARCHAR(100) NOT NULL UNIQUE,
     store_description TEXT,
     store_logo_path VARCHAR(500),
-    balance INTEGER DEFAULT 0,
+    balance BIGINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -37,11 +37,11 @@ CREATE TABLE categories (
 
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
-    store_id INTEGER NOT NULL,
+    store_id BIGINT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     description TEXT,
-    price INTEGER NOT NULL CHECK (price > 0),
-    stock INTEGER NOT NULL CHECK (stock >= 0),
+    price BIGINT NOT NULL CHECK (price > 0),
+    stock BIGINT NOT NULL CHECK (stock >= 0),
     main_image_path VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -51,8 +51,8 @@ CREATE TABLE products (
 
 -- many-to-many relationship
 CREATE TABLE category_items (
-    category_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
+    category_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
     PRIMARY KEY (category_id, product_id),
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
@@ -60,9 +60,9 @@ CREATE TABLE category_items (
 
 CREATE TABLE cart_items (
     cart_item_id SERIAL PRIMARY KEY,
-    buyer_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    buyer_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity BIGINT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (buyer_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -80,9 +80,9 @@ CREATE TYPE order_status AS ENUM (
 
 CREATE TABLE orders (
     order_id SERIAL PRIMARY KEY,
-    buyer_id INTEGER NOT NULL,
-    store_id INTEGER NOT NULL,
-    total_price INTEGER NOT NULL CHECK (total_price > 0),
+    buyer_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    total_price BIGINT NOT NULL CHECK (total_price > 0),
     shipping_address TEXT NOT NULL,
     status order_status DEFAULT 'waiting_approval',
     reject_reason TEXT NULL,
@@ -96,11 +96,11 @@ CREATE TABLE orders (
 
 CREATE TABLE order_items (
     order_item_id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL CHECK (quantity > 0),
-    price_at_order INTEGER NOT NULL CHECK (price_at_order > 0),
-    subtotal INTEGER NOT NULL CHECK (subtotal > 0),
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity BIGINT NOT NULL CHECK (quantity > 0),
+    price_at_order BIGINT NOT NULL CHECK (price_at_order > 0),
+    subtotal BIGINT NOT NULL CHECK (subtotal > 0),
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT
 );

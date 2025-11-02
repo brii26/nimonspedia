@@ -34,7 +34,7 @@
                             <tr class="cart-item">
                                 <td>
                                     <div class="cart-product">
-                                        <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'images/product_placeholder.png') ?>" 
+                                        <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.png') ?>" 
                                                 alt="<?= View::escape($it['product_name']) ?>" 
                                                 class="product-image">
                                         <div class="cart-product-info">

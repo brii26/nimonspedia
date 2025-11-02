@@ -31,18 +31,56 @@ class AuthService {
 
         $userId = $this->userRepository->createUser($userData);
 
-		if ($data['role'] === 'SELLER') {
-			$storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
-			$storeDesc = $data['store_description'] ?? null;
-			$storeLogo = $_FILES['store_logo'];
-			$storeLogoPath = FileService::saveUploadedImage($storeLogo,'store_logo') ?? null;
-			$this->storeRepository->createStore($userId, $storeName, $storeDesc, $storeLogoPath);
-		}
-
-		if (!$userId) {
-            throw new Exception('Failed to create account');
+		$storeName = null;
+        if ($data['role'] === 'SELLER') {
+            $storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
+            if (empty(trim($storeName))) {
+                throw new Exception('Store name cannot be empty');
+            }
+            if ($this->storeRepository->findByName($storeName)) {
+                throw new Exception('Store name is already taken');
+            }
         }
+
+        $db = Database::getInstance();
         
+        try {
+            $db->beginTransaction();
+
+            $userData = [
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'role' => $data['role'],
+                'address' => $data['address']
+            ];
+
+            $userId = $this->userRepository->createUser($userData);
+            if (!$userId) {
+                throw new Exception('Failed to create user account');
+            }
+
+            // Jika user adalah SELLER, buat juga tokonya
+            if ($data['role'] === 'SELLER') {
+                $storeDesc = $data['store_description'] ?? null;
+                $storeLogo = $_FILES['store_logo'];
+                $storeLogoPath = FileService::saveUploadedImage($storeLogo,'store_logo') ?? null;
+                
+                // Kita gunakan $storeName yang sudah divalidasi di atas
+                $storeId = $this->storeRepository->createStore($userId, $storeName, $storeDesc, $storeLogoPath);
+                
+                if (!$storeId) {
+                    throw new Exception('Failed to create store for the user');
+                }
+            }
+
+            $db->commit();
+            return $this->userRepository->find($userId);
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+
         // Return created user
         return $this->userRepository->find($userId);
     }
