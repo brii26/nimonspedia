@@ -1,18 +1,20 @@
-// /public/js/pages/cart/cart-page.js
+// /public/js/pages/cart/index.js (atau cart-page.js)
 
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const cartForm = document.getElementById('cartForm');
     if (!cartForm) {
-        return;
+        return; // Keluar jika bukan halaman keranjang
     }
 
+    // --- Ambil Elemen ---
     const updateCartButton = document.getElementById('updateCart');
     const removeButtons = document.querySelectorAll('.btn-remove');
-    const cartBadge = document.querySelector('.cart-badge'); // Untuk helper
+    const cartBadge = document.querySelector('.cart-badge');
     const csrfToken = cartForm.dataset.csrfToken;
     
+    // Tampilkan error server jika ada
     const serverAlert = document.querySelector('.alert.alert-danger');
     if (serverAlert && serverAlert.textContent.trim() && window.App) {
         window.App.showAlert(serverAlert.textContent.trim(), 'error');
@@ -22,15 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * Helper function untuk meng-update badge di navbar
      */
     async function updateCartBadge() {
-        // PERBAIKAN: Gunakan window.fetchXhr
         if (!window.fetchXhr) return; 
         try {
-            // PERBAIKAN: Gunakan window.fetchXhr
             const response = await window.fetchXhr('/api/cart/count'); 
             if (!response.ok) return;
-
             const data = await response.json();
-            
             if (cartBadge && data.unique > 0) {
                 cartBadge.textContent = data.unique;
                 cartBadge.style.display = 'flex'; 
@@ -42,16 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
+    /**
+     * Logika Tombol Update Keranjang
+     */
     if (updateCartButton) {
         updateCartButton.addEventListener('click', async function() {
-            
-            // PERBAIKAN: Bungkus panggilan App dengan aman
             if (window.App) {
                 window.App.showLoading(this, 'Updating...');
             } else {
                 this.disabled = true;
-                this.textContent = 'Updating...';
             }
             
             const items = document.querySelectorAll('.cart-item');
@@ -68,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 updatePromises.push(
-                    // PERBAIKAN: Gunakan window.fetchXhr
                     window.fetchXhr('/cart/update', {
                         method: 'POST',
                         body: data
@@ -81,8 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.reload(); 
             } catch (error) {
                 console.error('Gagal mengupdate keranjang:', error);
-                
-                // PERBAIKAN: Bungkus panggilan App dengan aman
                 if (window.App) {
                     window.App.showAlert('Terjadi kesalahan saat mengupdate keranjang.', 'error');
                 } else {
@@ -95,9 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (removeButtons.length > 0) {
         removeButtons.forEach(button => {
-            button.addEventListener('click', async function() {
-                const productId = this.dataset.productId;
+            const onConfirm = async () => {
+                const productId = button.dataset.productId;
                 const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
+                const originalButtonText = button.textContent || 'Hapus';
+
+                if (window.App) {
+                    window.App.showLoading(button, 'Menghapus...');
+                } else {
+                    button.disabled = true;
+                }
 
                 const data = new URLSearchParams({
                     csrf_token: csrfToken,
@@ -105,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 try {
-                    // PERBAIKAN: Gunakan window.fetchXhr
                     const response = await window.fetchXhr('/cart/remove', {
                         method: 'POST',
                         body: data
@@ -113,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (response.ok) {
                         if (row) row.remove();
-                        
                         if (document.querySelectorAll('.cart-item').length === 0) {
                             window.location.reload();
                         } else {
@@ -121,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else {
                         const errData = await response.json();
-                        // PERBAIKAN: Bungkus panggilan App dengan aman
                         if (window.App) {
                             window.App.showAlert(errData.error || 'Gagal menghapus item', 'error');
                         } else {
@@ -130,12 +128,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } catch (error) {
                     console.error('Error menghapus item:', error);
-                    // PERBAIKAN: Bungkus panggilan App dengan aman
                     if (window.App) {
                         window.App.showAlert('Gagal menghapus item dari keranjang.', 'error');
                     } else {
                         alert('Gagal menghapus item dari keranjang.');
                     }
+                } finally {
+                    // Kembalikan tombol ke keadaan semula
+                    if (window.App) {
+                        window.App.hideLoading(button, originalButtonText);
+                    } else {
+                        button.disabled = false;
+                    }
+                }
+            };
+            
+            const onCancel = () => {};
+
+            // Pasang event listener
+            button.addEventListener('click', function() {
+                const message = 'Apakah Anda yakin ingin menghapus item ini dari keranjang?';
+
+                if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                    window.AppConfirm.ask(message, onConfirm, onCancel);
+                    
+                } else {
+                    confirm(message) ? onConfirm() : onCancel();
                 }
             });
         });
