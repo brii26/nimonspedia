@@ -47,25 +47,22 @@
                                     </div>
                                 </div>
 
-                                <div class="row mb-3 align-items-center">
-                                    <label for="category_id" class="col-md-3 col-form-label">Category</label>
-                                    <div class="col-md-9">
-                                        <select id="category_id" name="category_id" class="form-select" required>
-                                            <option value="">Select Category</option>
-                                            <?php
-                                            $selectedValue = (string)($old['category_id']
-                                                ?? (isset($assigned_category_ids) ? (string)($assigned_category_ids[0] ?? '') : '')
-                                                ?? '');
-                                            foreach ($categories as $cat):
-                                            ?>
-                                                <option value="<?= View::escape($cat['category_id']) ?>"
-                                                    <?= $selectedValue === (string)$cat['category_id'] ? 'selected' : '' ?>>
-                                                    <?= View::escape($cat['name']) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
+								<div class="row mb-3 align-items-center">
+									<label for="category_id" class="col-md-3 col-form-label">Category</label>
+									<div class="col-md-9">
+										<select id="category_id" name="category_ids[]" class="form-select" required multiple>
+											<?php
+											$selectedValues = $old['category_ids'] ?? [];
+											foreach ($categories as $cat):
+											?>
+												<option value="<?= View::escape($cat['category_id']) ?>"
+													<?= in_array($cat['category_id'], $selectedValues) ? 'selected' : '' ?>>
+													<?= View::escape($cat['name']) ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+								</div>
 
 								<div class="row mb-3 align-items-center">
 								<label for="input_file" class="col-md-3 col-form-label">Product Image</label>

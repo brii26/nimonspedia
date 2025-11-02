@@ -1,12 +1,12 @@
 <?php
-	$items       = $productsData['data'] ?? [];
-	$hasItems    = !empty($items);
-	$current     = (int)($productsData['current_page'] ?? 1);
-	$totalPages  = (int)($productsData['total_pages'] ?? 1);
-	$searchVal   = $_GET['searchTerm'] ?? '';
-	$catVal      = $_GET['categoryId'] ?? '';
-	$sortVal     = $_GET['sortBy'] ?? '';
-	$perPageVal  = (int)($_GET['perPage'] ?? 8);
+    $items       = $productsData['data'] ?? [];
+    $hasItems    = !empty($items);
+    $current     = (int)($productsData['current_page'] ?? 1);
+    $totalPages  = (int)($productsData['total_pages'] ?? 1);
+    $searchVal   = $_GET['searchTerm'] ?? '';
+    $catVal      = $_GET['categoryId'] ?? '';
+    $sortVal     = $_GET['sortBy'] ?? '';
+    $perPageVal  = (int)($_GET['perPage'] ?? 8);
 ?>
 
 <div class="seller-product-page">
@@ -62,7 +62,8 @@
         </select>
       </div>
       
-      <button type="submit" class="btn btn-primary btn-apply-filters">Apply Filters</button>
+      <button type="button" id="reset-filter-btn" class="btn btn-outline-secondary">Reset Filter</button>
+    
     </form>
   </aside>
 

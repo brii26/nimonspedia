@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
 		const MAX_SIZE_BYTES = 2 * 1024 * 1024;
+
+		if (typeof TomSelect !== 'undefined') {
+            new TomSelect('#category_id', {
+                plugins: ['remove_button'],
+                placeholder: 'Select categories...',
+                create: false 
+            });
+        } else {
+            console.error('TomSelect library is not loaded.');
+        }
 	
 		const quill = createEditor('#editor', 'product-description');
 		const form  = document.querySelector('form[action^="/seller/products/update"]') || document.getElementById('product-form');

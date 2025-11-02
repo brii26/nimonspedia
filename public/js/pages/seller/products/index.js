@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!form) return;
         const params = new URLSearchParams(new FormData(form));
         params.set('page', String(page));
-        params.set('page', String(page)); 
         return `${form.action}?${params.toString()}`;
     };
 
@@ -91,6 +90,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (paginationLink) {
             e.preventDefault();
             fetchAndSwap(paginationLink.getAttribute('href'));
+            return;
+        }
+
+        const resetButton = e.target.closest('#reset-filter-btn');
+        if (resetButton) {
+            e.preventDefault();
+            
+            const searchInput = pageContainer.querySelector('#search-input');
+            const categoryInput = pageContainer.querySelector('#filter-category');
+            const sortInput = pageContainer.querySelector('#sort-select');
+            const perPageInput = pageContainer.querySelector('#filter-perPage');
+
+            if (searchInput) searchInput.value = '';
+            if (categoryInput) categoryInput.value = '';
+            if (sortInput) sortInput.value = '';
+            if (perPageInput) perPageInput.value = '8';
+
+            fetchAndSwap(urlFromForm(1));
             return;
         }
 
@@ -126,4 +143,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
