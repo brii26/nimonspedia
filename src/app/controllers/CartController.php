@@ -17,7 +17,13 @@ class CartController extends BaseController {
     public function index() {
         try {
             $cart = $this->cartService->getCart();
-            $this->render('pages/cart/index', ['cart' => $cart]);
+            $this->render('pages/cart/index', [
+                'cart' => $cart, 
+                'jsFiles' => [
+                '/js/utils/fetchXhr.js',
+                '/js/pages/cart/index.js'
+                ],
+            ]);
         } catch (Exception $e) {
             error_log('Cart index error: ' . $e->getMessage());
             $this->render('pages/cart/index', ['cart' => ['items' => [], 'total' => 0], 'error' => $e->getMessage()]);
