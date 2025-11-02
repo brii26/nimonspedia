@@ -1,27 +1,3 @@
-<?php
-$items = $cart['items'] ?? [];
-$total = $cart['total'] ?? 0;
-
-// --- 1. LOGIKA PENGELOMPOKAN (GROUPING LOGIC) ---
-$groupedCart = [];
-foreach ($items as $it) {
-    $storeName = $it['store_name'] ?? 'Toko Tidak Dikenal';
-    $storeId = $it['store_id'] ?? 0;
-    
-    if (!isset($groupedCart[$storeName])) {
-        $groupedCart[$storeName] = [
-            'store_id' => $storeId,
-            'items' => [],
-            'subtotal' => 0
-        ];
-    }
-    
-    $groupedCart[$storeName]['items'][] = $it;
-    $itemSubtotal = $it['subtotal'] ?? ((int)($it['product_price'] ?? 0) * (int)($it['quantity'] ?? 0));
-    $groupedCart[$storeName]['subtotal'] += $itemSubtotal;
-}
-?>
-
 <div class="container">
     <h1 class="mb-4">Keranjang Belanja</h1>
 

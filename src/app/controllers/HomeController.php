@@ -80,7 +80,7 @@ class HomeController extends BaseController {
         ];
 
         $productsData = $this->productService->getAllProducts($filters);
-        $categories = $this->categoryService->getForDropdown();
+        $categories = $this->categoryService->getAllCategories();
         
         // Cek apakah ini AJAX request?
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 

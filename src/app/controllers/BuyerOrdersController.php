@@ -153,10 +153,24 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
+            $items = $cartData['items'] ?? [];
+            $groupedCart = $this->cartService->groupCartItemsByStore($items);
+            $grandTotal = $cartData['total'] ?? 0;
+            $userBalance = $user['balance'] ?? 0;
+            $sisaSaldo = $userBalance - $grandTotal;
             $this->render('pages/orders/checkout', [
-                'cart' => $cartData,
-                'user' => $user,
-                'jsFiles' => ['/js/components/confirm-modal.js', '/js/utils/fetchXhr.js',]
+                'groupedCart' => $groupedCart,
+                'grandTotal'  => $grandTotal,
+                'user'        => $user,
+                'sisaSaldo'   => $sisaSaldo,
+                'csrf_token'  => Auth::csrfToken(),
+                
+                'cssFiles' => ['/css/pages/checkout.css'], 
+                'jsFiles' => [
+                    '/js/utils/fetchXhr.js',
+                    '/js/components/confirm-modal.js', 
+                    '/js/pages/orders/checkout.js'
+                ]
             ]);
             
         } catch (Exception $e) {

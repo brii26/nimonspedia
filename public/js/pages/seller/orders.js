@@ -1,19 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // === BAGIAN 1: LOGIKA AJAX UNTUK FILTER/PAGINASI ===
     const container = document.querySelector('.orders-container');
     const orderListContainer = document.getElementById('seller-order-list-container'); 
 
-    /**
-     * Fungsi inti untuk fetch order list via AJAX
-     * (Sekarang menangani error-nya sendiri)
-     */
     const fetchOrders = (url) => {
-        if (!orderListContainer) return; // Guard clause
+        if (!orderListContainer) return; 
         
         orderListContainer.style.opacity = '0.5';
-
-        // fetchXhr mengembalikan promise
         return fetchXhr(url, {
             method: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -25,12 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 history.pushState(null, '', url); 
                 updateActiveTab(url);
             } else {
-                // Jika server merespon tapi tidak ada HTML
                 throw new Error('Invalid response from server.');
             }
         })
         .catch(error => {
-            // Tangani error fetchOrders DI SINI, jangan di-throw
             console.error('Error fetching orders:', error);
             if (orderListContainer) {
                 orderListContainer.innerHTML = '<div class="empty-state"><p>Gagal memuat daftar pesanan. Coba lagi.</p></div>';
@@ -68,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners untuk Navigasi ---
     if (container && orderListContainer) {
-        // 1. Klik pada Status Tabs
         container.addEventListener('click', (e) => {
             const tab = e.target.closest('.status-tabs .tab');
             if (tab) {
@@ -77,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 2. Klik pada Pagination Links
         orderListContainer.addEventListener('click', (e) => {
             const paginationLink = e.target.closest('.pagination a');
             if (paginationLink) {
@@ -86,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 3. Submit pada Search Form
         const searchForm = document.querySelector('.search-form');
         if (searchForm) {
             searchForm.addEventListener('submit', (e) => {
@@ -101,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === BAGIAN 2: LOGIKA AKSI (APPROVE, REJECT, DETAIL) ===
+    // == (APPROVE, REJECT, DETAIL) ===
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                       document.querySelector('input[name="csrf_token"]')?.value;
 
@@ -115,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.style.display = 'none';
     };
     
-    // Helper untuk nl2br di JS
     const nl2br = (str) => {
         if (typeof str !== 'string' || !str) return '';
         return str.replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
@@ -170,9 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    /**
-     * [PERBAIKAN] Fungsi Approve dengan promise chain yang benar
-     */
     window.approveOrder = (orderId) => {
         const onConfirm = () => {
             const formData = new URLSearchParams();
@@ -188,20 +172,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    // SUKSES: Tampilkan toast
                     App.showAlert('Order successfully approved!', 'success');
                     
-                    // Promise 2: Refresh list (fire-and-forget)
-                    // Kita tidak me-return promise ini, sehingga error
-                    // di sini tidak akan memicu .catch() di bawah.
                     fetchOrders(window.location.href); 
                 } else {
-                    // Jika backend merespon { success: false }
                     AppError.show(result.message || 'Gagal menyetujui pesanan.');
                 }
             })
             .catch(err => {
-                // Catch HANYA untuk error dari fetch 'approve'
                 console.error('Approve order error:', err);
                 AppError.show('Terjadi kesalahan jaringan saat menyetujui.');
             });
@@ -211,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('confirm:ok', onConfirm, { once: true });
     };
 
-    // ... (Sisa fungsi showRejectModal dan showDeliveryModal tetap sama) ...
     window.showRejectModal = (orderId) => {
         const orderIdInput = document.getElementById('reject-order-id');
         if (orderIdInput) orderIdInput.value = orderId;
@@ -226,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('delivery-time').focus();
     };
 
-    // ... (Sisa event listener untuk form reject dan delivery tetap sama) ...
     const rejectForm = document.getElementById('reject-form');
     if (rejectForm) {
         rejectForm.addEventListener('submit', function (e) {
@@ -246,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result.success) {
                     closeModal('reject-popup');
                     App.showAlert('Order successfully rejected.', 'success');
-                    fetchOrders(window.location.href); // Refresh list
+                    fetchOrders(window.location.href); 
                     rejectForm.reset();
                 } else {
                     App.showAlert(result.message || 'Failed to reject order.', 'error');
@@ -278,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result.success) {
                     closeModal('delivery-popup');
                     App.showAlert('Delivery time set.', 'success');
-                    fetchOrders(window.location.href); // Refresh list
+                    fetchOrders(window.location.href); 
                     deliveryForm.reset();
                 } else {
                     App.showAlert(result.message || 'Failed to set delivery time.', 'error');

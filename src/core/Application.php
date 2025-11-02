@@ -93,14 +93,16 @@ class Application {
         // Order routes (Track 2 & 3)
         $this->router->get('/orders', 'BuyerOrdersController@index');
         $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 
-        $this->router->post('/checkout', 'BuyerOrdersController@checkout');
+        $this->router->post('/orders/checkout', 'BuyerOrdersController@checkout');
         $this->router->get('/orders/show', 'BuyerOrdersController@show');
         $this->router->post('/orders/confirm', 'BuyerOrdersController@confirmReceived');
         
         // Seller routes (Track 3 - TODO)
         $this->router->get('/seller/products', 'SellerController@listProducts');
+		$this->router->post('/seller/products/filter', 'SellerController@filter');
         $this->router->get('/seller/products/create', 'SellerController@createProductForm');
         $this->router->post('/seller/products/store', 'SellerController@storeProduct');
+		$this->router->get('/seller/products/store', 'SellerController@storeProduct');
 		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
 		$this->router->get('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/update', 'SellerController@updateProduct');

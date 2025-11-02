@@ -1,69 +1,75 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const backButton = document.querySelector('.go-back');
-    if (backButton) {
-        backButton.addEventListener('click', function () {
-            window.location.href = '/';
-        });
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('seller-product-list-container');
+    if (!container) return;
 
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get('status');
+    const back = container.querySelector('.go-back') || document.querySelector('.go-back');
+    if (back) back.addEventListener('click', () => (window.location.href = '/'));
 
-    if (status === 'product_created') {
-        App.showAlert('Product created successfully!', 'success');
-    } else if (status === 'product_updated') {
-        App.showAlert('Product updated successfully!', 'success');
-    } else if (status === 'product_deleted') {
-        App.showAlert('Product deleted successfully!', 'success');
-    }
-
+    const qp = new URLSearchParams(window.location.search);
+    const status = qp.get('status');
+    if (status === 'product_created') App.showAlert('Product created successfully!', 'success');
+    else if (status === 'product_updated') App.showAlert('Product updated successfully!', 'success');
+    else if (status === 'product_deleted') App.showAlert('Product deleted successfully!', 'success');
     if (status) {
-        params.delete('status');
-        const newUrl =
-            window.location.pathname +
-            (params.toString() ? '?' + params.toString() : '') +
-            window.location.hash;
-        history.replaceState(null, '', newUrl);
+        qp.delete('status');
+        history.replaceState(
+            null,
+            '',
+            window.location.pathname + (qp.toString() ? '?' + qp.toString() : '')
+        );
     }
 
-    let lastSubmitter = null;
+    const fetchAndSwap = (url) => {
+        container.style.opacity = '0.5';
+        return fetchXhr(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then((r) => r.text())
+            .then((t) => {
+                let html = '';
+                try {
+                    const payload = JSON.parse(t);
+                    html = payload?.html || '';
+                } catch {
+                    html = t;
+                }
+                if (html) {
+                    container.innerHTML = html;
+                    history.pushState(null, '', url);
+                }
+            })
+            .finally(() => {
+                container.style.opacity = '1';
+            });
+    };
 
-    document.addEventListener('click', function (e) {
-        const btn = document.getElementById('delete-button');
-        if (btn) lastSubmitter = btn;
+    // Build URL
+    const urlFromForm = (page = 1) => {
+        const form = container.querySelector('#product-filter-form');
+        const params = new URLSearchParams(new FormData(form));
+        params.set('page', String(page));
+        return `${form.action}?${params.toString()}`;
+    };
+
+    // Pagination
+    container.addEventListener('click', (e) => {
+        const a = e.target.closest('#products-pagination a');
+        if (!a) return;
+        e.preventDefault();
+        fetchAndSwap(a.getAttribute('href'));
     });
 
-    document.addEventListener('submit', (e) => {
-        const form = e.target;
-        if (!form.matches('form[action^="/seller/products/delete"]')) return;
+    // Filter & sort
+    const debouncedReload = App.debounce
+        ? App.debounce(() => fetchAndSwap(urlFromForm(1)), 350)
+        : () => fetchAndSwap(urlFromForm(1));
 
-        e.preventDefault();
+    container.addEventListener('input', (e) => {
+        if (e.target && e.target.id === 'search-input') debouncedReload();
+    });
 
-        const btn = document.getElementById('delete-button');
-
-        const cleanup = () => {
-            document.removeEventListener('confirm:ok', onOk);
-            document.removeEventListener('confirm:cancel', onCancel);
-        };
-
-        const onOk = () => {
-            if (btn) App.showLoading(btn, 'Deleting...');
-            cleanup();
-            form.submit();
-        };
-
-        const onCancel = () => {
-            if (btn) App.hideLoading(btn);
-            cleanup();
-        };
-
-        document.addEventListener('confirm:ok', onOk, { once: true });
-        document.addEventListener('confirm:cancel', onCancel, { once: true });
-
-        if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-            window.AppConfirm.ask('Delete this product?');
-        } else {
-            window.confirm('Delete this product?') ? onOk() : onCancel();
+    container.addEventListener('change', (e) => {
+        const id = e.target && e.target.id;
+        if (id === 'filter-category' || id === 'sort-select' || id === 'filter-perPage') {
+            fetchAndSwap(urlFromForm(1));
         }
     });
 });
