@@ -31,23 +31,32 @@ class SellerOrdersController extends BaseController {
         
         $ordersData = $this->sellerOrderService->getOrders($storeId, $status, $search, $page);
 
-		$jsFiles = [
-			'/js/utils/fetchXHR.js',
-			'/js/pages/seller/orders.js'
-		];
-		$cssFiles = [
-			'/css/pages/seller/orders.css'
-		];
-        
-        $this->render('pages/seller/orders/index', array_merge([
+        $viewData = [
             'ordersData' => $ordersData,
             'currentStatus' => $status,
             'search' => $search,
-            'currentPage' => $page
-		], [
-			'jsFiles' => $jsFiles,
-			'cssFiles' => $cssFiles
-		]));
+            'currentPage' => $page,
+            'totalPages' => $ordersData['totalPages'] ?? 1 // Penting untuk pagination
+        ];
+        
+        if ($this->isAjax()) {
+            $html = View::render('components/seller-order-list', $viewData);
+            $this->json(['html' => $html]);
+            return;
+        }
+
+        $jsFiles = [
+            '/js/utils/fetchXhr.js',
+            '/js/pages/seller/orders.js'
+        ];
+        $cssFiles = [
+            '/css/pages/seller/orders.css'
+        ];
+        
+        $this->render('pages/seller/orders/index', array_merge($viewData, [
+            'jsFiles' => $jsFiles,
+            'cssFiles' => $cssFiles
+        ]));
     }
 
     public function showOrder() {
