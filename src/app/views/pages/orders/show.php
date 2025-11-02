@@ -26,9 +26,14 @@ $statusClasses = [
                         <p><strong>Tanggal Pesan:</strong> <?= View::date($order['created_at']) ?></p>
                         <p><strong>Total:</strong> <?= View::currency($order['total_price']) ?></p>
                         <p><strong>Status:</strong> <?= ucfirst(str_replace('_', ' ', $order['status'])) ?></p>
-                        <?php if (!empty($order['reject_reason']) && $order['status'] === 'rejected'): ?>
-                            <p><strong>Alasan Penolakan:</strong> <?= View::escape($order['reject_reason']) ?></p>
-                            <p><strong>Jumlah Dikembalikan:</strong> <?= View::currency($order['total_price']) ?></p>
+                        <?php if ($order['status'] === 'rejected'): ?>
+                            <?php if (!empty($order['reject_reason'])): ?>
+                                <p><strong>Alasan Penolakan:</strong> <?= View::escape($order['reject_reason']) ?></p>
+                            <?php endif; ?>
+
+                            <p class="text-danger"><strong>Dana Dikembalikan:</strong> 
+                                <span style="font-weight: bold;"><?= View::currency($order['total_price']) ?></span>
+                            </p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -70,9 +75,16 @@ $statusClasses = [
                             <?php foreach ($order['items'] as $item): ?>
                                 <tr>
                                     <td>
-                                        <a href="/product?id=<?= $item['product_id'] ?>">
-                                            <?= View::escape($item['product_name']) ?>
-                                        </a>
+                                        <div class="order-item-preview">
+                                            <img src="/storage/<?= View::escape($item['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                                                 alt="<?= View::escape($item['product_name']) ?>" 
+                                                 class="order-item-thumbnail">
+                                            <div class="order-item-info">
+                                                <a href="/product?id=<?= $item['product_id'] ?>" class="order-item-name" style="text-decoration: none; color: #34495e;">
+                                                    <?= View::escape($item['product_name']) ?>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td><?= View::currency($item['price_at_order']) ?></td>
                                     <td><?= View::escape($item['quantity']) ?></td>

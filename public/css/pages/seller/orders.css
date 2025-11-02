@@ -854,3 +854,172 @@ footer .copyright {
     flex: initial;
     min-width: auto; 
 }
+
+/* ==============================================
+   CSS UNTUK HALAMAN ORDER DETAIL (show.php)
+   Tambahkan ini di akhir file seller/orders.css
+   ============================================== */
+
+/* Card utama di halaman detail */
+.orders-container .card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ecf0f1;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* Header card (Judul dan status badge) */
+.orders-container .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background-color: #f5f7f9;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.orders-container .card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #34495e;
+}
+
+/* Body card (konten utama) */
+.orders-container .card-body {
+    padding: 1.5rem;
+}
+
+/* Layout 2 kolom untuk info pesanan & toko */
+.order-detail .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+}
+
+.order-detail .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+/* Box untuk setiap section info */
+.order-detail .section {
+    margin-bottom: 1.5rem;
+}
+
+.order-detail .section h4 {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.order-detail .section p {
+    font-size: 0.95rem;
+    color: #34495e;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.6;
+}
+
+.order-detail .section p strong {
+    color: #2c3e50;
+    min-width: 130px;
+    display: inline-block;
+}
+
+/* Styling untuk tabel item pesanan */
+.order-detail .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.order-detail .table th,
+.order-detail .table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.order-detail .table thead th {
+    background-color: #f5f7f9;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 0.9rem;
+}
+
+.order-detail .table tbody td {
+    font-size: 0.95rem;
+    color: #34495e;
+}
+
+.order-detail .table tfoot td {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.order-detail .table .text-end {
+    text-align: right;
+}
+
+/* Tombol Konfirmasi Terima Barang */
+.order-detail .btn-approve {
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: #2ecc71;
+    color: white;
+    text-decoration: none;
+}
+.order-detail .btn-approve:hover {
+    background-color: #27ae60;
+}
+
+/* Tombol Kembali ke Daftar Pesanan */
+.text-center {
+    text-align: center;
+}
+
+.btn-outline-primary {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #3498db;
+    background-color: transparent;
+    border: 1px solid #3498db;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+/* Responsive untuk layar kecil */
+@media (max-width: 768px) {
+    .order-detail .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .orders-container .card-body {
+        padding: 1rem;
+    }
+
+    .orders-container .card-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

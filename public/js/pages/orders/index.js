@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             if (data.html) {
                 orderListContainer.innerHTML = data.html;
-                
                 history.pushState(null, '', url);
+                updateActiveTab(url); 
             }
         })
         .catch(error => {
@@ -27,6 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .finally(() => {
             orderListContainer.style.opacity = '1';
+        });
+    };
+
+    const updateActiveTab = (url) => {
+        const urlParams = new URL(url, window.location.origin).searchParams;
+        const newStatus = urlParams.get('status') || 'all';
+        
+        const allTabs = container.querySelectorAll('.status-tabs .tab');
+        
+        allTabs.forEach(tab => {
+            const tabUrl = new URL(tab.href);
+            const tabStatus = tabUrl.searchParams.get('status') || 'all';
+            
+            if (tabStatus === newStatus) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
         });
     };
 
