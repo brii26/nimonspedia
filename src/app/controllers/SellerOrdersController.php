@@ -33,7 +33,8 @@ class SellerOrdersController extends BaseController {
 
 		$jsFiles = [
 			'/js/utils/fetchXHR.js',
-			'/js/pages/seller/orders.js'
+			'/js/pages/seller/orders.js',
+			'/js/utils/quill-setup.js'
 		];
 		$cssFiles = [
 			'/css/pages/seller/orders.css'

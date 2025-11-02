@@ -177,7 +177,6 @@ window.addEventListener('unhandledrejection', function(event) {
             closeConfirmModal();
         });
 
-        // Definisikan API Global
         window.AppConfirm = { ask: openConfirmModal };
     }
 
@@ -202,7 +201,6 @@ window.addEventListener('unhandledrejection', function(event) {
             successModalNode.querySelector('.app-modal-cancel').onclick = closeSuccessModal;
             successModalNode.querySelector('a.btn-primary').focus();
         };
-        // Definisikan API Global
         window.AppCartSuccess = { show: showSuccessModal };
     }
 
@@ -222,7 +220,6 @@ window.addEventListener('unhandledrejection', function(event) {
             errorModalNode.querySelector('.app-modal-ok').onclick = closeErrorModal;
             errorModalNode.querySelector('.app-modal-ok').focus();
         };
-        // Definisikan API Global
         window.AppError = { show: showErrorModal };
     }
 
