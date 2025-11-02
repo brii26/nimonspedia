@@ -119,7 +119,7 @@ class BuyerOrdersController extends BaseController {
         $this->verifyCsrf();
 
         try {
-            $orderId = (int)($this->getBody('order_id'));
+            $orderId = (int)($this->getPost('order_id'));
             if (!$orderId) {
                 $this->redirect('/orders?error=' . urlencode('Order tidak valid'));
                 return;
