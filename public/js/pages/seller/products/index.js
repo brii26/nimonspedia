@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('seller-product-list-container');
-    if (!container) return;
-
-    const back = container.querySelector('.go-back') || document.querySelector('.go-back');
-    if (back) back.addEventListener('click', () => (window.location.href = '/'));
+    const pageContainer = document.querySelector('.seller-product-page');
+    if (!pageContainer) return;
 
     const qp = new URLSearchParams(window.location.search);
     const status = qp.get('status');
@@ -20,7 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const fetchAndSwap = (url) => {
-        container.style.opacity = '0.5';
+        const contentTarget = pageContainer.querySelector('.product-grid-container');
+        if (!contentTarget) {
+            console.error('AJAX Error: Could not find .product-grid-container');
+            return Promise.reject('Missing content target');
+        }
+
+        contentTarget.style.opacity = '0.5';
+
         return fetchXhr(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => r.text())
             .then((t) => {
@@ -31,45 +35,95 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch {
                     html = t;
                 }
+
                 if (html) {
-                    container.innerHTML = html;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const newContent = doc.querySelector('.product-grid-container');
+
+                    if (newContent) {
+                        contentTarget.innerHTML = newContent.innerHTML;
+                    } else {
+                        contentTarget.innerHTML = html;
+                    }
+
                     history.pushState(null, '', url);
                 }
             })
+            .catch((err) => {
+                console.error('Fetch error:', err);
+                App.showAlert('Error loading products.', 'danger');
+            })
             .finally(() => {
-                container.style.opacity = '1';
+                if (contentTarget) contentTarget.style.opacity = '1';
             });
     };
 
-    // Build URL
     const urlFromForm = (page = 1) => {
-        const form = container.querySelector('#product-filter-form');
+        const form = pageContainer.querySelector('#product-filter-form');
+        if (!form) return;
         const params = new URLSearchParams(new FormData(form));
         params.set('page', String(page));
+        params.set('page', String(page)); 
         return `${form.action}?${params.toString()}`;
     };
 
-    // Pagination
-    container.addEventListener('click', (e) => {
-        const a = e.target.closest('#products-pagination a');
-        if (!a) return;
-        e.preventDefault();
-        fetchAndSwap(a.getAttribute('href'));
-    });
-
-    // Filter & sort
     const debouncedReload = App.debounce
         ? App.debounce(() => fetchAndSwap(urlFromForm(1)), 350)
         : () => fetchAndSwap(urlFromForm(1));
 
-    container.addEventListener('input', (e) => {
-        if (e.target && e.target.id === 'search-input') debouncedReload();
+    pageContainer.addEventListener('input', (e) => {
+        if (e.target && e.target.id === 'search-input') {
+            debouncedReload();
+        }
     });
 
-    container.addEventListener('change', (e) => {
+    pageContainer.addEventListener('change', (e) => {
         const id = e.target && e.target.id;
         if (id === 'filter-category' || id === 'sort-select' || id === 'filter-perPage') {
             fetchAndSwap(urlFromForm(1));
         }
     });
+
+    pageContainer.addEventListener('click', (e) => {
+        const paginationLink = e.target.closest('#products-pagination a');
+        if (paginationLink) {
+            e.preventDefault();
+            fetchAndSwap(paginationLink.getAttribute('href'));
+            return;
+        }
+
+        if (e.target.closest('.go-back')) {
+            window.location.href = '/';
+            return;
+        }
+
+        const deleteButton = e.target.closest('form[action="/seller/products/delete"] button[type="submit"]');
+        if (deleteButton) {
+            e.preventDefault();
+            const form = deleteButton.closest('form');
+            if (!form) return;
+
+            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                window.AppConfirm.ask('Are you sure you want to delete this product?');
+
+                document.addEventListener('confirm:ok', function onConfirm() {
+                    if (window.App && App.showLoading) {
+                        App.showLoading(deleteButton, 'Deleting...');
+                    }
+                    form.submit();
+                }, { once: true });
+
+                document.addEventListener('confirm:cancel', function onCancel() {
+                }, { once: true });
+
+            } else {
+                console.error('AppConfirm modal not found.');
+                form.submit();
+            }
+            return;
+        }
+    });
 });
+
