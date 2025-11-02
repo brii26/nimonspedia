@@ -99,8 +99,10 @@ class Application {
         
         // Seller routes (Track 3 - TODO)
         $this->router->get('/seller/products', 'SellerController@listProducts');
+		$this->router->post('/seller/products/filter', 'SellerController@filter');
         $this->router->get('/seller/products/create', 'SellerController@createProductForm');
         $this->router->post('/seller/products/store', 'SellerController@storeProduct');
+		$this->router->get('/seller/products/store', 'SellerController@storeProduct');
 		$this->router->get('/seller/products/edit', 'SellerController@editProduct');
 		$this->router->get('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/update', 'SellerController@updateProduct');

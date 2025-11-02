@@ -9,27 +9,10 @@ class ProductService {
 		$this->categoryService = new CategoryService();
     }
 
-    /**
-     * Retrieves a paginated and filtered list of products.
-     * This method is primarily used for the public product discovery page,
-     * forwarding the filter criteria to the repository layer.
-     *
-     * @param array $options An associative array of filter and pagination options.
-     * Example: ['page' => 1, 'searchTerm' => 'Laptop', 'categoryId' => 3]
-     * @return array The paginated result set containing product data and metadata.
-     */
     public function getAllProducts($options) {
         return $this->productRepository->searchAndFilter($options);
     }
     
-    /**
-     * Retrieves the full details for a single product by its unique ID.
-     * It performs a basic validation to ensure the ID is an integer before querying.
-     *
-     * @param int $productId The unique identifier for the product.
-     * @return array|null An associative array containing the product's detailed information,
-     * or null if the product is not found or the ID is invalid.
-     */
     public function getProductById($productId) {
         return $this->productRepository->findByIdWithDetails($productId);
     }
@@ -75,10 +58,6 @@ class ProductService {
     }
 	
 
-    /**
-     * Update an existing product after verifying ownership.
-     * @throws Exception if validation or ownership check fails.
-     */
     public function updateProduct($productId, $data, $storeId) {
         $product = $this->productRepository->find($productId);
         if (!$product) {
@@ -123,12 +102,6 @@ class ProductService {
         return true;
     }
 	
-	
-    
-    /**
-     * Soft delete a product after verifying ownership.
-     * @throws Exception if validation or ownership check fails.
-     */
     public function deleteProduct($productId, $storeId) {
         $product = $this->productRepository->find($productId);
         if (!$product) {
@@ -179,10 +152,9 @@ class ProductService {
             case 9: // Automotive
                 $keywords = array_merge($keywords, ['otomotif', 'mobil', 'motor', 'aksesoris mobil', 'aksesoris motor', 'oli', 'helm', 'suku cadang', 'mesin']);
                 break;
-            // case 10: // Others - tidak perlu keyword khusus
         }
 
-        // 2. Kamus berdasarkan Brand (dari nama produk)
+        // Kamus berdasarkan Brand (dari nama produk)
         if (str_contains($nameLower, 'macbook') || str_contains($nameLower, 'iphone') || str_contains($nameLower, 'ipad')) {
             $keywords[] = 'apple';
         }

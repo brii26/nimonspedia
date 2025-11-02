@@ -41,25 +41,33 @@ class ProductRepository extends BaseRepository {
      * - 'maxPrice' (float): The maximum price for the price range filter.
      * @return array An associative array containing paginated data and metadata.
      */
-    public function searchAndFilter($options = []) {
-        $page = (int)($options['page'] ?? 1);
-        $perPage = (int)($options['perPage'] ?? 12);
-        $offset = ($page - 1) * $perPage;
-
-        list($whereSql, $params) = $this->buildFilterConditions($options);
-
-        $total = $this->countFilteredProducts($whereSql, $params);
-
-        $records = $this->getFilteredProductsPage($whereSql, $params, $perPage, $offset);
-
-        return [
-            'data' => $records,
-            'current_page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-            'total_pages' => $total > 0 ? ceil($total / $perPage) : 0
-        ];
-    }
+	public function searchAndFilter($options = []) {
+		$page    = max(1, (int)($options['page'] ?? 1));
+		$perPage = max(1, (int)($options['perPage'] ?? 12));
+		$offset  = ($page - 1) * $perPage;
+	
+		[$whereSql, $params] = $this->buildFilterConditions($options);
+	
+		$sortBy  = $options['sortBy'] ?? null;        // null = no sort
+		$sortDir = (strtoupper($options['sortDir'] ?? 'ASC') === 'DESC') ? 'DESC' : 'ASC';
+	
+		$orderSql = '';
+		if ($sortBy === 'name')  $orderSql = "ORDER BY p.product_name {$sortDir}";
+		if ($sortBy === 'price') $orderSql = "ORDER BY p.price {$sortDir}";
+		if ($sortBy === 'stock') $orderSql = "ORDER BY p.stock {$sortDir}";
+	
+		$total   = $this->countFilteredProducts($whereSql, $params);
+		$records = $this->getFilteredProductsPage($whereSql, $params, $perPage, $offset, $orderSql);
+	
+		return [
+			'data' => $records,
+			'current_page' => $page,
+			'per_page' => $perPage,
+			'total' => (int)$total,
+			'total_pages' => $total ? (int)ceil($total / $perPage) : 0,
+		];
+	}
+	
 
     /**
      * [Private Helper] Constructs the WHERE clause and parameter array for filtering.
@@ -71,51 +79,17 @@ class ProductRepository extends BaseRepository {
         $whereClauses = ['p.deleted_at IS NULL'];
         $params = [];
 
-        // Filter based on search term
         if (!empty($options['searchTerm'])) {
-            $terms = preg_split('/\s+/', trim($options['searchTerm']));
-            $processedTerms = [];
-            
-            foreach ($terms as $term) {
-                if (!empty($term)) {
-                    $processedTerms[] = preg_replace('/[()|&!:]/', '', $term);
-                }
-            }
-
-            if (!empty($processedTerms)) {
-                // 2. Tambahkan operator prefix ':*' HANYA di kata terakhir
-                // Ini akan mengubah "kont" -> "kont:*" (cocok: kontroler, kontak)
-                // "laptop kont" -> "laptop & kont:*"
-                $lastTerm = array_pop($processedTerms);
-                $processedTerms[] = $lastTerm . ':*'; 
-
-                // 3. Gabungkan dengan '&' (AND)
-                $tsQueryParam = implode(' & ', $processedTerms);
-
-                $whereClauses[] = "p.search_vector @@ to_tsquery('simple', ?)";
-                $params[] = $tsQueryParam;
-            }
+            $whereClauses[] = "p.product_name ILIKE ?";
+            $params[] = "%{$options['searchTerm']}%";
         }
-        // Filter based on category id
         if (!empty($options['categoryId'])) {
             $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_items WHERE category_id = ?)";
             $params[] = $options['categoryId'];
         }
-
-        // Filter based on store id
         if (!empty($options['store_id'])) {
             $whereClauses[] = "p.store_id = ?";
             $params[] = $options['store_id'];
-        }
-        // Filter minimum price
-        if (isset($options['minPrice']) && $options['minPrice'] !== '') {
-            $whereClauses[] = "p.price >= ?";
-            $params[] = $options['minPrice'];
-        }
-        // Filter maximum price
-        if (isset($options['maxPrice']) && $options['maxPrice'] !== '') {
-            $whereClauses[] = "p.price <= ?";
-            $params[] = $options['maxPrice'];
         }
 
         $whereSql = "WHERE " . implode(' AND ', $whereClauses);
@@ -131,12 +105,11 @@ class ProductRepository extends BaseRepository {
      */
     private function countFilteredProducts($whereSql, $params) {
         $sql = "
-            SELECT COUNT(DISTINCT p.product_id) as total 
+            SELECT COUNT(DISTINCT p.product_id) as total
             FROM products p
             LEFT JOIN category_items ci ON p.product_id = ci.product_id
             {$whereSql}
         ";
-        
         $result = $this->db->selectOne($sql, $params);
         return $result ? (int)$result['total'] : 0;
     }
@@ -150,20 +123,21 @@ class ProductRepository extends BaseRepository {
      * @param int $offset The starting record offset for the current page.
      * @return array A list of product records.
      */
-    private function getFilteredProductsPage($whereSql, $params, $limit, $offset) {
-        $sql = "
-            SELECT p.*, s.store_name
-            FROM products p
-            JOIN stores s ON p.store_id = s.store_id
-            LEFT JOIN category_items ci ON p.product_id = ci.product_id
-            {$whereSql}
-            GROUP BY p.product_id, s.store_name
-            ORDER BY p.created_at DESC
-            LIMIT {$limit} OFFSET {$offset}
-        ";
-        
-        return $this->db->select($sql, $params);
-    }
+	
+	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '') {
+		$sql = "
+			SELECT p.*, s.store_name
+			FROM products p
+			JOIN stores s ON p.store_id = s.store_id
+			LEFT JOIN category_items ci ON p.product_id = ci.product_id
+			{$whereSql}
+			GROUP BY p.product_id, s.store_name
+			" . ($orderSql ?: "") . "
+			LIMIT {$limit} OFFSET {$offset}
+		";
+		return $this->db->select($sql, $params);
+	}
+	
 
 	/**
      * Retrieves only the main image path of a product.

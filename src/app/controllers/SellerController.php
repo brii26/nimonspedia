@@ -17,7 +17,7 @@ class SellerController extends BaseController {
     }
 
     public function createProductForm() {
-		$categories = $this->categoryService->getForDropdown();
+		$categories = $this->categoryService->getAllCategories();
 		$this->render('pages/seller/products/create', [
 			'categories' => $categories,
 			'old' => $_SESSION['old'] ?? [],
@@ -47,25 +47,100 @@ class SellerController extends BaseController {
         return $storeId;
     }
 
-    public function listProducts() {
-		$storeId = $this->getSellerStoreId();
-        $options = [
-            'page' => $this->getQuery('page', 1),
-            'store_id' => $storeId 
-        ];
-        $productsData = $this->productService->getAllProducts($options);
-
-        $this->render('pages/seller/products/index', [
+	public function listProducts() {
+		$storeId = $_SESSION['store_id'] ?? null;
+		$search  = $_GET['searchTerm'] ?? '';
+		$catId   = $_GET['categoryId'] ?? null;
+		$sortBy  = $_GET['sortBy'] ?? '';
+		$sortDir = strtoupper($_GET['sortDir'] ?? 'ASC');
+		$page    = (int)($_GET['page'] ?? 1);
+		$perPage = (int)($_GET['perPage'] ?? 8);
+	
+		$options = [
+			'store_id' => $storeId,
+			'searchTerm' => $search,
+			'categoryId' => $catId ?: null,
+			'page' => max(1, $page),
+			'perPage' => in_array($perPage, [4, 8, 12, 20], true) ? $perPage : 8,
+			'sortBy' => in_array($sortBy, ['name', 'price', 'stock'], true) ? $sortBy : null,
+			'sortDir' => $sortDir === 'DESC' ? 'DESC' : 'ASC'
+		];
+	
+		$productsData = $this->productService->getAllProducts($options);
+		$categories   = $this->categoryService->getAllCategories();
+		$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+			   && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+		
+		if ($isAjax) {
+			try {
+				$html = View::render('pages/seller/products/index', [
+					'productsData' => $productsData,
+					'categories' => $categories,
+					'filters' =>[
+						'searchTerm' => $search,
+						'categoryId' => $catId,
+						'sortBy' => $sortBy,
+						'sortDir' => $sortDir,
+						'perPage' => $perPage
+					],
+					'actionUrl' => '/seller/products',
+					'fragment' => true
+				]);
+		
+				while (ob_get_level()) { ob_end_clean(); }
+				header('Content-Type: application/json; charset=utf-8');
+				echo json_encode(['html' => $html], JSON_UNESCAPED_UNICODE);
+				exit;
+			} catch (Throwable $e) {
+				while (ob_get_level()) { ob_end_clean(); }
+				header('Content-Type: application/json; charset=utf-8', true, 500);
+				echo json_encode(['error' => 'render_failed', 'message' => $e->getMessage()]);
+				exit;
+			}
+		}
+			
+		$this->render('pages/seller/products/index', [
 			'productsData' => $productsData,
-			'cssFiles' => [
+			'categories' => $categories,
+			'filters' => [
+				'searchTerm' => $search,
+				'categoryId' => $catId,
+				'sortBy' => $sortBy,
+				'sortDir' => $sortDir,
+				'perPage' => $perPage
+			],
+			'actionUrl' => '/seller/products',
+			'pageTitle' => 'Your Products',
+			'cssFiles'  => [
 				'/css/pages/dashboard.css',
 				'/css/pages/seller/products/index.css'
 			],
-            'jsFiles' => [
+			'jsFiles' => [
+				'/js/utils/FetchXhr.js',
 				'/js/pages/seller/products/index.js'
-            ],
+			]
 		]);
 	}
+	
+	public function filter() {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $storeId = $_SESSION['store_id'] ?? null;
+
+        $options = [
+			$options = [
+				'store_id' => $storeId,
+				'searchTerm' => $data['search'] ?? '',
+				'categoryId' => $data['category_id'] ?? null,
+				'sortBy' => in_array($data['sort_by'] ?? '', ['name','price','stock'], true) ? $data['sort_by'] : null,
+				'sortDir' => (strtoupper($data['sort_dir'] ?? 'ASC') === 'DESC') ? 'DESC' : 'ASC',
+				'page' => max(1, (int)($data['page'] ?? 1)),
+				'perPage' => in_array((int)($data['perPage'] ?? 8), [4,8,12,20], true) ? (int)$data['perPage'] : 8,
+			  ]
+        ];
+
+        $result = $this->productService->getAllProducts($options);
+        echo json_encode($result);
+    }
 
     public function storeProduct() {
         $postData = $this->getPost();
@@ -75,7 +150,7 @@ class SellerController extends BaseController {
             $postData['description_plain_text'] = $plainText;
         }
 
-		$categories = $this->categoryService->getForDropdown();
+		$categories = $this->categoryService->getAllCategories();
 
         try {
             $this->verifyCsrf();
@@ -155,7 +230,7 @@ class SellerController extends BaseController {
 			return;
 		}
 
-		$categories = $this->categoryService->getForDropdown();
+		$categories = $this->categoryService->getAllCategories();
 		$assigned = $this->categoryService->getForProduct($productId);
 		$assignedIds = array_column($assigned, 'category_id');
 
@@ -188,7 +263,7 @@ class SellerController extends BaseController {
             $postData['description_plain_text'] = $plainText;
 		}
 
-		$categories = $this->categoryService->getForDropdown();
+		$categories = $this->categoryService->getAllCategories();
 
 		try { 
 			$this->verifyCsrf(); 

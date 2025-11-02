@@ -16,7 +16,7 @@ class CategoryRepository extends BaseRepository
      * Get all categories for dropdown (used in create.php / edit.php)
      * @return array [['category_id'=>int,'name'=>string], ...]
      */
-    public function getDropdownOptions()
+    public function getAllCategories()
     {
         $sql = "SELECT category_id, name FROM {$this->table} ORDER BY name ASC";
         return $this->db->select($sql, []);
