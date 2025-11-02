@@ -112,6 +112,8 @@ class Application {
 		$this->router->post('/seller/orders/reject', 'SellerOrdersController@reject');
 		$this->router->post('/seller/orders/delivery', 'SellerOrdersController@setDelivery');
 		$this->router->post('/seller/store/update', 'SellerController@updateStore');
+
+        $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
         
         // API routes for AJAX (TODO)
         // $this->router->get('/api/cart/count', 'CartController@count');

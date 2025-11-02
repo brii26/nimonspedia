@@ -126,6 +126,7 @@
             <a href="/seller/products/create" class="btn btn-success">Add New Product</a>
             <a href="/seller/products" class="btn btn-primary">Manage Products</a>
             <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
+            <a href="/seller/reports/sales" class="btn btn-secondary">Export Laporan (CSV)</a>
         </nav>
     </section>
 </div>
