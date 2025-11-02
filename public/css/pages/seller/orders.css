@@ -652,7 +652,6 @@ footer {
     background-color: #2c3e50; 
     color: #ecf0f1;
     padding: 40px 20px;
-    margin-top: 50px;
     font-size: 0.9em;
 }
 
@@ -737,4 +736,121 @@ footer .copyright {
 }
 #delivery-popup .orders-popup-action button[type="submit"]:hover {
     background-color: #2980b9;
+}
+
+/* ==============================================
+   ORDER CARD STYLES (BUYER VIEW)
+   Tambahkan ini di akhir file seller/orders.css
+   ============================================== */
+
+/* Container untuk semua card */
+.order-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Jarak antar card */
+    margin-bottom: 30px;
+}
+
+/* Card individu */
+.order-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ecf0f1;
+    overflow: hidden;
+}
+
+/* Header card (Info Toko, Tanggal, Status) */
+.order-card-header {
+    display: flex;
+    flex-wrap: wrap; /* Agar rapi di mobile */
+    gap: 10px;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background-color: #f5f7f9;
+    border-bottom: 1px solid #ecf0f1;
+    font-size: 0.85rem;
+    color: #5d6d7e;
+}
+
+.order-card-store {
+    font-weight: 500;
+    margin-right: auto; /* Mendorong status ke kanan */
+}
+
+.order-card-store strong {
+    color: #34495e;
+    font-weight: 600;
+}
+
+.order-card-date {
+    color: #7f8c8d;
+}
+
+/* Body card (Tempat produk) */
+.order-card-body {
+    padding: 1.25rem;
+}
+
+/* * Kita pakai ulang style .order-item-preview dari seller,
+ * tapi kita buat thumbnail sedikit lebih besar.
+ */
+.order-card .order-item-thumbnail {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px; /* Sedikit lebih membulat */
+}
+
+/* Footer card (Total & Tombol Aksi) */
+.order-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #ecf0f1;
+    background-color: #fcfdfe;
+}
+
+.order-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.order-total span {
+    font-size: 0.85rem;
+    color: #5d6d7e;
+}
+
+.order-total strong {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark, #2c3e50);
+}
+
+.order-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Pastikan tombol 'View Detail' terlihat benar */
+.order-actions .btn-detail {
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+/* Sembunyikan tabel lama jika ada (hanya di view ini) */
+.orders-table {
+    display: none;
+}
+
+.order-card-footer .order-total,
+.order-card-footer .order-actions {
+    flex: initial;
+    min-width: auto; 
 }

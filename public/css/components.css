@@ -924,7 +924,7 @@
     }
 
     .footer-content {
-        /* Di mobile, grid akan otomatis jadi 1 kolom */
+        grid-template-columns: 1fr;
         text-align: center;
         justify-content: center;
     }

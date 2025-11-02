@@ -14,77 +14,57 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
         <?php endforeach; ?>
     </div>
 
-    <div class="orders-table">
+    <div class="order-card-list">
         <?php if (empty($orders)): ?>
             <div class="empty-state">
                 <p>Tidak ada pesanan <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
             </div>
         <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Tanggal</th>
-                        <th>Detail Produk</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($orders as $order): ?>
-                        <tr>
-                            <td>#<?= View::escape($order['order_id']) ?></td>
-                            
-                            <td><?= View::date($order['created_at']) ?></td>
+            <?php foreach ($orders as $order): ?>
+                <article class="order-card">
+                    <header class="order-card-header">
+                        <span class="order-card-store">Toko: <strong><?= View::escape($order['store_name'] ?? 'N/A') ?></strong></span>
+                        <span class="order-card-date"><?= View::date($order['created_at'], 'd M Y') ?></span>
+                        <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
+                            <?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
+                        </span>
+                    </header>
 
-                            <td>
-                                <?php if (!empty($order['items'])): ?>
-                                    <?php $firstItem = $order['items'][0]; // Ambil 1 item sebagai preview ?>
-                                    <div class="order-item-preview">
-                                        <img src="/storage/<?= View::escape($firstItem['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
-                                            alt="<?= View::escape($firstItem['product_name']) ?>" 
-                                            class="order-item-thumbnail">
+                    <div class="order-card-body">
+                        <?php if (!empty($order['items'])): ?>
+                            <?php $firstItem = $order['items'][0]; ?>
+                            <div class="order-item-preview">
+                                <img src="/storage/<?= View::escape($firstItem['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                                     alt="<?= View::escape($firstItem['product_name']) ?>" 
+                                     class="order-item-thumbnail">
+                                <div class="order-item-info">
+                                    <div class="order-item-name"><?= View::escape($firstItem['product_name']) ?></div>
+                                    <div class="order-item-qty"><?= View::escape($firstItem['quantity']) ?> barang</div>
+                                    <?php if (count($order['items']) > 1): ?>
+                                        <div class="order-item-more">+<?= (count($order['items']) - 1) ?> produk lainnya</div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Produk tidak ditemukan)</span>
+                        <?php endif; ?>
+                    </div>
 
-                                        <div class="order-item-info">
-                                            <div class="order-item-name">
-                                                <?= View::escape($firstItem['product_name']) ?>
-                                            </div>
-                                            <div class="order-item-qty">
-                                                <?= View::escape($firstItem['quantity']) ?> barang
-                                            </div>
-                                            <?php if (count($order['items']) > 1): ?>
-                                                <div class="order-item-more">
-                                                    +<?= (count($order['items']) - 1) ?> produk lainnya
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                <?php else: ?>
-                                    <span style="color: #888;">(Produk tidak ditemukan)</span>
-                                <?php endif; ?>
-                            </td>
-
-                            <td><?= View::currency($order['total_price']) ?></td>
-
-                            <td>
-                                <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
-                                    <?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
-                                </span>
-                            </td>
-                            
-                            <td>
-                                <a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn-detail" style="text-decoration: none;">
-                                    View Details
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    <footer class="order-card-footer">
+                        <div class="order-total">
+                            <span>Total Belanja</span>
+                            <strong><?= View::currency($order['total_price']) ?></strong>
+                        </div>
+                        <div class="order-actions">
+                            <a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn btn-detail">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    </footer>
+                </article>
+            <?php endforeach; ?>
         <?php endif; ?>
     </div>
-
     <?php if ($total_pages > 1): ?>
         <div class="pagination">
             <?php
@@ -112,5 +92,5 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
             ?>
         </div>
     <?php endif; ?>
-    </div>
+
 </div>
