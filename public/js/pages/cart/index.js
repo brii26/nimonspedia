@@ -20,25 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.App.showAlert(serverAlert.textContent.trim(), 'error');
     }
 
-    /**
-     * Helper function untuk meng-update badge di navbar
-     */
-    async function updateCartBadge() {
-        if (!window.fetchXhr) return; 
-        try {
-            const response = await window.fetchXhr('/api/cart/count'); 
-            if (!response.ok) return;
-            const data = await response.json();
-            if (cartBadge && data.unique > 0) {
-                cartBadge.textContent = data.unique;
-                cartBadge.style.display = 'flex'; 
-            } else if (cartBadge) {
-                cartBadge.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error updating cart badge:', error);
-        }
-    }
 
     /**
      * Logika Tombol Update Keranjang

@@ -95,7 +95,29 @@ window.App = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    }
+    },
+
+    updateCartBadge: async function() {
+        const badge = document.getElementById('navbar-cart-badge'); 
+        if (!badge) return;
+
+        try {
+            const response = await fetchXhr('/api/cart/count'); 
+            if (!response.ok) return;
+
+            const data = await response.json();
+            
+            if (data.unique > 0) {
+                badge.textContent = data.unique;
+                badge.style.display = 'flex';
+            } else {
+                badge.textContent = 0;
+                badge.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error updating cart badge:', error);
+        }
+    },
 };
 
 document.addEventListener('DOMContentLoaded', function() {

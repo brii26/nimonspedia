@@ -63,9 +63,12 @@ $activePage = $currentPage ?? '';
                         <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
                             <span class="nav-icon">🛒</span>
                             <span class="nav-text">Cart</span>
-                            <?php if ($cartCount > 0): ?>
-                                <span class="cart-badge"><?= $cartCount ?></span>
-                            <?php endif; ?>
+                            
+                            <span class="cart-badge" 
+                                id="navbar-cart-badge" 
+                                style="<?= ($cartCount == 0) ? 'display: none;' : '' ?>">
+                                <?= $cartCount ?>
+                            </span>
                         </a>
                         <a href="/orders" class="nav-link <?= $activePage === 'orders' ? 'active' : '' ?>">
                             <span class="nav-icon">📦</span>
