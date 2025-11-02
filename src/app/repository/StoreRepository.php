@@ -42,6 +42,11 @@ class StoreRepository extends BaseRepository {
         return $this->db->selectOne($sql, [$userId]);
     }
 
+	public function findByName($name) {
+        $sql = "SELECT store_id FROM stores WHERE store_name = ? LIMIT 1";
+        return $this->db->selectOne($sql, [$name]);
+    }
+
     public function updateStore($storeId, $name, $desc, $logo) {
         $sql = "UPDATE stores
                    SET store_name = ?, store_description = ?, store_logo_path = ?

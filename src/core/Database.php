@@ -96,4 +96,32 @@ class Database {
             throw new Exception("Database error: " . $e->getMessage());
         }
     }
+    
+    public function beginTransaction() {
+        try {
+            return $this->connection->beginTransaction();
+        } catch (PDOException $e) {
+            throw new Exception("Failed to start transaction: " . $e->getMessage());
+        }
+    }
+    
+    public function commit() {
+        try {
+            return $this->connection->commit();
+        } catch (PDOException $e) {
+            throw new Exception("Failed to commit transaction: " . $e->getMessage());
+        }
+    }
+    
+    public function rollBack() {
+        // Hanya rollback jika transaksi sedang aktif
+        if ($this->connection->inTransaction()) {
+            try {
+                return $this->connection->rollBack();
+            } catch (PDOException $e) {
+                throw new Exception("Failed to rollback transaction: " . $e->getMessage());
+            }
+        }
+        return false;
+    }
 }
