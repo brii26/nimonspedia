@@ -82,11 +82,9 @@ class HomeController extends BaseController {
         $productsData = $this->productService->getAllProducts($filters);
         $categories = $this->categoryService->getAllCategories();
         
-        // Cek apakah ini AJAX request?
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
                   
-        $actionUrl = '/'; // Definisikan actionUrl untuk partial
+        $actionUrl = '/';
 
         if ($isAjax) {
             // Jika AJAX, render HANYA partial-nya
