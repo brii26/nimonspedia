@@ -48,7 +48,7 @@ class SellerController extends BaseController {
     }
 
 	public function listProducts() {
-		$storeId = $_SESSION['store_id'] ?? null;
+		$storeId = $this->getSellerStoreId();
 		$search  = $_GET['searchTerm'] ?? '';
 		$catId   = $_GET['categoryId'] ?? null;
 		$sortBy  = $_GET['sortBy'] ?? '';
@@ -124,7 +124,7 @@ class SellerController extends BaseController {
 	
 	public function filter() {
         $data = json_decode(file_get_contents('php://input'), true);
-        $storeId = $_SESSION['store_id'] ?? null;
+        $storeId = $this->getSellerStoreId();
 
         $options = [
 			$options = [
