@@ -86,6 +86,7 @@ class StoreController extends BaseController {
             'cssFiles' => [
                 '/css/pages/store-detail.css',
                 '/css/components/product-filter.css',
+                'css/components/modal.css'
             ],
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',

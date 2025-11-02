@@ -199,4 +199,32 @@ class ProductRepository extends BaseRepository {
         
         return $this->db->selectOne($sql, [$productId]);
     }
+
+    /**
+     * Mengambil rekomendasi produk dari kategori yang sama.
+     *
+     * @param int $categoryId ID Kategori
+     * @param int $excludeId ID Produk saat ini (agar tidak tampil lagi)
+     * @param int $limit Jumlah produk
+     * @return array
+     */
+    public function getRecommendations(int $categoryId, int $excludeId, int $limit = 4): array {
+        if ($categoryId <= 0) {
+            return [];
+        }
+
+        $sql = "
+            SELECT p.product_id, p.product_name, p.price, p.main_image_path
+            FROM products p
+            JOIN category_items ci ON p.product_id = ci.product_id
+            WHERE ci.category_id = ?
+            AND p.product_id != ?
+            AND p.deleted_at IS NULL
+            AND p.stock > 0
+            ORDER BY RANDOM()
+            LIMIT ?
+        ";
+
+        return $this->db->select($sql, [$categoryId, $excludeId, $limit]);
+    }
 }

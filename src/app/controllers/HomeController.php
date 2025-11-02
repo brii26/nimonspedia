@@ -113,6 +113,7 @@ class HomeController extends BaseController {
                 '/js/components/product-filter.js',
             ],
             'cssFiles'=> [
+                'css/components/modal.css',
                 'css/components/product-filter.css'
             ]
         ]);

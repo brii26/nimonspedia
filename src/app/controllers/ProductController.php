@@ -6,10 +6,12 @@
  */
 class ProductController extends BaseController {
     private $productService;
+    private $categoryService;
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService();
+        $this->categoryService = new CategoryService();
     }
 
     public function index() {
@@ -54,15 +56,27 @@ class ProductController extends BaseController {
             return;
         }
 
+        $recommendations = [];
+        $categories = $this->categoryService->getForProduct($productId);
+
+        if (!empty($categories)) {
+            $firstCategoryId = $categories[0]['category_id'];
+
+            $productRepo = new ProductRepository();
+            $recommendations = $productRepo->getRecommendations($firstCategoryId, $productId, 4);
+        }
+
         $this->render('pages/products/show', [
             'product' => $product,
+            'recommendations' => $recommendations,
             'pageTitle' => View::escape($product['product_name']),
             'jsFiles' => [
                 '/js/utils/fetchXhr.js', 
                 '/js/pages/products/show.js'
             ],
             'cssFiles' => [
-                '/css/pages/product-detail.css'
+                '/css/pages/product-detail.css',
+                '/css/components/modal.css'
             ]
         ]);
     }

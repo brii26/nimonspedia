@@ -21,4 +21,6 @@
         </div>
         
     </div>
-</div>
+</div><?php
+echo View::component('cart-success-modal', ['recommendations' => []]);
+?>
