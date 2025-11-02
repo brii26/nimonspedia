@@ -111,14 +111,3 @@
         </div>
     </div>
 </div>
-
-<div id="confirm-modal" class="confirm-modal" style="display:none;">
-	<div class="confirm-modal-content">
-	<h3>Confirm Update</h3>
-	<p>Save?? yes no?</p>
-		<div class="confirm-modal-actions">
-			<button type="button" id="confirm-update" class="btn-confirm">Yes, Save</button>
-			<button type="button" id="cancel-update" class="btn-cancel">Cancel</button>
-		</div>
-	</div>
-</div>

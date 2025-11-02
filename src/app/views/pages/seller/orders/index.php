@@ -1,14 +1,14 @@
 <?php
+// Variabel-variabel ini sudah didefinisikan oleh Controller
 $statuses = ['waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 $currentStatus = $currentStatus ?? null;
 $search = $search ?? '';
 $currentPage = $currentPage ?? 1;
 $orders = $ordersData['orders'] ?? [];
-$totalPages = $ordersData['totalPages'] ?? 1;
+$totalPages = $ordersData['totalPages'] ?? 1; // <--- $totalPages didefinisikan di sini
 ?>
 
 <div class="orders-container">
-    <!-- Status Filter Tabs -->
     <div class="status-tabs">
         <a href="/seller/orders" class="tab <?php echo !$currentStatus ? 'active' : ''; ?>">All</a>
         <?php foreach ($statuses as $status): ?>
@@ -19,7 +19,6 @@ $totalPages = $ordersData['totalPages'] ?? 1;
         <?php endforeach; ?>
     </div>
 
-    <!-- Search Form -->
     <form class="search-form" method="GET" action="/seller/orders">
         <?php if ($currentStatus): ?>
             <input type="hidden" name="status" value="<?php echo $currentStatus; ?>">
@@ -31,84 +30,15 @@ $totalPages = $ordersData['totalPages'] ?? 1;
         <button type="submit">Search</button>
     </form>
 	
-    <!-- Orders Table -->
-    <div class="orders-table">
-        <?php if (empty($orders)): ?>
-            <div class="empty-state">
-                <p>No orders found</p>
-                <?php if ($search): ?>
-                    <p>Try different search terms</p>
-                <?php elseif ($currentStatus): ?>
-                    <p>No orders with status: <?php echo ucwords(str_replace('_', ' ', $currentStatus)); ?></p>
-                <?php endif; ?>
-            </div>
-        <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Date</th>
-                        <th>Buyer</th>
-                        <th>Products</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($orders as $order): ?>
-                        <tr>
-                            <td>#<?php echo $order['order_id']; ?></td>
-                            <td><?php echo date('Y-m-d H:i', strtotime($order['created_at'])); ?></td>
-                            <td><?php echo htmlspecialchars($order['buyer_name']); ?></td>
-                            <td>
-                                <ul class="order-items">
-                                    <?php foreach ($order['items'] as $item): ?>
-                                        <li>
-                                            <?php echo htmlspecialchars($item['product_name']); ?>
-                                            (x<?php echo $item['quantity']; ?>)
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </td>
-                            <td>Rp <?php echo number_format($order['total_price']); ?></td>
-                            <td>
-                                <span class="status-badge <?php echo $order['status']; ?>">
-                                    <?php echo ucwords(str_replace('_', ' ', $order['status'])); ?>
-                                </span>
-                            </td>
-                            <td>
-                                <button type="button" 
-                                        onclick="showOrderDetail(<?php echo $order['order_id']; ?>)"
-                                        class="btn-detail">
-                                    View Details
-                                </button>
-                                
-                                <?php if ($order['status'] === 'waiting_approval'): ?>
-                                    <button type="button" id="btn-approve" onclick="approveOrder(<?php echo $order['order_id']; ?>)" id="btn-approve">
-                                        Approve
-                                    </button>
-                                    <button type="button" onclick="showRejectModal(<?php echo $order['order_id']; ?>)" id="btn-reject">
-                                        Reject
-                                    </button>
-                                <?php endif; ?>
-
-                                <?php if ($order['status'] === 'approved'): ?>
-                                    <button type="button"
-                                            onclick="showDeliveryModal(<?php echo $order['order_id']; ?>)"
-                                            class="btn-delivery">
-                                        Set Delivery
-                                    </button>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
+    <div id="seller-order-list-container">
+        <?= View::render('components/seller-order-list', [
+                // Kirim semua variabel yang dibutuhkan oleh komponen
+                'ordersData' => $ordersData,
+                'currentStatus' => $currentStatus
+            ]);
+        ?>
     </div>
 
-    <!-- Pagination -->
     <?php if ($totalPages > 1): ?>
         <div class="pagination">
             <?php
