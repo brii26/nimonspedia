@@ -25,7 +25,8 @@ class CartController extends BaseController {
                 ],
                 'cssFiles'=> [
                     'css/components/modal.css',
-                    'css/components/product-filter.css'
+                    'css/components/product-filter.css',
+                    'css/pages/cart.css'
                 ]
 
             ]);
