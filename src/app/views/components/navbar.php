@@ -5,11 +5,11 @@ $isLoggedIn = Auth::check();
 $userRole = $currentUser ? $currentUser['role'] : null;
 
 // Get cart count for buyers
-$cartCount = 0;
-if ($isLoggedIn && $userRole === 'BUYER') {
-    // TODO: Implement cart count logic in Sprint 2
-    $cartCount = $_SESSION['cart_count'] ?? 0;
-}
+$productRepo = new ProductRepository();
+$cartItemRepo = new CartItemRepository();
+$cartService = new CartService($productRepo, $cartItemRepo);
+
+$cartCount = $cartService->getUniqueCount();
 
 // Determine active page for navigation highlighting
 $currentPath = $_SERVER['REQUEST_URI'];

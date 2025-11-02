@@ -17,7 +17,13 @@ class CartController extends BaseController {
     public function index() {
         try {
             $cart = $this->cartService->getCart();
-            $this->render('pages/cart/index', ['cart' => $cart]);
+            $this->render('pages/cart/index', [
+                'cart' => $cart, 
+                'jsFiles' => [
+                '/js/utils/fetchXhr.js',
+                '/js/pages/cart/index.js'
+                ],
+            ]);
         } catch (Exception $e) {
             error_log('Cart index error: ' . $e->getMessage());
             $this->render('pages/cart/index', ['cart' => ['items' => [], 'total' => 0], 'error' => $e->getMessage()]);
@@ -36,13 +42,52 @@ class CartController extends BaseController {
             if ($productId <= 0) {
                 return $this->error('Produk tidak valid', 422);
             }
+            if ($quantity <= 0) {
+                return $this->error('Kuantitas harus lebih dari nol', 422);
+            }
 
-            $count = $this->cartService->addToCart($productId, $quantity);
+            $count = 0;
+
+            if (Auth::isBuyer()) {
+                // --- LOGIKA UNTUK BUYER ---
+                $buyerId = Auth::id();
+
+                $this->cartService->mergeSessionToPersistent($buyerId);
+                $count = $this->cartService->addOrUpdateDbCart($buyerId, $productId, $quantity);
+            
+            } else {
+                // --- LOGIKA UNTUK GUEST ---
+                $product = $this->cartService->getProductForValidation($productId); // Perlu method baru di service
+                if (!$product) throw new ValidationException('Produk tidak ditemukan');
+                $available = isset($product['stock']) ? (int)$product['stock'] : PHP_INT_MAX;
+                if ($available <= 0) throw new ValidationException('Produk habis');
+
+                if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
+                    $_SESSION['cart'] = [];
+                }
+                
+                $existingQty = isset($_SESSION['cart'][$productId]) ? (int)$_SESSION['cart'][$productId]['quantity'] : 0;
+                $newQty = $existingQty + $quantity;
+                
+                if ($newQty > $available) {
+                    // Jangan lempar error, cap saja di jumlah stok untuk guest
+                    $newQty = $available; 
+                }
+
+                $_SESSION['cart'][$productId] = [
+                    'product_id' => $productId,
+                    'quantity' => $newQty,
+                    'product_name' => $product['product_name'] ?? ($product['name'] ?? ''),
+                    'product_price' => $product['price'] ?? 0
+                ];
+
+                $count = count($_SESSION['cart']);
+            }
+            
             return $this->success('Item berhasil ditambahkan', ['uniqueCount' => $count]);
 
         } catch (ValidationException $ve) {
-            return $this->error($ve->getFirstError(), 422);;
-        
+            return $this->error($ve->getFirstError(), 422);
         } catch (Exception $e) {
             return $this->error($e->getMessage(), 500);
         }
@@ -88,9 +133,18 @@ class CartController extends BaseController {
      */
     public function count() {
         try {
-            $unique = $this->cartService->getUniqueCount();
-            $units = $this->cartService->getTotalUnitsCount();
-            $this->json(['unique' => $unique, 'units' => $units]);
+            $unique = 0;
+            
+            if (Auth::isBuyer()) {
+                $unique = $this->cartService->getDbUniqueCountByBuyer(Auth::id());
+            } else {
+                if (!empty($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+                    $unique = count($_SESSION['cart']);
+                }
+            }
+            
+            $this->json(['unique' => $unique]);
+
         } catch (Exception $e) {
             return $this->error($e->getMessage(), 500);
         }

@@ -23,73 +23,35 @@ class CartService {
 	 * @return int Unique items count (badge count)
 	 * @throws Exception
 	 */
-	public function addToCart(int $productId, int $quantity = 1) {
-        if ($quantity <= 0) {
-            throw new ValidationException('Kuantitas harus lebih dari nol');
-        }
+	public function addOrUpdateDbCart(int $buyerId, int $productId, int $quantity) {
+		// 1. Validasi produk dan stok (ini murni logika bisnis, jadi tetap di service)
+		$product = $this->productRepository->findByIdWithDetails($productId);
+		if (!$product) throw new ValidationException('Produk tidak ditemukan');
+		$available = isset($product['stock']) ? (int)$product['stock'] : PHP_INT_MAX;
+		if ($available <= 0) throw new ValidationException('Produk habis');
 
-        $product = $this->productRepository->findByIdWithDetails($productId);
-        if (!$product) {
-            throw new ValidationException('Produk tidak ditemukan');
-        }
+		// 2. Cek kuantitas yang ada
+		$existingItem = $this->cartItemRepository->whereFirst('buyer_id = ? AND product_id = ?', [$buyerId, $productId]);
+		$existingQty = $existingItem ? (int)$existingItem['quantity'] : 0;
+		
+		// 3. Hitung total baru dan validasi stok
+		$newTotalQty = $existingQty + $quantity;
+		if ($newTotalQty > $available) {
+			throw new ValidationException(['stock' => "Stok tidak mencukupi. Sisa stok: {$available}"]);
+		}
 
-        $available = isset($product['stock']) ? (int)$product['stock'] : PHP_INT_MAX;
-        if ($available <= 0) {
-            throw new ValidationException('Produk habis');
-        }
-
-        if (Auth::isBuyer()) {
-            $buyerId = Auth::id();
-            $this->mergeSessionToPersistent($buyerId);
-
-            // --- INI PERBAIKANNYA ---
-            // 1. Cek kuantitas yang sudah ada di keranjang
-            $existingItem = $this->cartItemRepository->whereFirst('buyer_id = ? AND product_id = ?', [$buyerId, $productId]);
-            $existingQty = $existingItem ? (int)$existingItem['quantity'] : 0;
-            
-            // 2. Hitung total baru
-            $newTotalQty = $existingQty + $quantity;
-
-            // 3. Bandingkan dengan stok
-            if ($newTotalQty > $available) {
-                // Lempar error jika stok tidak cukup
-                throw new ValidationException(['stock' => "Stok tidak mencukupi. Sisa stok: {$available}"]);
-            }
-            // --- AKHIR PERBAIKAN ---
-
-            // 4. Jika lolos, baru tambahkan ke repo
-            $this->cartItemRepository->addOrUpdate($buyerId, $productId, $quantity);
-            return $this->cartItemRepository->countByBuyer($buyerId);
-        }
-
-        // (Logika untuk Guest)
-        if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-
-        $existingQty = isset($_SESSION['cart'][$productId]) ? (int)$_SESSION['cart'][$productId]['quantity'] : 0;
-        $newQty = $existingQty + $quantity;
-        
-        // Perbaiki pengecekan stok untuk guest juga
-        if ($newQty > $available) {
-            $newQty = $available; // Cap di jumlah stok
-        }
-
-        $_SESSION['cart'][$productId] = [
-            'product_id' => $productId,
-            'quantity' => $newQty,
-            'product_name' => $product['product_name'] ?? ($product['name'] ?? ''),
-            'product_price' => $product['price'] ?? 0
-        ];
-
-        return count($_SESSION['cart']);
-    }
+		// 4. Eksekusi
+		$this->cartItemRepository->addOrUpdate($buyerId, $productId, $quantity);
+		
+		// 5. Kembalikan hitungan baru
+		return $this->cartItemRepository->countByBuyer($buyerId);
+	}
 
 	/**
 	 * Merge session cart into persistent DB cart for buyer.
 	 * Called when a buyer performs an action so their guest cart is not lost.
 	 */
-	private function mergeSessionToPersistent(int $buyerId) {
+	public function mergeSessionToPersistent(int $buyerId) {
 		if (empty($_SESSION['cart']) || !is_array($_SESSION['cart'])) return;
 
 		foreach ($_SESSION['cart'] as $prodId => $it) {
@@ -136,7 +98,7 @@ class CartService {
 				];
 				$total += $subtotal;
 			}
-			return ['items' => $items, 'total' => $total];
+			return ['items' => $items, 'total' => $total, 'cart_count' => count($items)];
 		}
 
 		if (empty($_SESSION['cart']) || !is_array($_SESSION['cart'])) return ['items' => [], 'total' => 0];
@@ -260,5 +222,12 @@ class CartService {
 			foreach ($_SESSION['cart'] as $it) $sum += (int)$it['quantity'];
 		}
 		return $sum;
+	}
+
+	/**
+	 * Get unique items count for navbar badge from DB.
+	 */
+	public function getDbUniqueCountByBuyer(int $buyerId): int {
+    	return $this->cartItemRepository->countByBuyer($buyerId);
 	}
 }
