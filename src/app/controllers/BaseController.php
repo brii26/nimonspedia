@@ -201,6 +201,10 @@ abstract class BaseController {
 			if ($rule === 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
 				return "{$fieldName} must be a valid email address";
 			}
+
+			if ($rule === 'array' && !is_array($value)) {
+				return "{$fieldName} must be an array";
+			}
 	
 			if (strpos($rule, 'min:') === 0) {
 				$min = (int)substr($rule, 4);

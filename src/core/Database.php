@@ -114,7 +114,6 @@ class Database {
     }
     
     public function rollBack() {
-        // Hanya rollback jika transaksi sedang aktif
         if ($this->connection->inTransaction()) {
             try {
                 return $this->connection->rollBack();

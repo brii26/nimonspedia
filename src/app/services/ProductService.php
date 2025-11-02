@@ -32,6 +32,9 @@ class ProductService {
         if (is_array($productImageArray) && ($productImageArray['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
             $product_image_path = FileService::saveUploadedImage($productImageArray, 'product_image');
         }
+
+		$categoryIds = $data['category_ids'] ?? [];
+    	$firstCategoryId = (int)($categoryIds[0] ?? 0);
     
         $now = date('Y-m-d H:i:s');
         $productData = [
@@ -43,7 +46,7 @@ class ProductService {
             'main_image_path' => $product_image_path,
             'manual_keywords' => $this->generateManualKeywords(
                 $data['product_name'], 
-                (int)($data['category_id'] ?? 0)
+                $firstCategoryId
             ),
             'created_at' => $now,
             'updated_at' => $now
@@ -53,7 +56,11 @@ class ProductService {
         if (!$productId) {
             throw new Exception('Failed to create product (DB insert returned no id).');
         }
-    
+
+		if (!empty($categoryIds)) {
+			$this->categoryService->updateForProduct($productId, array_map('intval', $categoryIds));
+		}
+		
         return (int)$productId;
     }
 	
@@ -79,6 +86,10 @@ class ProductService {
             );
         }
 
+		$categoryIds = $data['category_ids'] ?? [];
+		$categoryIds = array_map('intval', $categoryIds);
+		$firstCategoryId = (int)($categoryIds[0] ?? 0);
+
         $updateData = [
             'product_name' => htmlspecialchars($data['product_name']),
             'description' => $data['product-description'] ?? '',
@@ -86,7 +97,7 @@ class ProductService {
             'stock' => (int)$data['stock'],
             'manual_keywords' => $this->generateManualKeywords(
                 $data['product_name'], 
-                (int)($data['category_id'] ?? 0)
+                $firstCategoryId
             ),
             'main_image_path' => $productImagePath
         ];
@@ -95,9 +106,7 @@ class ProductService {
             throw new Exception("Failed to update product.");
         }
     
-        $categoryId = $data['category_id'] ?? null;
-        $categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
-        $this->categoryService->updateForProduct($productId, $categoryIds);
+		$this->categoryService->updateForProduct($productId, $categoryIds);
     
         return true;
     }

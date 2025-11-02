@@ -26,12 +26,14 @@ class SellerController extends BaseController {
             'cssFiles' => [
 				'/css/pages/dashboard.css', 
 				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
-				'/css/pages/seller/products/create.css'
+				'/css/pages/seller/products/create.css',
+				'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css'
 			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
-				'/js/pages/seller/products/create.js'
+				'/js/pages/seller/products/create.js',
+				'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js'
             ],
 		]);
         
@@ -161,19 +163,14 @@ class SellerController extends BaseController {
 				'price' => ['required', 'numeric', 'numeric_min:1000'], 
 				'stock' => ['required', 'numeric', 'numeric_min:0'],
 				'description_plain_text' => ['max:1000'],
-				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp']
+				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp'],
+				'category_ids' => ['required', 'array']
 			]); 
 
 			$storeId = $this->getSellerStoreId();
 
 			$productId = $this->productService->createProduct($postData, $storeId);
-			$categoryId = $postData['category_id'] ?? null;
-			$categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
 
-			if (!empty($productId)) {
-				$this->categoryService->updateForProduct((int)$productId, $categoryIds);
-			}
-            
             $this->redirect('/seller/products?status=product_created');
 
         } catch (ValidationException $e) {
@@ -244,12 +241,14 @@ class SellerController extends BaseController {
             'cssFiles' => [
 				'https://cdn.quilljs.com/1.3.6/quill.snow.css',
 				'/css/pages/seller/products/edit.css',
-				'/css/pages/dashboard.css'
+				'/css/pages/dashboard.css',
+				'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css'
 			],
             'jsFiles' => [
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js', 
-				'/js/pages/seller/products/edit.js'
+				'/js/pages/seller/products/edit.js',
+				'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js'
             ],
 		]);
 	}
@@ -274,16 +273,12 @@ class SellerController extends BaseController {
 				'price' => ['required', 'numeric', 'numeric_min:1000'], 
 				'stock' => ['required', 'numeric', 'numeric_min:0'],
 				'description_plain_text' => ['max:1000'],
-				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp']
+				'product_image' => [ 'size:2097152', 'mimes:jpeg,png,jpg,gif,webp'],
+				'category_ids' => ['required', 'array']
 			]); 
 
 			$storeId = $this->getSellerStoreId(); 
 			$this->productService->updateProduct($productId, $postData, $storeId); 
-
-			$categoryId = $postData['category_id'] ?? null;
-			$categoryIds = !empty($categoryId) ? [(int)$categoryId] : [];
-			$this->categoryService->updateForProduct((int)$productId, $categoryIds);
-
 
 			$this->redirect('/seller/products?status=product_updated');
 		} catch (ValidationException $e) { 

@@ -45,22 +45,40 @@ class CategoryRepository extends BaseRepository
      * @param array $categoryIds
      * @return bool
      */
-    public function updateProductCategories(int $productId, array $categoryIds)
+	public function updateProductCategories(int $productId, array $categoryIds): bool
     {
-        // Delete old mappings
-        $this->db->delete("DELETE FROM category_items WHERE product_id = ?", [$productId]);
+        try {
+            $this->db->beginTransaction();
+            $this->db->delete("DELETE FROM category_items WHERE product_id = ?", [$productId]);
 
-        // Insert new mappings if exist
-        if (!empty($categoryIds)) {
-            foreach ($categoryIds as $cid) {
-                $cid = (int)$cid;
-                if ($cid > 0) {
-                    $sql = "INSERT INTO category_items (category_id, product_id) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM category_items WHERE category_id = ? AND product_id = ?)";
-                    $this->db->query($sql, [$cid, $productId, $cid, $productId]);
+            if (!empty($categoryIds)) {
+                $sql = "INSERT INTO category_items (category_id, product_id) VALUES (?, ?)";
+                
+                foreach ($categoryIds as $cid) {
+                    $cid = (int)$cid;
+                    if ($cid > 0) {
+                        $this->db->execute($sql, [$cid, $productId]);
+                    }
                 }
             }
-        }
 
-        return true;
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            
+            error_log("Failed to update categories for product $productId: " . $e->getMessage());
+            return false; 
+        }
+    }
+
+	public function clearForProduct(int $productId): bool {
+        return $this->db->delete("DELETE FROM category_items WHERE product_id = ?", [$productId]);
+    }
+
+	public function addForProduct(int $productId, int $categoryId): bool {
+        $sql = "INSERT INTO category_items (category_id, product_id) VALUES (?, ?)";
+        return $this->db->insert($sql, [$categoryId, $productId]);
     }
 }

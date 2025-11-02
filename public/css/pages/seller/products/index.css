@@ -229,9 +229,11 @@ body {
     background: var(--primary-600);
 }
 .btn-outline-secondary {
-    background: #fff;
-    color: #374151;
+    background: var(--primary);
+    color: white;
     border: 1px solid var(--border);
+	width: 100%;
+	margin-top : 20px;
 }
 .btn-outline-secondary:hover {
     border-color: var(--text-muted);
