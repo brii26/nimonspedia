@@ -14,12 +14,15 @@ foreach ($items as $it) {
     if (!isset($groupedCart[$storeName])) {
         $groupedCart[$storeName] = [
             'store_id' => $storeId,
-            'items' => [] // Buat array untuk item-item di toko ini
+            'items' => [], // Buat array untuk item-item di toko ini
+            'subtotal' => 0
         ];
     }
     
     // Masukkan item saat ini ke "ember" tokonya
     $groupedCart[$storeName]['items'][] = $it;
+    $itemSubtotal = $it['subtotal'] ?? ((int)($it['product_price'] ?? 0) * (int)($it['quantity'] ?? 0));
+    $groupedCart[$storeName]['subtotal'] += $itemSubtotal;
 }
 ?>
 
@@ -91,7 +94,17 @@ foreach ($items as $it) {
                                 </td>
                             </tr>
                         <?php endforeach; // Akhir loop item ?>
-                        
+                        <tr class="store-subtotal">
+                            <td colspan="3" style="text-align: right;">
+                                <strong>Subtotal Toko:</strong>
+                            </td>
+                            <td class="cart-product-price">
+                                <strong>
+                                    Rp <?= number_format($storeData['subtotal'], 0, ',', '.') ?>
+                                </strong>
+                            </td>
+                            <td></td> 
+                        </tr>
                     <?php endforeach; // Akhir loop toko ?>
                 </tbody>
                 </table>
