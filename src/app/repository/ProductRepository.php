@@ -88,12 +88,8 @@ class ProductRepository extends BaseRepository {
                 }
             }
             if (!empty($processedTerms)) {
-                // 2. Tambahkan operator prefix ':*' HANYA di kata terakhir
-                // Ini akan mengubah "kont" -> "kont:*" (cocok: kontroler, kontak)
-                // "laptop kont" -> "laptop & kont:*"
                 $lastTerm = array_pop($processedTerms);
                 $processedTerms[] = $lastTerm . ':*'; 
-                // 3. Gabungkan dengan '&' (AND)
                 $tsQueryParam = implode(' & ', $processedTerms);
                 $whereClauses[] = "p.search_vector @@ to_tsquery('simple', ?)";
                 $params[] = $tsQueryParam;
@@ -116,6 +112,10 @@ class ProductRepository extends BaseRepository {
             $whereClauses[] = "p.price <= ?";
             $params[] = (int)$options['maxPrice'];
         }
+		if (!empty($options['stock']) && $options['stock'] === 'low') {
+            $whereClauses[] = "(p.stock > 0 AND p.stock < 10)";
+        }
+		
 
         $whereSql = "WHERE " . implode(' AND ', $whereClauses);
         return [$whereSql, $params];
