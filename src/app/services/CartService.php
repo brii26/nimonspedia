@@ -231,4 +231,32 @@ class CartService {
 	public function getDbUniqueCountByBuyer(int $buyerId): int {
     	return $this->cartItemRepository->countByBuyer($buyerId);
 	}
+
+	/**
+	 * Mengelompokkan daftar item keranjang berdasarkan toko.
+	 * Ini adalah fungsi helper murni.
+	 *
+	 * @param array $items Array item keranjang yang "datar"
+	 * @return array Array yang sudah dikelompokkan
+	 */
+	public function groupCartItemsByStore(array $items): array {
+		$groupedCart = [];
+		foreach ($items as $it) {
+			$storeName = $it['store_name'] ?? 'Toko Tidak Dikenal';
+			$storeId = $it['store_id'] ?? 0;
+			
+			if (!isset($groupedCart[$storeName])) {
+				$groupedCart[$storeName] = [
+					'store_id' => $storeId,
+					'items' => [],
+					'subtotal' => 0
+				];
+			}
+			
+			$groupedCart[$storeName]['items'][] = $it;
+			$itemSubtotal = $it['subtotal'] ?? ((int)($it['product_price'] ?? 0) * (int)($it['quantity'] ?? 0));
+			$groupedCart[$storeName]['subtotal'] += $itemSubtotal;
+		}
+		return $groupedCart;
+	}
 }

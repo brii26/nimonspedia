@@ -93,7 +93,7 @@ class Application {
         // Order routes (Track 2 & 3)
         $this->router->get('/orders', 'BuyerOrdersController@index');
         $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 
-        $this->router->post('/checkout', 'BuyerOrdersController@checkout');
+        $this->router->post('/orders/checkout', 'BuyerOrdersController@checkout');
         $this->router->get('/orders/show', 'BuyerOrdersController@show');
         $this->router->post('/orders/confirm', 'BuyerOrdersController@confirmReceived');
         

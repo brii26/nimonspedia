@@ -16,9 +16,17 @@ class CartController extends BaseController {
      */
     public function index() {
         try {
-            $cart = $this->cartService->getCart();
+            $cartData = $this->cartService->getCart();
+            $items = $cartData['items'] ?? [];
+            $total = $cartData['total'] ?? 0;
+            
+            $groupedCart = $this->cartService->groupCartItemsByStore($items);
+
             $this->render('pages/cart/index', [
-                'cart' => $cart, 
+                'groupedCart' => $groupedCart,
+                'total' => $total,
+                'cart' => $cartData, 
+                'csrf_token' => Auth::csrfToken(),
                 'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/cart/index.js'
@@ -32,7 +40,15 @@ class CartController extends BaseController {
             ]);
         } catch (Exception $e) {
             error_log('Cart index error: ' . $e->getMessage());
-            $this->render('pages/cart/index', ['cart' => ['items' => [], 'total' => 0], 'error' => $e->getMessage()]);
+            $this->render('pages/cart/index', [
+                'groupedCart' => [],
+                'total' => 0,
+                'cart' => ['items' => [], 'total' => 0],
+                'error' => $e->getMessage(),
+                'csrf_token' => Auth::csrfToken(),
+                'jsFiles' => [],
+                'cssFiles' => ['css/pages/cart.css']
+            ]);
         }
     }
 
