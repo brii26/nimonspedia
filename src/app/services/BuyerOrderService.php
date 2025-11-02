@@ -32,6 +32,12 @@ class BuyerOrderService {
     public function getBuyerOrders(int $buyerId, int $page = 1, int $perPage = 10, ?string $status = null): array {
         $result = $this->orderRepo->getOrdersByBuyer($buyerId, $page, $perPage, $status);
         
+        if (!empty($result['data'])) {
+            foreach ($result['data'] as $key => $order) {
+                $result['data'][$key]['items'] = $this->orderRepo->getOrderItems($order['order_id']);
+            }
+        }
+        
         return $result;
     }
 
@@ -77,6 +83,7 @@ class BuyerOrderService {
             throw new Exception("Gagal membuat pesanan karena kesalahan sistem.");
         }
         $this->cartService->clearCart($buyerId);
+        $_SESSION['cart_count'] = 0;
 
         return $createdOrders[0];
     }

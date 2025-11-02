@@ -32,6 +32,7 @@ $currentPage = $currentPage ?? '';
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/components/modal.css"> <?php if (isset($cssFiles)): ?><?php endif; ?>
     
     <!-- Page-specific CSS -->
     <?php if (isset($cssFiles)): ?>
@@ -141,5 +142,12 @@ $currentPage = $currentPage ?? '';
             });
         });
     </script>
+    <?php
+    echo View::component('confirm-modal');
+
+    echo View::component('cart-success-modal', ['recommendations' => []]);
+
+    echo View::component('error-modal');
+    ?>
 </body>
 </html>

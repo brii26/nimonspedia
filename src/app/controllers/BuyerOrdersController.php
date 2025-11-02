@@ -4,6 +4,7 @@ class BuyerOrdersController extends BaseController {
     private $buyerOrderService;
     private $cartService;
     private $orderRepository;
+    private $authService;
     
     public function __construct() {
         parent::__construct();
@@ -14,6 +15,7 @@ class BuyerOrdersController extends BaseController {
             $this->orderRepository,
             $this->cartService
         );
+        $this->authService = new AuthService();
     }
     
     /**
@@ -27,25 +29,52 @@ class BuyerOrdersController extends BaseController {
             $status = $this->getQuery('status');
             $perPage = 10;
             
-            $orders = $this->buyerOrderService->getBuyerOrders(
+            // Logika ini tetap sama
+            $ordersData = $this->buyerOrderService->getBuyerOrders(
                 Auth::user()['user_id'],
                 $page,
                 $perPage,
                 $status
             );
             
-            $this->render('pages/orders/index', [
-                'orders' => $orders['data'],
+            // Data yang akan dikirim ke view (baik full/partial)
+            $viewData = [
+                'orders' => $ordersData['data'],
                 'current_page' => $page,
-                'total_pages' => $orders['total_pages'],
-                'status_filter' => $status
-            ]);
+                'total_pages' => $ordersData['total_pages'],
+                'currentStatus' => $status, // Diganti dari 'status_filter'
+                'status_filter' => $status  // Jaga-jaga
+            ];
+
+            if ($this->isAjax()) {
+                $html = View::render('components/order-list', $viewData);
+                $this->json(['html' => $html]);
+                return;
+            }
+
+            $this->render('pages/orders/index', array_merge($viewData, [
+                // Load CSS DAN JS baru kita
+                'cssFiles' => ['/css/pages/seller/orders.css'],
+                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
+            ]));
             
         } catch (Exception $e) {
             error_log('Error fetching orders: ' . $e->getMessage());
+            
+            if ($this->isAjax()) {
+                $this->json(['html' => '<div class="empty-state"><p>Gagal memuat pesanan.</p></div>'], 500);
+                return;
+            }
+            
             $this->render('pages/orders/index', [
                 'orders' => [],
-                'error' => 'Failed to load orders'
+                'current_page' => 1,
+                'total_pages' => 0,
+                'currentStatus' => $status,
+                'status_filter' => $status,
+                'error' => 'Failed to load orders',
+                'cssFiles' => ['/css/pages/seller/orders.css'],
+                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
             ]);
         }
     }
@@ -70,7 +99,10 @@ class BuyerOrdersController extends BaseController {
             }
             
             $this->render('pages/orders/show', [
-                'order' => $order
+                'order' => $order,
+                // Load CSS DAN JS baru kita
+                'cssFiles' => ['/css/pages/seller/orders.css'],
+                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
             ]);
             
         } catch (Exception $e) {
@@ -123,7 +155,8 @@ class BuyerOrdersController extends BaseController {
             
             $this->render('pages/orders/checkout', [
                 'cart' => $cartData,
-                'user' => $user
+                'user' => $user,
+                'jsFiles' => ['/js/components/confirm-modal.js', '/js/utils/fetchXhr.js',]
             ]);
             
         } catch (Exception $e) {
@@ -153,6 +186,8 @@ class BuyerOrdersController extends BaseController {
             $order = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
             
             if ($order) {
+                $updatedUser = $this->authService->getUserById($userId);
+                Auth::updateSession($updatedUser);
                 $this->redirect('/orders/show?id=' . $order['order_id']);
                 return;
             } else {

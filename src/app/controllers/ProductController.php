@@ -76,7 +76,6 @@ class ProductController extends BaseController {
             ],
             'cssFiles' => [
                 '/css/pages/product-detail.css',
-                '/css/components/modal.css'
             ]
         ]);
     }
