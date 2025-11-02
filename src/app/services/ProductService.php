@@ -58,6 +58,10 @@ class ProductService {
             'stock' => (int)$data['stock'],
             'store_id' => $storeId,
             'main_image_path' => $product_image_path,
+            'manual_keywords' => $this->generateManualKeywords(
+                $data['product_name'], 
+                (int)($data['category_id'] ?? 0)
+            ),
             'created_at' => $now,
             'updated_at' => $now
         ];
@@ -101,6 +105,10 @@ class ProductService {
             'description' => $data['product-description'] ?? '',
             'price' => (float)$data['price'],
             'stock' => (int)$data['stock'],
+            'manual_keywords' => $this->generateManualKeywords(
+                $data['product_name'], 
+                (int)($data['category_id'] ?? 0)
+            ),
             'main_image_path' => $productImagePath
         ];
     
@@ -136,5 +144,64 @@ class ProductService {
         }
         
         return true;
+    }
+
+    private function generateManualKeywords(string $productName, int $categoryId): string
+    {
+        $keywords = [];
+        $nameLower = strtolower($productName);
+
+        switch ($categoryId) {
+            case 1: // Electronics
+                $keywords = array_merge($keywords, ['elektronik', 'gadget', 'laptop', 'notebook', 'komputer', 'pc', 'handphone', 'hp', 'smartphone', 'ponsel', 'aksesoris']);
+                break;
+            case 2: // Fashion
+                $keywords = array_merge($keywords, ['fashion', 'baju', 'pakaian', 'kaos', 'kemeja', 'celana', 'sepatu', 'jaket', 'tas', 'busana']);
+                break;
+            case 3: // Food & Beverages
+                $keywords = array_merge($keywords, ['makanan', 'minuman', 'snack', 'cemilan', 'kopi', 'teh', 'sembako', 'bumbu', 'dapur']);
+                break;
+            case 4: // Books
+                $keywords = array_merge($keywords, ['buku', 'novel', 'komik', 'majalah', 'pelajaran', 'edukasi', 'literatur', 'bacaan']);
+                break;
+            case 5: // Sports & Outdoor
+                $keywords = array_merge($keywords, ['olahraga', 'sport', 'outdoor', 'gym', 'fitness', 'sepatu olahraga', 'bola', 'alat pancing', 'mendaki', 'gunung']);
+                break;
+            case 6: // Health & Beauty
+                $keywords = array_merge($keywords, ['kesehatan', 'kecantikan', 'skincare', 'makeup', 'kosmetik', 'obat', 'vitamin', 'suplemen', 'parfum', 'wajah']);
+                break;
+            case 7: // Home & Garden
+                $keywords = array_merge($keywords, ['rumah', 'taman', 'kebun', 'dapur', 'perabotan', 'furnitur', 'dekorasi', 'alat masak', 'lampu', 'perkakas']);
+                break;
+            case 8: // Toys & Games
+                $keywords = array_merge($keywords, ['mainan', 'main', 'game', 'hobi', 'anak', 'boneka', 'action figure', 'video game', 'puzzle', 'kartu']);
+                break;
+            case 9: // Automotive
+                $keywords = array_merge($keywords, ['otomotif', 'mobil', 'motor', 'aksesoris mobil', 'aksesoris motor', 'oli', 'helm', 'suku cadang', 'mesin']);
+                break;
+            // case 10: // Others - tidak perlu keyword khusus
+        }
+
+        // 2. Kamus berdasarkan Brand (dari nama produk)
+        if (str_contains($nameLower, 'macbook') || str_contains($nameLower, 'iphone') || str_contains($nameLower, 'ipad')) {
+            $keywords[] = 'apple';
+        }
+        if (str_contains($nameLower, 'galaxy')) {
+            $keywords[] = 'samsung';
+        }
+        if (str_contains($nameLower, 'thinkpad') || str_contains($nameLower, 'legion') || str_contains($nameLower, 'yoga')) {
+            $keywords[] = 'lenovo';
+        }
+        if (str_contains($nameLower, 'rog') || str_contains($nameLower, 'tuf') || str_contains($nameLower, 'zenbook')) {
+            $keywords[] = 'asus';
+        }
+        if (str_contains($nameLower, 'playstation') || str_contains($nameLower, 'bravia') || str_contains($nameLower, 'alpha')) {
+            $keywords[] = 'sony';
+        }
+        if (str_contains($nameLower, 'switch')) {
+            $keywords[] = 'nintendo';
+        }
+
+        return implode(' ', array_unique(array_filter($keywords)));
     }
 }
