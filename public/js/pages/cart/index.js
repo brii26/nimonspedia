@@ -1,4 +1,4 @@
-// /public/js/pages/cart/index.js (atau cart-page.js)
+// /public/js/pages/cart/index.js
 
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
@@ -89,71 +89,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (removeButtons.length > 0) {
         removeButtons.forEach(button => {
-            const onConfirm = async () => {
-                const productId = button.dataset.productId;
-                const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
-                const originalButtonText = button.textContent || 'Hapus';
-
-                if (window.App) {
-                    window.App.showLoading(button, 'Menghapus...');
-                } else {
-                    button.disabled = true;
-                }
-
-                const data = new URLSearchParams({
-                    csrf_token: csrfToken,
-                    product_id: productId
-                });
-
-                try {
-                    const response = await window.fetchXhr('/cart/remove', {
-                        method: 'POST',
-                        body: data
-                    });
-
-                    if (response.ok) {
-                        if (row) row.remove();
-                        if (document.querySelectorAll('.cart-item').length === 0) {
-                            window.location.reload();
-                        } else {
-                            updateCartBadge();
-                        }
-                    } else {
-                        const errData = await response.json();
-                        if (window.App) {
-                            window.App.showAlert(errData.error || 'Gagal menghapus item', 'error');
-                        } else {
-                            alert(errData.error || 'Gagal menghapus item');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error menghapus item:', error);
-                    if (window.App) {
-                        window.App.showAlert('Gagal menghapus item dari keranjang.', 'error');
-                    } else {
-                        alert('Gagal menghapus item dari keranjang.');
-                    }
-                } finally {
-                    // Kembalikan tombol ke keadaan semula
-                    if (window.App) {
-                        window.App.hideLoading(button, originalButtonText);
-                    } else {
-                        button.disabled = false;
-                    }
-                }
-            };
             
-            const onCancel = () => {};
-
-            // Pasang event listener
             button.addEventListener('click', function() {
+                const clickedButton = this;
+                const productId = clickedButton.dataset.productId;
+                const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
+                const originalButtonText = clickedButton.textContent || 'Hapus';
                 const message = 'Apakah Anda yakin ingin menghapus item ini dari keranjang?';
 
-                if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-                    window.AppConfirm.ask(message, onConfirm, onCancel);
-                    
+                const onOk = async () => {
+                    document.removeEventListener('confirm:cancel', onCancel);
+                    if (window.App) {
+                        window.App.showLoading(clickedButton, 'Menghapus...');
+                    } else {
+                        clickedButton.disabled = true;
+                    }
+
+                    const data = new URLSearchParams({
+                        csrf_token: csrfToken,
+                        product_id: productId
+                    });
+
+                    try {
+                        const response = await window.fetchXhr('/cart/remove', {
+                            method: 'POST',
+                            body: data
+                        });
+
+                        if (response.ok) {
+                            if (row) row.remove();
+                            if (document.querySelectorAll('.cart-item').length === 0) {
+                                window.location.reload();
+                            } else {
+                                updateCartBadge();
+                            }
+                        } else {
+                            const errData = await response.json();
+                            if (window.App) {
+                                window.App.showAlert(errData.error || 'Gagal menghapus item', 'error');
+                            } else {
+                                alert(errData.error || 'Gagal menghapus item');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error menghapus item:', error);
+                        if (window.App) {
+                            window.App.showAlert('Gagal menghapus item dari keranjang.', 'error');
+                        } else {
+                            alert('Gagal menghapus item dari keranjang.');
+                        }
+                    } finally {
+                        if (window.App) {
+                            window.App.hideLoading(clickedButton, originalButtonText);
+                        } else {
+                            clickedButton.disabled = false;
+                        }
+                    }
+                };
+                
+                const onCancel = () => {
+                    document.removeEventListener('confirm:ok', onOk);
+                };
+
+                document.addEventListener('confirm:ok', onOk, { once: true });
+                document.addEventListener('confirm:cancel', onCancel, { once: true });
+
+                if (window.AppConfirm && typeof window.AppConfirm.ask === 'function' && document.querySelector('.app-confirm-modal')) {
+                    window.AppConfirm.ask(message);
                 } else {
-                    confirm(message) ? onConfirm() : onCancel();
+                    if (confirm(message)) {
+                        onOk();
+                    } else {
+                        onCancel();
+                    }
                 }
             });
         });
