@@ -13,7 +13,7 @@ $products = $productsData['data'] ?? [];
             
             <div class="product-card">
                 <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-image-link">
-                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.png') ?>" 
                          alt="<?= View::escape($product['product_name']) ?>" 
                          class="product-image">
                 </a>

@@ -21,7 +21,7 @@
                     <?php if (!empty($order['items'])): ?>
                         <?php $firstItem = $order['items'][0]; ?>
                         <div class="order-item-preview">
-                            <img src="/storage/<?= View::escape($firstItem['main_image_path'] ?? 'images/product_placeholder.png') ?>" 
+                            <img src="/storage/<?= View::escape($firstItem['main_image_path'] ?? 'product_images/default-product.png') ?>" 
                                  alt="<?= View::escape($firstItem['product_name']) ?>" 
                                  class="order-item-thumbnail">
                             <div class="order-item-info">

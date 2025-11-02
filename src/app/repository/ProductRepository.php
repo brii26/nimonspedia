@@ -108,6 +108,15 @@ class ProductRepository extends BaseRepository {
             $params[] = $options['store_id'];
         }
 
+        if (isset($options['minPrice']) && $options['minPrice'] !== '') {
+            $whereClauses[] = "p.price >= ?";
+            $params[] = (int)$options['minPrice'];
+        }
+        if (isset($options['maxPrice']) && $options['maxPrice'] !== '') {
+            $whereClauses[] = "p.price <= ?";
+            $params[] = (int)$options['maxPrice'];
+        }
+
         $whereSql = "WHERE " . implode(' AND ', $whereClauses);
         return [$whereSql, $params];
     }

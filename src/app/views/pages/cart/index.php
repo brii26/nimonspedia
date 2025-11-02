@@ -40,7 +40,7 @@
                                         <div class="cart-product">
                                             
                                             <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>">
-                                            <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'images/product_placeholder.png') ?>" 
+                                            <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.png') ?>" 
                                                 alt="<?= View::escape($it['product_name']) ?>" 
                                                 class="product-image">
                                             </a>
