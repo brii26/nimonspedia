@@ -186,3 +186,7 @@
     background-color: #177436; /* Warna utama */
     color: white;
 }
+
+#updateCart {
+    display: none;
+}

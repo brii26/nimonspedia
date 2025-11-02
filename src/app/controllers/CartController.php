@@ -118,6 +118,9 @@ class CartController extends BaseController {
     /**
      * Update quantity (POST)
      */
+    /**
+     * Update quantity (POST)
+     */
     public function update() {
         try {
             $this->verifyCsrf();
@@ -128,7 +131,19 @@ class CartController extends BaseController {
             if ($quantity < 0) return $this->error('Invalid quantity', 422);
 
             $res = $this->cartService->updateQuantity($productId, $quantity);
-            return $this->success('Cart updated', ['updated' => (bool)$res]);
+            
+            $cartData = $this->cartService->getCart();
+            $groupedCart = $this->cartService->groupCartItemsByStore($cartData['items'] ?? []);
+
+            return $this->success('Cart updated', [
+                'updated' => (bool)$res,
+                'newCartData' => [
+                    'items' => $cartData['items'],
+                    'total' => $cartData['total'],
+                    'groupedCart' => $groupedCart
+                ]
+            ]);
+
         } catch (Exception $e) {
             return $this->error($e->getMessage(), 500);
         }

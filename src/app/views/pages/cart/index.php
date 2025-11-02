@@ -17,34 +17,24 @@
 
             <?php foreach ($groupedCart as $storeName => $storeData): ?>
                 
-                <div class="cart-store-card">
+                <div class="cart-store-card" 
+                     data-store-id="<?= (int)($storeData['store_id'] ?? 0) // <-- TAMBAHKAN INI ?>">
                     
                     <div class="cart-store-header">
                         <strong><?= htmlspecialchars($storeName) ?></strong>
                     </div>
 
                     <table class="cart-items-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40%;">Produk</th>
-                                <th style="width: 20%;">Harga</th>
-                                <th style="width: 15%;">Jumlah</th>
-                                <th style="width: 20%;">Subtotal</th>
-                                <th style="width: 5%;"></th>
-                            </tr>
-                        </thead>
                         <tbody>
                             <?php foreach ($storeData['items'] as $it): ?>
                                 <tr class="cart-item" data-product-id="<?= (int)($it['product_id'] ?? 0) ?>">
+                                    
                                     <td>
                                         <div class="cart-product">
-                                            
                                             <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>">
-                                            <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.png') ?>" 
+                                            <img src="<?= '/storage/' . View::escape(!empty($it['product_image']) ? $it['product_image'] : 'images/product_placeholder.png') ?>" 
                                                 alt="<?= View::escape($it['product_name']) ?>" 
-                                                class="product-image">
-                                            </a>
-                                            
+                                                class="product-image"> </a>
                                             <div class="cart-product-info">
                                                 <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>" class="cart-product-name">
                                                     <?= htmlspecialchars($it['product_name'] ?? '') ?>
@@ -52,17 +42,21 @@
                                                 </div>
                                         </div>
                                     </td>
+
                                     <td class="cart-product-price">
                                         Rp <?= number_format($it['product_price'] ?? 0, 0, ',', '.') ?>
                                     </td>
+
                                     <td>
                                         <input type="number" class="cart-quantity" 
                                             value="<?= (int)$it['quantity'] ?>" 
-                                            min="0" max="<?= (int)($it['product_stock'] ?? 999) ?>">
+                                            min="1" max="<?= (int)($it['product_stock'] ?? 999) ?>">
                                     </td>
-                                    <td class="cart-product-price">
+                                    
+                                    <td class="cart-product-price item-subtotal">
                                         Rp <?= number_format($it['subtotal'] ?? (($it['product_price'] ?? 0) * ($it['quantity'] ?? 0)), 0, ',', '.') ?>
                                     </td>
+                                    
                                     <td>
                                         <button type="button" class="btn-remove" data-product-id="<?= (int)($it['product_id'] ?? 0) ?>">
                                             Hapus
@@ -75,7 +69,9 @@
 
                     <div class="cart-store-footer">
                         <span>Subtotal Toko:</span>
-                        <strong>Rp <?= number_format($storeData['subtotal'], 0, ',', '.') ?></strong>
+                        <strong class="store-subtotal">
+                            Rp <?= number_format($storeData['subtotal'], 0, ',', '.') ?>
+                        </strong>
                     </div>
 
                 </div> <?php endforeach; // Akhir loop toko ?>
@@ -83,7 +79,9 @@
             <div class="cart-summary-card">
                 <div class="cart-total">
                     <h3>Total Belanja:</h3>
-                    <h3 class="grand-total">Rp <?= number_format($total, 0, ',', '.') ?></h3>
+                    <h3 class="grand-total" id="grand-total-display">
+                        Rp <?= number_format($total, 0, ',', '.') ?>
+                    </h3>
                 </div>
 
                 <div class="cart-actions">
@@ -92,7 +90,6 @@
                     <a href="/checkout" class="btn-checkout">Checkout</a>
                 </div>
             </div>
-
         </form>
     <?php endif; ?>
 
