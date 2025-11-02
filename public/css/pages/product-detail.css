@@ -110,6 +110,9 @@ h1.product-name {
     margin-bottom: 1rem;
 }
 
+/* =================================================== */
+/* PERBAIKAN KERAPIAN DESKRIPSI            */
+/* =================================================== */
 .product-description-html {
     font-size: 1rem;
     line-height: 1.6;
@@ -118,6 +121,15 @@ h1.product-name {
     overflow-wrap: break-word;
     word-break: break-word;
 }
+/* Style dasar untuk tag <p> dari Quill */
+.product-description-html p {
+    margin-bottom: 1em;
+}
+.product-description-html p:last-child {
+    margin-bottom: 0;
+}
+/* =================================================== */
+
 
 /* ==========================================================================
    4. Kolom 3: Kartu Keranjang
@@ -164,6 +176,23 @@ h1.product-name {
     object-fit: cover;
     border: 1px solid #eee;
 }
+
+/* =================================================== */
+/* STYLE UNTUK DESKRIPSI DI SIDEBAR         */
+/* =================================================== */
+.sidebar-store-description {
+    font-size: 0.875rem; /* Lebih kecil */
+    color: var(--text-muted, #6c757d);
+    line-height: 1.5;
+    padding-left: calc(40px + 0.75rem);
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.sidebar-store-description p {
+    margin: 0;
+    padding: 0;
+}
+/* =================================================== */
 
 .quantity-selector-wrapper {
     display: flex;

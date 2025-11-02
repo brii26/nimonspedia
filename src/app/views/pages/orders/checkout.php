@@ -128,6 +128,7 @@ $sisaSaldo = $saldoUser - $totalBelanja;
                         <?php if (!$saldoCukup): ?>
                             <div class="alert alert-danger" role="alert">
                                 <strong>Saldo Tidak Cukup!</strong> Saldo Anda tidak mencukupi untuk melakukan transaksi ini.
+                                <a href="/profile" class="alert-link" style="text-decoration: underline;">Top-up di halaman profil Anda.</a>
                             </div>
                         <?php endif; ?>
 
