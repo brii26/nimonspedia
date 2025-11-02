@@ -23,6 +23,11 @@ class CartController extends BaseController {
                 '/js/utils/fetchXhr.js',
                 '/js/pages/cart/index.js'
                 ],
+                'cssFiles'=> [
+                    'css/components/modal.css',
+                    'css/components/product-filter.css'
+                ]
+
             ]);
         } catch (Exception $e) {
             error_log('Cart index error: ' . $e->getMessage());
