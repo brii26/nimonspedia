@@ -57,7 +57,7 @@ class CartItemRepository extends BaseRepository
     public function findByBuyerId(int $buyerId): array
     {
         $sql = "SELECT ci.cart_item_id, ci.buyer_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at,
-                       p.product_name, p.price as product_price, p.stock as product_stock,
+                       p.product_name, p.main_image_path AS product_image, p.price as product_price, p.stock as product_stock,
                        p.store_id, s.store_name,
                        (p.price * ci.quantity) as subtotal
                 FROM {$this->table} ci

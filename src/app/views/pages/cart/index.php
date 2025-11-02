@@ -62,11 +62,18 @@ foreach ($items as $it) {
                                 <tr class="cart-item" data-product-id="<?= (int)($it['product_id'] ?? 0) ?>">
                                     <td>
                                         <div class="cart-product">
+                                            
+                                            <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>">
+                                            <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'images/product_placeholder.png') ?>" 
+                                                alt="<?= View::escape($it['product_name']) ?>" 
+                                                class="product-image">
+                                            </a>
+                                            
                                             <div class="cart-product-info">
                                                 <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>" class="cart-product-name">
                                                     <?= htmlspecialchars($it['product_name'] ?? '') ?>
                                                 </a>
-                                            </div>
+                                                </div>
                                         </div>
                                     </td>
                                     <td class="cart-product-price">

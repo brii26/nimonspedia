@@ -89,6 +89,7 @@ class CartService {
 					'cart_item_id' => $r['cart_item_id'],
 					'product_id' => $r['product_id'],
 					'product_name' => $r['product_name'],
+					'product_image' => $r['product_image'],
 					'product_price' => $price,
 					'product_stock' => $r['product_stock'] ?? null,
 					'quantity' => $qty,

@@ -1,8 +1,31 @@
 /* * CSS untuk cart/index.php
- * (Tambahkan ke file CSS Anda, misal: /public/css/cart.css)
  */
 
 /* Card utama untuk setiap toko */
+.cart-product {
+    display: flex;
+    align-items: center; /* Membuat gambar & teks sejajar vertikal */
+    gap: 15px; /* Jarak antara gambar dan teks */
+}
+.cart-product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover; /* Mencegah gambar penyok/stretch */
+    border-radius: 6px; /* Sudut melengkung */
+    border: 1px solid #f0f0f0; /* Border tipis */
+    flex-shrink: 0; /* Mencegah gambar mengecil jika nama produk panjang */
+}
+
+.cart-product-name {
+    font-size: 1rem;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+.cart-product-name:hover {
+    text-decoration: underline;
+}
+
 .cart-store-card {
     background: #ffffff;
     border-radius: 8px; /* Mirip halaman pesanan */
