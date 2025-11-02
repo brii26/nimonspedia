@@ -13,7 +13,7 @@ $total = $cart['total'] ?? 0;
     <?php if (empty($items)): ?>
         <div class="cart-empty">
             <p>Keranjang Anda kosong.</p>
-            <a href="/products" class="btn btn-primary">Mulai Belanja</a>
+            <a href="/" class="btn btn-primary">Mulai Belanja</a>
         </div>
     <?php else: ?>
         <form method="post" action="/cart/update" id="cartForm">
@@ -70,7 +70,7 @@ $total = $cart['total'] ?? 0;
             <div class="cart-actions">
                 <button type="button" id="updateCart" class="btn-update">Update Keranjang</button>
                 <a href="/checkout" class="btn-checkout">Lanjut ke Checkout</a>
-                <a href="/products" class="btn btn-outline-primary">Lanjutkan Belanja</a>
+                <a href="/" class="btn btn-outline-primary">Lanjutkan Belanja</a>
             </div>
         </form>
 

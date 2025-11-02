@@ -45,7 +45,7 @@
                 <h2>Quick Actions</h2>
             </header>
             <nav class="actions-nav">
-                <a href="/products" class="btn btn-primary">Browse Products</a>
+                <a href="/" class="btn btn-primary">Browse Products</a>
                 <a href="/stores" class="btn btn-secondary">Browse Stores</a>
                 <a href="/categories" class="btn btn-secondary">Categories</a>
             </nav>
