@@ -3,7 +3,7 @@ const createEditor = (selector, hiddenInputName) => {
   if (!editor) return null;
 
   const quill = new Quill(selector, {
-	modules: { toolbar: false },
+	modules: { toolbar: true },
 	theme: 'snow'
   });
   

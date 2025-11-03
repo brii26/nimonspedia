@@ -15,6 +15,9 @@ class CartController extends BaseController {
      * Show cart page
      */
     public function index() {
+        $this->requireRole('BUYER');
+        $this->verifyCsrf();
+
         try {
             $cartData = $this->cartService->getCart();
             $items = $cartData['items'] ?? [];
@@ -115,9 +118,6 @@ class CartController extends BaseController {
         }
     }
 
-    /**
-     * Update quantity (POST)
-     */
     /**
      * Update quantity (POST)
      */

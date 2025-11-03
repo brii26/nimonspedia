@@ -102,10 +102,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById(modalId);
         if (modal) modal.style.display = 'none';
     };
+
+    const escapeHTML = (str) => {
+        if (typeof str !== 'string' || !str) return '';
+        return str.replace(/[&<>"']/g, function(m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m];
+        });
+    };
     
     const nl2br = (str) => {
         if (typeof str !== 'string' || !str) return '';
-        return str.replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
+
+        const safeStr = escapeHTML(str);
+        return safeStr.replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
     };
 
     window.showOrderDetail = (orderId) => {

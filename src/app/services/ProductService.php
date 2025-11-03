@@ -39,7 +39,7 @@ class ProductService {
         $now = date('Y-m-d H:i:s');
         $productData = [
             'product_name' => htmlspecialchars($data['product_name']),
-            'description' => $data['product-description'] ?? '',
+            'description' => SanitizerService::sanitizeRichText($data['product-description']) ?? '',
             'price' => (float)$data['price'],
             'stock' => (int)$data['stock'],
             'store_id' => $storeId,
@@ -92,7 +92,7 @@ class ProductService {
 
         $updateData = [
             'product_name' => htmlspecialchars($data['product_name']),
-            'description' => $data['product-description'] ?? '',
+            'description' => SanitizerService::sanitizeRichText($data['product-description']) ?? '',
             'price' => (float)$data['price'],
             'stock' => (int)$data['stock'],
             'manual_keywords' => $this->generateManualKeywords(

@@ -1,5 +1,5 @@
 <?php
-$description = $store['store_description'] ?? null;
+$description = SanitizerService::sanitizeRichText($store['store_description']) ?? null;
 $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
 ?>
 
