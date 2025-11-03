@@ -106,7 +106,11 @@ $isOutOfStock = $stock <= 0;
                             </div>
 
                             <div class="action-buttons">
-                                <button type="submit" class="btn btn-primary w-100" <?= $isOutOfStock ? 'disabled' : '' ?>>
+                                <button type="submit" 
+                                    class="btn btn-primary w-100" 
+                                    <?= $isOutOfStock ? 'disabled' : '' ?> 
+                                    style=<?= $isOutOfStock ? "background-color:" . "#555" : '' ?>
+                                >
                                     <?= $isOutOfStock ? 'Stok Habis' : '+ Keranjang' ?>
                                 </button>
                             </div>
