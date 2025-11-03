@@ -54,7 +54,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                 
                 <div id="product-list-container">
                      <?php
-                    echo View::component('components/product-list', [
+                    echo View::render('components/product-list', [
                         'productsData' => $productsData,
                         'filters' => $filters,
                         'actionUrl' => $actionUrl ?? '/store',
