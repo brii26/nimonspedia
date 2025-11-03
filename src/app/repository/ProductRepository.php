@@ -46,18 +46,37 @@ class ProductRepository extends BaseRepository {
 		$perPage = max(1, (int)($options['perPage'] ?? 12));
 		$offset  = ($page - 1) * $perPage;
 	
-		[$whereSql, $params] = $this->buildFilterConditions($options);
+		[$whereSql, $filterParams] = $this->buildFilterConditions($options);
 	
-		$sortBy  = $options['sortBy'] ?? null;        // null = no sort
+		$sortBy  = $options['sortBy'] ?? null;
 		$sortDir = (strtoupper($options['sortDir'] ?? 'ASC') === 'DESC') ? 'DESC' : 'ASC';
+		$searchTerm = $options['searchTerm'] ?? '';
 	
 		$orderSql = '';
-		if ($sortBy === 'name')  $orderSql = "ORDER BY p.product_name {$sortDir}";
-		if ($sortBy === 'price') $orderSql = "ORDER BY p.price {$sortDir}";
-		if ($sortBy === 'stock') $orderSql = "ORDER BY p.stock {$sortDir}";
+		$sortParams = [];
+
+		if ($sortBy === 'name')  {
+			$orderSql = "ORDER BY p.product_name {$sortDir}";
+		} elseif ($sortBy === 'price') {
+			$orderSql = "ORDER BY p.price {$sortDir}";
+		} elseif ($sortBy === 'stock') {
+			$orderSql = "ORDER BY p.stock {$sortDir}";
+		} elseif (empty($sortBy) && !empty($searchTerm)) {
+			$orderSql = "
+				ORDER BY 
+					CASE 
+						WHEN p.product_name ILIKE ? THEN 1 
+						ELSE 2
+					END ASC, 
+					p.product_name ASC
+			";
+			$sortParams[] = $searchTerm . '%';
+		}
 	
-		$total   = $this->countFilteredProducts($whereSql, $params);
-		$records = $this->getFilteredProductsPage($whereSql, $params, $perPage, $offset, $orderSql);
+		$total = $this->countFilteredProducts($whereSql, $filterParams);
+
+		$allParams = array_merge($filterParams, $sortParams);
+		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql);
 	
 		return [
 			'data' => $records,
@@ -79,21 +98,9 @@ class ProductRepository extends BaseRepository {
         $whereClauses = ['p.deleted_at IS NULL'];
         $params = [];
 
-        if (!empty($options['searchTerm'])) {
-            $terms = preg_split('/\s+/', trim($options['searchTerm']));
-            $processedTerms = [];
-            foreach ($terms as $term) {
-                if (!empty($term)) {
-                    $processedTerms[] = preg_replace('/[()|&!:]/', '', $term);
-                }
-            }
-            if (!empty($processedTerms)) {
-                $lastTerm = array_pop($processedTerms);
-                $processedTerms[] = $lastTerm . ':*'; 
-                $tsQueryParam = implode(' & ', $processedTerms);
-                $whereClauses[] = "p.search_vector @@ to_tsquery('simple', ?)";
-                $params[] = $tsQueryParam;
-            }
+		if (!empty($options['searchTerm'])) {
+			$whereClauses[] = "p.product_name ILIKE ?";
+			$params[] = '%' . $options['searchTerm'] . '%';
         }
         if (!empty($options['categoryId'])) {
             $whereClauses[] = "p.product_id IN (SELECT product_id FROM category_items WHERE category_id = ?)";
@@ -151,10 +158,14 @@ class ProductRepository extends BaseRepository {
 	
 	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '') {
 		$sql = "
-			SELECT p.*, s.store_name
+			SELECT 
+				p.*, 
+				s.store_name,
+				COALESCE(string_agg(DISTINCT c.name, '|||'), '') AS category_names
 			FROM products p
 			JOIN stores s ON p.store_id = s.store_id
 			LEFT JOIN category_items ci ON p.product_id = ci.product_id
+			LEFT JOIN categories c ON ci.category_id = c.category_id
 			{$whereSql}
 			GROUP BY p.product_id, s.store_name
 			" . ($orderSql ?: "") . "

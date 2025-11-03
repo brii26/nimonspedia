@@ -94,10 +94,41 @@
               <span class="stock-badge <?= $stockClass ?>"><?= $stockText ?></span>
             </div>
 
-            <div class="card-body">
-              <h3 class="card-title"><?= View::escape($product['product_name']) ?></h3>
-              <p class="card-price"><?= View::currency($product['price']) ?></p>
-            </div>
+			<div class="card-body">
+				<h3 class="card-title"><?= View::escape($product['product_name']) ?></h3>
+				<p class="card-price"><?= View::currency($product['price']) ?></p>
+
+			<?php
+				$allCategories = explode('|||', $product['category_names']);
+				$categories = array_filter($allCategories, 'trim'); 
+				$categoryCount = count($categories);
+				$maxToShow = 2;
+			?>
+
+			<?php if ($categoryCount > 0): ?>
+			<div class="card-categories">
+				<?php
+					$categoriesToShow = array_slice($categories, 0, $maxToShow);
+					foreach ($categoriesToShow as $categoryName):
+				?>
+					<span class="category-pill">
+					<?= View::escape($categoryName) ?>
+					</span>
+				<?php endforeach; ?>
+				
+				<?php
+					if ($categoryCount > $maxToShow):
+						$remainingCount = $categoryCount - $maxToShow;
+				?>
+					<span class="category-pill more-pill">
+						+<?= $remainingCount ?>
+					</span>
+				<?php endif; ?>
+
+			</div>
+			<?php endif; ?>
+
+			</div>
 
             <div class="card-actions">
               <a href="/seller/products/edit?id=<?= $product['product_id'] ?>" class="btn btn-warning">Edit</a>
