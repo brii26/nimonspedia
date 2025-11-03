@@ -70,10 +70,6 @@ $activePage = $currentPage ?? '';
                                 <?= $cartCount ?>
                             </span>
                         </a>
-                        <a href="/orders" class="nav-link <?= $activePage === 'orders' ? 'active' : '' ?>">
-                            <span class="nav-icon">📦</span>
-                            <span class="nav-text">Orders</span>
-                        </a>
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
                         <!-- Seller Navigation -->
@@ -129,8 +125,12 @@ $activePage = $currentPage ?? '';
                                         <span class="dropdown-icon">💳</span>
                                         <span class="dropdown-text">Top Up Balance</span>
                                     </a>
+                                    <a href="/orders" class="nav-link <?= $activePage === 'orders' ? 'active' : '' ?>">
+                                        <span class="nav-icon">📦</span>
+                                        <span class="nav-text">Orders</span>
+                                    </a>
                                 <?php endif; ?>
-                                
+                                        
                                 <div class="dropdown-divider"></div>
                                 
                                 <form method="POST" action="/logout" class="logout-form">
