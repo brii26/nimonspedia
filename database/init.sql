@@ -13,7 +13,7 @@ CREATE TABLE users (
     role user_role NOT NULL,
     name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
-    balance BIGINT DEFAULT 0,
+    balance NUMERIC(1000,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -24,7 +24,7 @@ CREATE TABLE stores (
     store_name VARCHAR(100) NOT NULL UNIQUE,
     store_description TEXT,
     store_logo_path VARCHAR(500),
-    balance BIGINT DEFAULT 0,
+    balance NUMERIC(1000,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE

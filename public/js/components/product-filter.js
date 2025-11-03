@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const formData = new FormData(filterForm);
             const params = new URLSearchParams(formData);
+            params.set('page', '1');
             const actionUrl = filterForm.getAttribute('action') || window.location.pathname;
             const queryString = params.toString();
             fetchUrl = `${actionUrl}?${queryString}`;
