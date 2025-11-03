@@ -51,26 +51,33 @@ $isOutOfStock = $stock <= 0;
 
         <aside class="product-purchase-sidebar">
             <div class="purchase-card">
-                <div class="purchase-card-header">
-                    <h3 class_ ="card-title">Atur jumlah</h3>
-                </div>
-                
                 <div class="purchase-card-body">
                     <div class="store-info-simple">
                         <img src="<?= '/storage/' . View::escape($product['store_logo_path'] ?? 'store_logos/default-store.png') ?>" alt="Logo <?= $storeName ?>" class="store-logo-small">
                         <a href="<?= $storeLink ?>" class="store-link"><?= $storeName ?></a>
                     </div>
                     
-                    <!-- ============================================== -->
-                    <!--     DESKRIPSI TOKO DITAMBAHKAN DI SINI     -->
-                    <!-- ============================================== -->
                     <div class="sidebar-store-description">
-                        <?= $storeDescription ?>
+                        <?php
+                            $plainDescription = strip_tags($storeDescription);
+                            $limit = 100;
+
+                            if (mb_strlen($plainDescription) > $limit) {
+                                $truncatedText = mb_substr($plainDescription, 0, $limit);
+                                
+                                echo '<p>' . View::escape($truncatedText) . '...</p>'; 
+                                
+                                echo '<a href="' . $storeLink . '" class="store-link" style="font-size: 0.875rem; font-weight: 600;">Lihat Selengkapnya</a>';
+                            
+                            } else {
+                                echo $storeDescription;
+                            }
+                        ?>
                     </div>
                     
                     <hr class="card-divider">
 
-                    <?php if (Auth::check()): // --- TAMPILKAN JIKA SUDAH LOGIN --- ?>
+                    <?php if (Auth::check()):?>
                         <form id="addToCartForm" class="add-to-cart-form">
                             <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">

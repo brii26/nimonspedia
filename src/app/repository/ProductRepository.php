@@ -202,6 +202,7 @@ class ProductRepository extends BaseRepository {
 				p.*,
 				s.store_name,
                 s.store_description,
+                s.store_logo_path,
 				COALESCE(string_agg(c.name, ', ' ORDER BY c.name), '') AS categories
 			FROM 
 				products p
