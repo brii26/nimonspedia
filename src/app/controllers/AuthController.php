@@ -89,8 +89,27 @@ class AuthController extends BaseController {
                     '/js/pages/auth/register.js']
             ]);
         } catch (Exception $e) {
+            $errorMessage = $e->getMessage();
+            
+            if (($e instanceof PDOException || $e->getCode() == '23505') && str_contains($e->getMessage(), 'SQLSTATE[23505]')) {
+                
+                if (str_contains($e->getMessage(), 'users_email_key')) {
+                    $errorMessage = 'Email already registered.';
+                } else if (str_contains($e->getMessage(), 'stores_store_name_key')) {
+                    $errorMessage = 'Store name is already taken.';
+                } else {
+                    $errorMessage = 'A unique value conflict occurred. Please check your inputs.';
+                }
+            } 
+            else if ($errorMessage === 'Email already registered' || $errorMessage === 'Store name is already taken') {
+            }
+            else {
+                error_log("Register error: " . $e->getMessage());
+                $errorMessage = 'An unexpected error occurred. Please try again.';
+            }
+
             $this->render('pages/auth/register', [
-                'error' => $e->getMessage(),
+                'error' => $errorMessage,
                 'old' => $this->getPost(),
                 'pageTitle' => 'Register',
                 'cssFiles' => ['/css/pages/auth.css',  'https://cdn.quilljs.com/1.3.6/quill.snow.css'],

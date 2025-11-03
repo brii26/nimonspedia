@@ -1,89 +1,200 @@
-// /public/js/pages/cart/index.js
-
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const cartForm = document.getElementById('cartForm');
     if (!cartForm) {
-        return; // Keluar jika bukan halaman keranjang
+        return; 
     }
 
-    // --- Ambil Elemen ---
-    const updateCartButton = document.getElementById('updateCart');
     const removeButtons = document.querySelectorAll('.btn-remove');
     const cartBadge = document.querySelector('.cart-badge');
     const csrfToken = cartForm.dataset.csrfToken;
     
-    // Tampilkan error server jika ada
     const serverAlert = document.querySelector('.alert.alert-danger');
     if (serverAlert && serverAlert.textContent.trim() && window.App) {
         window.App.showAlert(serverAlert.textContent.trim(), 'error');
     }
 
+    /**
+     * Meng-handle update AJAX saat quantity diubah
+     */
+    const handleQuantityChange = (inputElement) => {
+        const input = inputElement;
+        let quantity = parseInt(input.value, 10);
+        const maxStock = parseInt(input.max, 10);
+        const minVal = parseInt(input.min, 10);
+        const prevValue = input.dataset.previousValue || minVal;
+
+        // --- [LOGIKA REVERT] ---
+        // Jika input tidak valid (NaN) atau < 0, kembalikan ke nilai sebelumnya
+        if (isNaN(quantity) || quantity < minVal) {
+            App.showAlert(`Kuantitas minimal adalah ${minVal}`, 'error');
+            input.value = prevValue;
+            return; // Hentikan eksekusi
+        }
+        
+        // Jika input > stok, kembalikan ke nilai sebelumnya
+        if (!isNaN(maxStock) && quantity > maxStock) {
+            App.showAlert(`Stok tidak mencukupi (maks: ${maxStock})`, 'error');
+            input.value = prevValue;
+            return; // Hentikan eksekusi
+        }
+        // --- [AKHIR LOGIKA REVERT] ---
+
+        const cartItemRow = input.closest('.cart-item');
+        if (!cartItemRow) return;
+
+        // Update nilai 'previous' untuk validasi berikutnya
+        input.dataset.previousValue = quantity;
+
+        const productId = cartItemRow.dataset.productId;
+        cartItemRow.style.opacity = '0.5';
+
+        // Update status tombol +/-
+        const qtySelector = input.closest('.quantity-selector');
+        if (qtySelector) {
+            qtySelector.querySelector('.btn-qty-minus').disabled = (quantity <= minVal);
+            qtySelector.querySelector('.btn-qty-plus').disabled = (!isNaN(maxStock) && quantity >= maxStock);
+        }
+
+        const data = new URLSearchParams({
+            csrf_token: csrfToken,
+            product_id: productId,
+            quantity: quantity
+        });
+
+        window.fetchXhr('/cart/update', {
+            method: 'POST',
+            body: data
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => Promise.reject(err));
+            return response.json();
+        })
+        .then(result => {
+            if (result.success && result.data.newCartData) {
+                updateUI(result.data.newCartData);
+            } else {
+                throw new Error(result.message || 'Gagal mengupdate keranjang');
+            }
+        })
+        .catch(error => {
+            console.error('Gagal mengupdate quantity:', error);
+            if (window.App) {
+                window.App.showAlert(error.error || 'Gagal mengupdate keranjang.', 'error');
+            }
+            window.location.reload(); 
+        })
+        .finally(() => {
+            cartItemRow.style.opacity = '1';
+        });
+    };
 
     /**
-     * Logika Tombol Update Keranjang
+     * Memperbarui semua harga di halaman berdasarkan data baru dari server
      */
-    if (updateCartButton) {
-        updateCartButton.addEventListener('click', async function() {
-            if (window.App) {
-                window.App.showLoading(this, 'Updating...');
-            } else {
-                this.disabled = true;
-            }
-            
-            const items = document.querySelectorAll('.cart-item');
-            const updatePromises = [];
-            
-            items.forEach(item => {
-                const productId = item.dataset.productId;
-                const quantity = item.querySelector('.cart-quantity').value;
-                
-                const data = new URLSearchParams({
-                    csrf_token: csrfToken,
-                    product_id: productId,
-                    quantity: quantity
-                });
+    const updateUI = (cartData) => {
+        const { items, total, groupedCart } = cartData;
 
-                updatePromises.push(
-                    window.fetchXhr('/cart/update', {
-                        method: 'POST',
-                        body: data
-                    })
-                );
-            });
-
-            try {
-                await Promise.all(updatePromises);
-                window.location.reload(); 
-            } catch (error) {
-                console.error('Gagal mengupdate keranjang:', error);
-                if (window.App) {
-                    window.App.showAlert('Terjadi kesalahan saat mengupdate keranjang.', 'error');
-                } else {
-                    alert('Terjadi kesalahan saat mengupdate keranjang.');
+        items.forEach(item => {
+            const row = cartForm.querySelector(`.cart-item[data-product-id="${item.product_id}"]`);
+            if (row) {
+                const subtotalElDesktop = row.querySelector('.item-subtotal-desktop');
+                const subtotalElMobile = row.querySelector('.item-subtotal-mobile');
+                if (subtotalElDesktop) {
+                    subtotalElDesktop.textContent = App.formatCurrency(item.subtotal);
+                } else if (subtotalElMobile) {
+                    subtotalElMobile.textContent = App.formatCurrency(item.subtotal);
                 }
-                window.location.reload(); 
+                
+                const quantityInput = row.querySelector('.cart-quantity');
+                if (quantityInput && quantityInput.value != item.quantity) {
+                    quantityInput.value = item.quantity;
+                    // Simpan juga nilai baru sebagai 'previous'
+                    quantityInput.dataset.previousValue = item.quantity;
+                }
+
+                // Update status tombol +/- setelah server merespon
+                const qtySelector = row.querySelector('.quantity-selector');
+                if (qtySelector) {
+                    const maxStock = parseInt(quantityInput.max, 10);
+                    const minVal = parseInt(quantityInput.min, 10);
+                    const currentVal = item.quantity;
+
+                    qtySelector.querySelector('.btn-qty-minus').disabled = (currentVal <= minVal);
+                    qtySelector.querySelector('.btn-qty-plus').disabled = (!isNaN(maxStock) && currentVal >= maxStock);
+                }
             }
         });
-    }
 
+        for (const storeName in groupedCart) {
+            const storeData = groupedCart[storeName];
+            const storeCard = cartForm.querySelector(`.cart-store-card[data-store-id="${storeData.store_id}"]`);
+            if (storeCard) {
+                const storeSubtotalEl = storeCard.querySelector('.store-subtotal');
+                if (storeSubtotalEl) {
+                    storeSubtotalEl.textContent = App.formatCurrency(storeData.subtotal);
+                }
+            }
+        }
+
+        const grandTotalEl = document.getElementById('grand-total-display');
+        if (grandTotalEl) {
+            grandTotalEl.textContent = App.formatCurrency(total);
+        }
+
+        if (cartBadge) {
+            const uniqueCount = items.length;
+            cartBadge.textContent = uniqueCount;
+            cartBadge.style.display = uniqueCount > 0 ? 'flex' : 'none';
+        }
+    };
+
+    const debouncedUpdate = App.debounce(handleQuantityChange, 400);
+
+    cartForm.addEventListener('input', (e) => {
+        if (e.target.classList.contains('cart-quantity')) {
+            handleQuantityChange(e.target);
+        }
+    });
+
+    // --- [LOGIKA BARU] Event listener untuk tombol +/- ---
+    cartForm.addEventListener('click', (e) => {
+        const button = e.target.closest('.btn-qty');
+        if (!button) return;
+
+        const selector = button.closest('.quantity-selector');
+        const input = selector.querySelector('.cart-quantity');
+        if (!input) return;
+
+        const isPlus = button.classList.contains('btn-qty-plus');
+        let currentValue = parseInt(input.value, 10);
+        if (isNaN(currentValue)) currentValue = 0;
+
+        if (isPlus) {
+            input.stepUp();
+        } else {
+            input.stepDown();
+        }
+        
+        debouncedUpdate(input);
+    });
+
+    /**
+     * Logika Tombol Hapus (Refactored tanpa async/await)
+     */
     if (removeButtons.length > 0) {
         removeButtons.forEach(button => {
             
             button.addEventListener('click', function() {
                 const clickedButton = this;
                 const productId = clickedButton.dataset.productId;
-                const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
-                const originalButtonText = clickedButton.textContent || 'Hapus';
                 const message = 'Apakah Anda yakin ingin menghapus item ini dari keranjang?';
 
-                const onOk = async () => {
+                const onOk = () => {
                     document.removeEventListener('confirm:cancel', onCancel);
                     if (window.App) {
                         window.App.showLoading(clickedButton, 'Menghapus...');
-                    } else {
-                        clickedButton.disabled = true;
                     }
 
                     const data = new URLSearchParams({
@@ -91,41 +202,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         product_id: productId
                     });
 
-                    try {
-                        const response = await window.fetchXhr('/cart/remove', {
-                            method: 'POST',
-                            body: data
-                        });
-
+                    window.fetchXhr('/cart/remove', {
+                        method: 'POST',
+                        body: data
+                    })
+                    .then(response => {
                         if (response.ok) {
-                            if (row) row.remove();
-                            if (document.querySelectorAll('.cart-item').length === 0) {
-                                window.location.reload();
-                            } else {
-                                updateCartBadge();
-                            }
-                        } else {
-                            const errData = await response.json();
-                            if (window.App) {
-                                window.App.showAlert(errData.error || 'Gagal menghapus item', 'error');
-                            } else {
-                                alert(errData.error || 'Gagal menghapus item');
-                            }
+                            return response.json();
                         }
-                    } catch (error) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || 'Gagal menghapus item');
+                        });
+                    })
+                    .then(result => {
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            throw new Error(result.error || 'Gagal menghapus item');
+                        }
+                    })
+                    .catch(error => {
                         console.error('Error menghapus item:', error);
                         if (window.App) {
-                            window.App.showAlert('Gagal menghapus item dari keranjang.', 'error');
-                        } else {
-                            alert('Gagal menghapus item dari keranjang.');
+                            window.App.showAlert(error.message, 'error');
                         }
-                    } finally {
                         if (window.App) {
-                            window.App.hideLoading(clickedButton, originalButtonText);
-                        } else {
-                            clickedButton.disabled = false;
+                            window.App.hideLoading(clickedButton, 'Hapus');
                         }
-                    }
+                    });
                 };
                 
                 const onCancel = () => {
@@ -147,5 +251,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
 });
