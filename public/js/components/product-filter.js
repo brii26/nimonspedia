@@ -48,20 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchUrl = `${actionUrl}?${queryString}`;
         }
 
-        // Gunakan fetchXhr (karena Anda punya)
         fetchXhr(fetchUrl, {
             method: 'GET',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // Ini penting!
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.html) {
-                // Ganti isi container dengan HTML baru
                 productListContainer.innerHTML = data.html;
-                
-                // Update URL di browser tanpa reload
                 history.pushState(null, '', fetchUrl);
             }
         })
@@ -75,34 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-
     if (searchInput && typeof App.debounce === 'function') {
-        searchInput.addEventListener('input', App.debounce(fetchProducts, 400));
+        searchInput.addEventListener('input', App.debounce(() => fetchProducts(), 400));
     } else if (searchInput) {
-        searchInput.addEventListener('input', fetchProducts);
+        searchInput.addEventListener('input', () => fetchProducts());
     }
 
-    // 2. FILTER LAINNYA (Langsung)
-    if (categorySelect) categorySelect.addEventListener('change', fetchProducts);
-    if (priceSelect) priceSelect.addEventListener('change', fetchProducts);
-    if (perPageSelect) perPageSelect.addEventListener('change', fetchProducts);
+    if (categorySelect) categorySelect.addEventListener('change', () => fetchProducts());
+    if (priceSelect) priceSelect.addEventListener('change', () => fetchProducts());
+    if (perPageSelect) perPageSelect.addEventListener('change', () => fetchProducts());
 
-    // 3. PAGINASI (Via event delegation)
-    // Kita harus pasang di container karena link <a> akan di-reload
     if (productListContainer) {
         productListContainer.addEventListener('click', e => {
-            // Cek apakah yang diklik adalah link pagination
             if (e.target.matches('.pagination-item')) {
-                e.preventDefault(); // Hentikan navigasi standar
+                e.preventDefault(); 
                 const url = e.target.getAttribute('href');
-                
-                // Update URL di browser
                 history.pushState(null, '', url);
                 
-                // Ambil query string dari URL pagination
                 const queryString = url.split('?')[1] || '';
-                
-                // Update form agar nilainya pas (terutama 'page')
                 const params = new URLSearchParams(queryString);
                 params.forEach((value, key) => {
                     const input = filterForm.querySelector(`[name="${key}"]`);
@@ -110,20 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         input.value = value;
                     }
                 });
-
-                // Fetch produk untuk halaman baru
-                fetchProducts(url);
+                
+                // Ini sudah benar karena 'url' adalah string
+                fetchProducts(url); 
             }
         });
     }
 
-    // 4. HENTIKAN SUBMIT & RESET BAWAAN
     filterForm.addEventListener('submit', e => {
-        e.preventDefault(); // Hentikan reload halaman
-
+        e.preventDefault(); 
         e.stopImmediatePropagation();
         
-        fetchProducts(url); // Jalankan fetch manual
+        fetchProducts(); 
     });
 
     if (resetLink) {
@@ -135,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const baseUrl = resetLink.getAttribute('href') || window.location.pathname;
             history.pushState(null, '', baseUrl);
             
-            fetchProducts(url);
+            fetchProducts(baseUrl);
         });
     }
 });
