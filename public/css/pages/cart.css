@@ -1,192 +1,343 @@
-/* * CSS untuk cart/index.php
- */
+.container h1.mb-4 {
+    margin-top: 1.5rem; 
+    margin-bottom: 1.5rem;
+}
 
-/* Card utama untuk setiap toko */
-.cart-product {
+/* Card Toko (style dari dashboard.css) */
+.cart-store-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Header Toko (Nama Toko) */
+.cart-store-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    background-color: #fcfcfc;
+}
+
+/* List Item (Pengganti <tbody>) */
+.cart-item-list {
+    padding: 0 24px;
+}
+
+/* Container per Item (Pengganti <tr>) */
+.cart-item {
     display: flex;
-    align-items: center; /* Membuat gambar & teks sejajar vertikal */
-    gap: 15px; /* Jarak antara gambar dan teks */
+    flex-wrap: wrap; /* Agar responsif di mobile */
+    align-items: center;
+    gap: 16px;
+    padding: 24px 0;
+    border-bottom: 1px solid #f0f0f0;
 }
-.cart-product-image {
-    width: 60px;
-    height: 60px;
-    object-fit: cover; /* Mencegah gambar penyok/stretch */
-    border-radius: 6px; /* Sudut melengkung */
-    border: 1px solid #f0f0f0; /* Border tipis */
-    flex-shrink: 0; /* Mencegah gambar mengecil jika nama produk panjang */
+.cart-item-list .cart-item:last-child {
+    border-bottom: none;
 }
 
+/* Kolom 1: Gambar */
+.cart-item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+/* Kolom 2: Info (Nama & Harga) */
+.cart-item-details {
+    flex-grow: 1; /* Ambil sisa ruang */
+    min-width: 150px; /* Agar tidak terlalu kecil */
+}
 .cart-product-name {
     font-size: 1rem;
     color: #333;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
 }
 .cart-product-name:hover {
     text-decoration: underline;
 }
-
-.cart-store-card {
-    background: #ffffff;
-    border-radius: 8px; /* Mirip halaman pesanan */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Mirip halaman pesanan */
-    margin-bottom: 20px;
-    overflow: hidden; /* Penting agar border-radius berfungsi */
-}
-
-/* Header di dalam card (Nama Toko) */
-.cart-store-header {
-    background-color: #3498DB;
-    padding: 16px 24px;
-    border-bottom: 1px solid #f0f0f0;
+.cart-product-price {
     font-size: 1.1rem;
-    font-weight: 500;
-    color: #FFF;
+    font-weight: 700;
+    color: var(--primary-color, #667eea);
 }
 
-
-/* Tabel di dalam card */
-.cart-items-table {
-    width: 100%;
-    border-collapse: collapse; /* Hapus jarak antar sel */
+/* Kolom 3: Aksi (Qty & Hapus) */
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto; /* Dorong ke kanan di desktop */
 }
 
-.cart-items-table th {
-    background-color: #fafafa;
-    padding: 12px 24px;
-    text-align: left;
-    font-size: 0.85rem; /* Perkecil sedikit */
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.5px; /* Beri sedikit jarak */
-}
-
-.cart-items-table td {
-    padding: 16px 24px;
-    border-bottom: 1px solid #f0f0f0;
-    vertical-align: middle;
-}
-
-/* Hapus border di baris terakhir setiap tabel */
-.cart-items-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Styling input jumlah */
-.cart-quantity {
-    width: 70px;
-    padding: 8px;
-    text-align: center;
+/* Input Quantity (Style baru) */
+.quantity-selector {
+    display: flex;
+    align-items: center;
     border: 1px solid #ddd;
     border-radius: 6px;
+    overflow: hidden;
 }
 
-/* Tombol Hapus */
-.btn-remove {
-    background-color: #d9534f;
-    border: 0px solid #d9534f;
-    border-radius: 20px;
-    color: white;
+.btn-qty {
+    background: #f8f9fa;
+    border: none;
+    color: #495057;
+    font-weight: 600;
+    font-size: 1.25rem;
+    width: 38px;
+    height: 38px;
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: 10px;
-    transition: background-color 0.2s ease;
+    transition: background 0.2s ease;
+}
+.btn-qty:hover {
+    background: #e9ecef;
+}
+.btn-qty:disabled {
+    color: #adb5bd;
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.quantity-selector .cart-quantity {
+    width: 50px;
+    height: 38px;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-radius: 0;
+    padding: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    -moz-appearance: textfield;
+}
+.quantity-selector .cart-quantity:focus {
+    outline: none;
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 1px var(--primary-color, #667eea) inset;
+}
+.quantity-selector .cart-quantity::-webkit-outer-spin-button,
+.quantity-selector .cart-quantity::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Tombol Hapus (Style baru - Icon) */
+.btn-remove {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
 }
 .btn-remove:hover {
-    background-color: #98332f
+    color: #dc3545; /* Merah saat hover */
+    background-color: #fef0f0;
 }
 
-/* Footer di dalam card (Subtotal Toko) */
+/* Subtotal (Desktop & Mobile) */
+.item-subtotal-desktop {
+    width: 120px;
+    text-align: right;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+.item-subtotal-mobile {
+    display: none; /* Sembunyikan di desktop */
+}
+
+/* Footer Toko (Subtotal Toko) */
 .cart-store-footer {
-    background-color: #fafafa;
+    background-color: #fcfcfc;
     padding: 16px 24px;
     text-align: right;
     border-top: 1px solid #f0f0f0;
     font-size: 1.1rem;
 }
-
 .cart-store-footer span {
     color: #555;
     margin-right: 10px;
 }
-
-/* Card terakhir untuk Total & Tombol Aksi */
-.cart-summary-card {
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    padding: 24px;
-    margin-top: 20px;
+.cart-store-footer .store-subtotal {
+    font-weight: 700;
 }
 
-.cart-total {
+/*
+ * [FIX] Footer Halaman (Total & Checkout) - BUKAN STICKY LAGI
+ * Diubah menjadi card biasa, mengambil style dari .stat-card referensi
+ */
+.cart-summary-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    margin-top: 20px;
+    margin-bottom: 2rem;
+    
+    padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 16px;
-    margin-bottom: 16px;
+    flex-wrap: wrap; /* Agar rapi di mobile */
+    gap: 16px;
+}
+/* [AKHIR FIX] */
+
+.summary-total-group {
+    display: flex;
+    flex-direction: column;
+}
+.summary-total-group span {
+    font-size: 0.9rem;
+    color: var(--text-muted, #6c757d);
+}
+.grand-total {
+    color: var(--text-dark, #2c3e50); /* Diubah dari primary ke text-dark */
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
 }
 
-.cart-total .grand-total {
-    color: #d9534f; /* Beri warna pada total akhir */
-}
-
+/* Tombol Aksi di Footer */
 .cart-actions {
     display: flex;
-    justify-content: flex-end; /* Pindahkan tombol ke kanan */
-    gap: 10px; /* Beri jarak antar tombol */
-    margin-bottom: 10px;
+    gap: 12px;
 }
 
-/* Tombol "Lanjutkan Belanja" */
-.btn-continue-shopping {
-    display: inline-block;
-    padding: 12px 20px;
-    border: 1px solid #ddd; /* Border abu-abu */
-    color: white; /* Teks abu-abu */
-    background-color: #3498DB; /* Latar putih */
-    border-radius: 20px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-}
-
-.btn-continue-shopping:hover {
-    background-color: #105f93; /* Efek hover */
-    text-decoration: none;
-}
-
-/* Styling umum tombol (sesuaikan dengan style Anda) */
-.btn-update, .btn-checkout {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn-update {
-    background-color: #3498DB;
-    color: white;
-}
-
-.btn-update:hover {
-    background-color: #105f93; /* Warna utama */
-    color: white;
-}
-
-.btn-checkout {
-    background-color: #1bb04d; /* Warna utama */
-    color: white;
-}
-
-.btn-checkout:hover {
-    background-color: #177436; /* Warna utama */
-    color: white;
-}
-
+/* Sembunyikan Tombol "Update Keranjang" */
 #updateCart {
     display: none;
+}
+
+.cart-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1.5rem;
+}
+.cart-empty p {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+.cart-empty .btn-primary {
+    /* (Style sudah ada di global) */
+}
+
+
+/* Tampilan Mobile */
+/* Tampilan Mobile */
+@media (max-width: 768px) {
+    .container {
+        padding: 0;
+    }
+    
+    /* [FIX] Rapikan margin/padding judul di mobile */
+    .container h1.mb-4 {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        padding: 0 1rem; /* Tambahkan padding samping */
+    }
+
+    .cart-store-card {
+        border-radius: 0;
+        margin-bottom: 12px;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+    }
+    .cart-store-header, .cart-item-list, .cart-store-footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .cart-item {
+        gap: 12px;
+        flex-wrap: wrap; /* Pastikan item bisa wrap */
+    }
+
+    .cart-item-image {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0; /* Jangan biarkan gambar mengecil */
+    }
+
+    /* [FIX] Hapus 'order: -1' dan 'flex-basis: 100%' */
+    .cart-item-details {
+        flex-grow: 1;    /* Biarkan dia tumbuh di sisa ruang */
+        flex-basis: 150px; /* Beri basis agar bisa wrap */
+        min-width: 0;
+        /* HAPUS 'order: -1' */
+    }
+
+    .cart-product-price {
+        display: none; /* Sembunyikan harga satuan (opsional, tapi bersih) */
+    }
+    
+    .item-subtotal-desktop {
+        display: none; /* Sembunyikan subtotal desktop */
+    }
+    
+    .item-subtotal-mobile {
+        display: block; /* Tampilkan subtotal mobile */
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 8px;
+    }
+    .item-subtotal-mobile .item-subtotal {
+        color: #333;
+    }
+
+    /* [FIX] Hapus 'order: 1', biarkan dia wrap secara alami */
+    .cart-item-actions {
+        width: 100%; /* Buat actions full width */
+        justify-content: space-between; /* Qty di kiri, Hapus di kanan */
+        margin-left: 0;
+        flex-direction: row-reverse; /* Balik urutan (Tombol Hapus | Qty) */
+        /* HAPUS 'order: 1' */
+    }
+
+    /* Rapikan summary card di mobile */
+    .cart-summary-card {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 0; /* Full width di mobile */
+        border-left: none;
+        border-right: none;
+        margin-top: 12px;
+        margin-bottom: 0; /* Hapus margin bawah di mobile */
+    }
+    .summary-total-group {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cart-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    .btn-continue-shopping, .btn-checkout {
+        text-align: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
 }

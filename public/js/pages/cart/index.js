@@ -1,41 +1,61 @@
-// /public/js/pages/cart/index.js
-
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const cartForm = document.getElementById('cartForm');
     if (!cartForm) {
-        return; // Keluar jika bukan halaman keranjang
+        return; 
     }
 
-    // --- Ambil Elemen ---
     const removeButtons = document.querySelectorAll('.btn-remove');
     const cartBadge = document.querySelector('.cart-badge');
     const csrfToken = cartForm.dataset.csrfToken;
     
-    // Tampilkan error server jika ada
     const serverAlert = document.querySelector('.alert.alert-danger');
     if (serverAlert && serverAlert.textContent.trim() && window.App) {
         window.App.showAlert(serverAlert.textContent.trim(), 'error');
     }
 
-
-    // --- (MULAI) LOGIKA BARU: REAL-TIME UPDATE QUANTITY ---
-    
     /**
      * Meng-handle update AJAX saat quantity diubah
      */
-    const handleQuantityChange = (event) => {
-        const input = event.target;
-        const quantity = parseInt(input.value, 10);
-        const cartItemRow = input.closest('.cart-item');
+    const handleQuantityChange = (inputElement) => {
+        const input = inputElement;
+        let quantity = parseInt(input.value, 10);
+        const maxStock = parseInt(input.max, 10);
+        const minVal = parseInt(input.min, 10);
+        const prevValue = input.dataset.previousValue || minVal;
+
+        // --- [LOGIKA REVERT] ---
+        // Jika input tidak valid (NaN) atau < 0, kembalikan ke nilai sebelumnya
+        if (isNaN(quantity) || quantity < minVal) {
+            App.showAlert(`Kuantitas minimal adalah ${minVal}`, 'error');
+            input.value = prevValue;
+            return; // Hentikan eksekusi
+        }
         
-        if (!cartItemRow || isNaN(quantity)) return; // Abaikan jika input tidak valid
+        // Jika input > stok, kembalikan ke nilai sebelumnya
+        if (!isNaN(maxStock) && quantity > maxStock) {
+            App.showAlert(`Stok tidak mencukupi (maks: ${maxStock})`, 'error');
+            input.value = prevValue;
+            return; // Hentikan eksekusi
+        }
+        // --- [AKHIR LOGIKA REVERT] ---
+
+        const cartItemRow = input.closest('.cart-item');
+        if (!cartItemRow) return;
+
+        // Update nilai 'previous' untuk validasi berikutnya
+        input.dataset.previousValue = quantity;
 
         const productId = cartItemRow.dataset.productId;
-
-        // Tampilkan loading visual (opsional, tapi bagus)
         cartItemRow.style.opacity = '0.5';
+
+        // Update status tombol +/-
+        const qtySelector = input.closest('.quantity-selector');
+        if (qtySelector) {
+            qtySelector.querySelector('.btn-qty-minus').disabled = (quantity <= minVal);
+            qtySelector.querySelector('.btn-qty-plus').disabled = (!isNaN(maxStock) && quantity >= maxStock);
+        }
 
         const data = new URLSearchParams({
             csrf_token: csrfToken,
@@ -63,8 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.App) {
                 window.App.showAlert(error.error || 'Gagal mengupdate keranjang.', 'error');
             }
-            // Balikin ke value lama jika error (opsional)
-            // input.value = input.dataset.previousValue || quantity;
+            window.location.reload(); 
         })
         .finally(() => {
             cartItemRow.style.opacity = '1';
@@ -77,23 +96,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateUI = (cartData) => {
         const { items, total, groupedCart } = cartData;
 
-        // 1. Update Subtotal Item
         items.forEach(item => {
             const row = cartForm.querySelector(`.cart-item[data-product-id="${item.product_id}"]`);
             if (row) {
-                const subtotalEl = row.querySelector('.item-subtotal');
-                if (subtotalEl) {
-                    subtotalEl.textContent = App.formatCurrency(item.subtotal);
+                const subtotalElDesktop = row.querySelector('.item-subtotal-desktop');
+                const subtotalElMobile = row.querySelector('.item-subtotal-mobile');
+                if (subtotalElDesktop) {
+                    subtotalElDesktop.textContent = App.formatCurrency(item.subtotal);
+                } else if (subtotalElMobile) {
+                    subtotalElMobile.textContent = App.formatCurrency(item.subtotal);
                 }
-
+                
                 const quantityInput = row.querySelector('.cart-quantity');
                 if (quantityInput && quantityInput.value != item.quantity) {
                     quantityInput.value = item.quantity;
+                    // Simpan juga nilai baru sebagai 'previous'
+                    quantityInput.dataset.previousValue = item.quantity;
+                }
+
+                // Update status tombol +/- setelah server merespon
+                const qtySelector = row.querySelector('.quantity-selector');
+                if (qtySelector) {
+                    const maxStock = parseInt(quantityInput.max, 10);
+                    const minVal = parseInt(quantityInput.min, 10);
+                    const currentVal = item.quantity;
+
+                    qtySelector.querySelector('.btn-qty-minus').disabled = (currentVal <= minVal);
+                    qtySelector.querySelector('.btn-qty-plus').disabled = (!isNaN(maxStock) && currentVal >= maxStock);
                 }
             }
         });
 
-        // 2. Update Subtotal Toko
         for (const storeName in groupedCart) {
             const storeData = groupedCart[storeName];
             const storeCard = cartForm.querySelector(`.cart-store-card[data-store-id="${storeData.store_id}"]`);
@@ -105,13 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Update Grand Total
         const grandTotalEl = document.getElementById('grand-total-display');
         if (grandTotalEl) {
             grandTotalEl.textContent = App.formatCurrency(total);
         }
 
-        // 4. Update Cart Badge
         if (cartBadge) {
             const uniqueCount = items.length;
             cartBadge.textContent = uniqueCount;
@@ -119,22 +150,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Buat versi debounced dari fungsi update
-    // Ini mencegah server di-spam setiap kali user mengetik angka
     const debouncedUpdate = App.debounce(handleQuantityChange, 400);
 
-    // Pasang listener di form, delegasikan ke input quantity
     cartForm.addEventListener('input', (e) => {
         if (e.target.classList.contains('cart-quantity')) {
-            debouncedUpdate(e);
+            handleQuantityChange(e.target);
         }
     });
 
-    // --- (SELESAI) LOGIKA BARU ---
+    // --- [LOGIKA BARU] Event listener untuk tombol +/- ---
+    cartForm.addEventListener('click', (e) => {
+        const button = e.target.closest('.btn-qty');
+        if (!button) return;
 
+        const selector = button.closest('.quantity-selector');
+        const input = selector.querySelector('.cart-quantity');
+        if (!input) return;
+
+        const isPlus = button.classList.contains('btn-qty-plus');
+        let currentValue = parseInt(input.value, 10);
+        if (isNaN(currentValue)) currentValue = 0;
+
+        if (isPlus) {
+            input.stepUp();
+        } else {
+            input.stepDown();
+        }
+        
+        debouncedUpdate(input);
+    });
 
     /**
-     * Logika Tombol Hapus (Ini masih sama seperti kodemu sebelumnya)
+     * Logika Tombol Hapus (Refactored tanpa async/await)
      */
     if (removeButtons.length > 0) {
         removeButtons.forEach(button => {
@@ -142,16 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', function() {
                 const clickedButton = this;
                 const productId = clickedButton.dataset.productId;
-                const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
-                const originalButtonText = clickedButton.textContent || 'Hapus';
                 const message = 'Apakah Anda yakin ingin menghapus item ini dari keranjang?';
 
                 const onOk = () => {
                     document.removeEventListener('confirm:cancel', onCancel);
                     if (window.App) {
                         window.App.showLoading(clickedButton, 'Menghapus...');
-                    } else {
-                        clickedButton.disabled = true;
                     }
 
                     const data = new URLSearchParams({
@@ -164,11 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: data
                     })
                     .then(response => {
-                        // Cek dulu apakah response-nya OK
                         if (response.ok) {
-                            return response.json(); // Lanjut ke .then() berikutnya
+                            return response.json();
                         }
-                        // Jika tidak OK, parse error JSON-nya dan lempar ke .catch()
                         return response.json().then(errData => {
                             throw new Error(errData.error || 'Gagal menghapus item');
                         });
@@ -184,15 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Error menghapus item:', error);
                         if (window.App) {
                             window.App.showAlert(error.message, 'error');
-                        } else {
-                            alert(error.message);
                         }
-                    })
-                    .finally(() => {
                         if (window.App) {
-                            window.App.hideLoading(clickedButton, originalButtonText);
-                        } else {
-                            clickedButton.disabled = false;
+                            window.App.hideLoading(clickedButton, 'Hapus');
                         }
                     });
                 };
@@ -216,5 +251,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
 });
