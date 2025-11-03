@@ -29,20 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetLink = filterForm.querySelector('.btn-secondary');
     const submitButton = filterForm.querySelector('.btn-search');
 
-    const fetchProducts = () => {
+    const fetchProducts = (urlOverride = null) => {
         if (!productListContainer) return;
 
         productListContainer.style.opacity = '0.5';
 
         if (submitButton) App.showLoading(submitButton, 'Loading...');
         
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
-        
-        // Dapatkan URL dari action form
-        const actionUrl = filterForm.getAttribute('action') || window.location.pathname;
-        const queryString = params.toString();
-        const fetchUrl = `${actionUrl}?${queryString}`;
+        let fetchUrl;
+
+        if (urlOverride) {
+            fetchUrl = urlOverride;
+        } else {
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+            const actionUrl = filterForm.getAttribute('action') || window.location.pathname;
+            const queryString = params.toString();
+            fetchUrl = `${actionUrl}?${queryString}`;
+        }
 
         // Gunakan fetchXhr (karena Anda punya)
         fetchXhr(fetchUrl, {
@@ -108,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 // Fetch produk untuk halaman baru
-                fetchProducts();
+                fetchProducts(url);
             }
         });
     }
@@ -119,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         e.stopImmediatePropagation();
         
-        fetchProducts(); // Jalankan fetch manual
+        fetchProducts(url); // Jalankan fetch manual
     });
 
     if (resetLink) {
@@ -131,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const baseUrl = resetLink.getAttribute('href') || window.location.pathname;
             history.pushState(null, '', baseUrl);
             
-            fetchProducts();
+            fetchProducts(url);
         });
     }
 });
