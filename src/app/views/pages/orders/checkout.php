@@ -3,17 +3,34 @@
 
     <form action="checkout" method="POST" id="checkoutForm">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+        
+        <input type="hidden" name="shipping_address" id="shipping_address_input" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
 
         <div class="checkout-card">
             <div class="checkout-card-header">
                 Alamat Pengiriman
             </div>
             <div class="checkout-card-body address-details">
-                <strong><?= htmlspecialchars($user['name'] ?? 'Pengguna') ?></strong>
-                <p><?= nl2br(htmlspecialchars($user['address'] ?? 'Alamat belum diatur.')) ?></p>
+                <div id="address-display-group">
+                    <strong><?= htmlspecialchars($user['name'] ?? 'Pengguna') ?></strong>
+                    <div id="static-address-content">
+                        <p><?= nl2br(htmlspecialchars($user['address'] ?? 'Alamat belum diatur.')) ?></p>
+                    </div>
+                    <button type="button" class="btn btn-secondary address-edit-toggle" id="edit-address-btn">
+                        Edit Alamat
+                    </button>
                 </div>
-        </div>
 
+                <div id="address-edit-group" style="display: none;">
+                    <label for="address-editor">Edit Alamat Pengiriman (hanya untuk pesanan ini)</label>
+                    <div id="address-editor" style="min-height: 150px;"><?= htmlspecialchars($user['address'] ?? '') ?></div>
+                    <div class="address-edit-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-address-btn">Batal</button>
+                        <button type="button" class="btn btn-primary" id="save-address-btn">Simpan Alamat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php foreach ($groupedCart as $storeName => $storeData): ?>
             <div class="checkout-card">
                 <div class="checkout-card-header">
@@ -36,14 +53,13 @@
                                     <div class="cart-product">
                                         <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.png') ?>" 
                                                 alt="<?= View::escape($it['product_name']) ?>" 
-                                                class="product-image">
-                                        <div class="cart-product-info">
-                                            <span class="cart-product-name">
+                                                class="cart-product-image"> <div class="cart-product-info">
+                                            <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>" class="cart-product-name">
                                                 <?= htmlspecialchars($it['product_name'] ?? '') ?>
-                                            </span>
+                                            </a>
                                         </div>
                                     </div>
-                                </td>
+                                    </td>
                                 <td>x<?= (int)($it['quantity'] ?? 0) ?></td>
                                 <td class="cart-product-price">
                                     Rp <?= number_format($it['product_price'] ?? 0, 0, ',', '.') ?>
@@ -94,6 +110,7 @@
             </div>
             
             <div class="checkout-action">
+                <a class = "btn-cart" href = "/cart">Back to Cart</a>
                 <button type="submit" class="btn-checkout" <?= ($sisaSaldo < 0) ? 'disabled' : '' ?>>
                     <?= ($sisaSaldo < 0) ? 'Saldo Tidak Cukup' : 'Bayar Sekarang' ?>
                 </button>

@@ -224,7 +224,7 @@ class OrderRepository extends BaseRepository {
      */
     public function getBuyerOrderDetails(int $orderId, int $buyerId): ?array {
         $sql = "
-            SELECT o.*, s.store_name, u.name as buyer_name, u.address as buyer_address
+            SELECT o.*, s.store_name, u.name as buyer_name, o.shipping_address as buyer_address
             FROM {$this->table} o
             JOIN stores s ON o.store_id = s.store_id
             JOIN users u ON o.buyer_id = u.user_id

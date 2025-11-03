@@ -165,10 +165,15 @@ class BuyerOrdersController extends BaseController {
                 'sisaSaldo'   => $sisaSaldo,
                 'csrf_token'  => Auth::csrfToken(),
                 
-                'cssFiles' => ['/css/pages/checkout.css'], 
+                'cssFiles' => [
+                    '/css/pages/checkout.css',
+                    'https://cdn.quilljs.com/1.3.6/quill.snow.css'
+                ], 
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
                     '/js/components/confirm-modal.js', 
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
                     '/js/pages/orders/checkout.js'
                 ]
             ]);
@@ -187,7 +192,16 @@ class BuyerOrdersController extends BaseController {
         $this->verifyCsrf();
         
         try {
-            // Pre-validation to get more specific error messages
+            $postData = $this->getPost();
+            
+            $shippingAddress = $postData['shipping_address'] ?? null;
+
+            $postData['shipping_address_plain'] = $shippingAddress;
+
+            $this->validate($postData, [
+                'shipping_address_plain' => ['required', 'min:10']
+            ]);
+
             $userId = Auth::user()['user_id'];
             $cart = $this->cartService->getCart($userId);
             
@@ -196,7 +210,6 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
 
-            $shippingAddress = $this->getPost('shipping_address', null);
             $order = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
             
             if ($order) {

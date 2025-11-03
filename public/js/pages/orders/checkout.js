@@ -3,6 +3,78 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
     
+    const editAddressBtn = document.getElementById('edit-address-btn');
+    const addressDisplayGroup = document.getElementById('address-display-group');
+    const addressEditGroup = document.getElementById('address-edit-group');
+    
+    // Ambil elemen-elemen kunci
+    const staticContentDiv = document.getElementById('static-address-content');
+    const hiddenInput = document.getElementById('shipping_address_input');
+    const editorElement = document.getElementById('address-editor');
+    
+    if (editAddressBtn && addressDisplayGroup && addressEditGroup && editorElement) {
+        
+        // 1. Inisialisasi Quill Editor
+        const quill = createEditor('#address-editor', null); 
+
+        // 2. Tombol "Edit Alamat" diklik
+        editAddressBtn.addEventListener('click', () => {
+            // Ambil alamat TERBARU dari hidden input (sumber kebenaran)
+            const currentAddress = hiddenInput.value;
+            
+            // Set konten Quill dengan alamat terbaru
+            // Kita perlu konversi \n dari htmlspecialchars menjadi <p> untuk Quill
+            const addressHtml = '<p>' + currentAddress.replace(/\n/g, '</p><p>') + '</p>';
+            quill.root.innerHTML = addressHtml;
+
+            // Tampilkan editor
+            addressDisplayGroup.style.display = 'none';
+            addressEditGroup.style.display = 'block';
+            
+            if (editorElement) {
+                editorElement.classList.remove('is-invalid');
+            }
+            quill.focus();
+        });
+
+        // 3. Tombol "Batal" diklik
+        const cancelBtn = document.getElementById('cancel-address-btn');
+        cancelBtn.addEventListener('click', () => {
+            addressEditGroup.style.display = 'none';
+            addressDisplayGroup.style.display = 'block';
+        });
+
+        // 4. Tombol "Simpan Alamat" diklik
+        const saveBtn = document.getElementById('save-address-btn');
+        saveBtn.addEventListener('click', () => {
+            
+            // Validasi 10 karakter
+            const plainText = quill.getText().trim();
+            if (plainText.length < 10) {
+                if(window.App) App.showAlert('Alamat pengiriman harus minimal 10 karakter.', 'error');
+                if (editorElement) {
+                    editorElement.classList.add('is-invalid');
+                }
+                return;
+            }
+
+            // Ambil konten dari Quill
+            const newAddressHtml = quill.root.innerHTML;
+            
+            const newAddressText = quill.getText().trim();
+            
+            // Perbarui tampilan statis (div)
+            staticContentDiv.innerHTML = newAddressHtml;
+            
+            // Perbarui "source of truth" (hidden input)
+            hiddenInput.value = newAddressText; 
+            
+            // Kembalikan tampilan
+            addressEditGroup.style.display = 'none';
+            addressDisplayGroup.style.display = 'block';
+        });
+    }
+
     const checkoutBtn = document.querySelector('.btn-checkout'); // Lebih aman pakai class
     const checkoutForm = document.getElementById('checkoutForm');
 
