@@ -193,7 +193,6 @@ class BuyerOrdersController extends BaseController {
         
         try {
             $postData = $this->getPost();
-            
             $shippingAddress = $postData['shipping_address'] ?? null;
 
             $postData['shipping_address_plain'] = $shippingAddress;
@@ -206,30 +205,82 @@ class BuyerOrdersController extends BaseController {
             $cart = $this->cartService->getCart($userId);
             
             if (empty($cart['items'])) {
+                if ($this->isAjax()) {
+                    return $this->json(['success' => false, 'message' => 'Keranjang belanja Anda kosong.'], 400);
+                }
                 $this->redirect('/cart?error=' . urlencode("Keranjang belanja Anda kosong."));
                 return;
             }
 
-            $order = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
+            $orders = $this->buyerOrderService->createFromCart($userId, $shippingAddress);
             
-            if ($order) {
+            if ($orders) {
                 $updatedUser = $this->authService->getUserById($userId);
                 Auth::updateSession($updatedUser);
-                $this->redirect('/orders/show?id=' . $order['order_id']);
+                
+                $orderIds = array_column($orders, 'order_id');
+                $_SESSION['last_checkout_order_ids'] = $orderIds;
+
+                $redirectUrl = '/orders/success';
+                $this->json(['success' => true, 'redirect' => $redirectUrl]);
+                
                 return;
             } else {
-                throw new Exception('Failed to create order');
+                throw new Exception('Gagal membuat order');
             }
             
         } catch (PDOException $e) {
             error_log("Checkout PDO Error: " . $e->getMessage());
+            if ($this->isAjax()) return $this->json(['success' => false, 'message' => 'Database error.'], 500);
             $this->redirect('/cart?error=' . urlencode("Database error during checkout: " . $e->getMessage()));
+        
         } catch (ValidationException $e) {
             error_log("Checkout Validation Error: " . $e->getMessage());
-            $this->redirect('/cart?error=' . urlencode($e->getMessage()));
+            $errorMessage = $e->getFirstError();
+            if (str_contains($errorMessage, 'Shipping address plain')) {
+                $errorMessage = 'Alamat pengiriman harus diisi (minimal 10 karakter).';
+            }
+            if ($this->isAjax()) return $this->json(['success' => false, 'message' => $errorMessage], 422);
+            $this->redirect('/checkout?error=' . urlencode($errorMessage));
+        
         } catch (Exception $e) {
             error_log("Checkout Error: " . $e->getMessage());
+            if ($this->isAjax()) return $this->json(['success' => false, 'message' => $e->getMessage()], 500);
             $this->redirect('/cart?error=' . urlencode("Unexpected error during checkout: " . $e->getMessage()));
+        }
+    }
+
+    public function successCheckout() {
+        $this->requireRole('BUYER');
+        
+        try {
+            $orderIds = $_SESSION['last_checkout_order_ids'] ?? null;
+            
+            if (empty($orderIds)) {
+                $this->redirect('/orders');
+                return;
+            }
+            
+            unset($_SESSION['last_checkout_order_ids']);
+            
+            $orders = [];
+            $buyerId = Auth::id();
+            foreach ($orderIds as $orderId) {
+                $orderDetails = $this->orderRepository->getBuyerOrderDetails($orderId, $buyerId); 
+                if ($orderDetails) {
+                    $orders[] = $orderDetails;
+                }
+            }
+            
+            $this->render('pages/orders/success', [
+                'orders' => $orders,
+                'pageTitle' => 'Checkout Berhasil',
+                'cssFiles' => ['/css/pages/seller/orders.css', '/css/pages/errors.css']
+            ]);
+            
+        } catch (Exception $e) {
+            error_log('Error di halaman order success: ' . $e->getMessage());
+            $this->redirect('/orders');
         }
     }
 }

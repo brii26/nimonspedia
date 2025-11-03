@@ -85,6 +85,6 @@ class BuyerOrderService {
         $this->cartService->clearCart($buyerId);
         $_SESSION['cart_count'] = 0;
 
-        return $createdOrders[0];
+        return $createdOrders;
     }
 }

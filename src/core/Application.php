@@ -96,6 +96,7 @@ class Application {
         $this->router->post('/orders/checkout', 'BuyerOrdersController@checkout');
         $this->router->get('/orders/show', 'BuyerOrdersController@show');
         $this->router->post('/orders/confirm', 'BuyerOrdersController@confirmReceived');
+        $this->router->get('/orders/success', 'BuyerOrdersController@successCheckout');
         
         // Seller routes (Track 3 - TODO)
         $this->router->get('/seller/products', 'SellerController@listProducts');
