@@ -1,9 +1,4 @@
 <?php
-
-/**
- * ProductController handles HTTP requests for product-related actions.
- * It extends BaseController to leverage shared functionalities like rendering views and handling redirects.
- */
 class ProductController extends BaseController {
     private $productService;
     private $categoryService;
@@ -40,9 +35,6 @@ class ProductController extends BaseController {
         return;
     }
 
-    /**
-     * Displays the detail page for a single product.
-     */
     public function show() {
         $productId = $this->getQuery('id');
         if (!$productId) {

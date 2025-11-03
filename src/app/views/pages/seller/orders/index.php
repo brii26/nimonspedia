@@ -30,7 +30,7 @@
     </form>
 	
     <div id="seller-order-list-container">
-        <?= View::render('components/seller-order-list', [
+        <?= View::component('seller-order-list', [
                 'ordersData' => $ordersData,
                 'currentStatus' => $currentStatus
             ]);

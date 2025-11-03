@@ -13,9 +13,6 @@ class StoreController extends BaseController {
         $this->categoryService = new CategoryService();
     }
 
-    /**
-     * Menampilkan halaman detail toko (etalase)
-     */
     public function show() {
         $storeId = (int)$this->getQuery('id');
         if (!$storeId) {
@@ -42,7 +39,6 @@ class StoreController extends BaseController {
         }
 
         $filters = [
-            // ... (isi $filters array tetap sama) ...
             'page'       => (int)$this->getQuery('page', 1),
             'perPage'    => $perPage,
             'searchTerm' => $this->getQuery('searchTerm'),
@@ -56,32 +52,28 @@ class StoreController extends BaseController {
         $productsData = $this->productService->getAllProducts($filters);
         $categories = $this->categoryService->getAllCategories();
         
-        // Cek apakah ini AJAX request?
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
                   
-        $actionUrl = '/store'; // Definisikan actionUrl untuk partial
+        $actionUrl = '/store';
 
         if ($isAjax) {
-            // Jika AJAX, render HANYA partial-nya
-            $html = View::render('components/product-list', [
+            $html = View::component('product-list', [
                 'productsData' => $productsData,
                 'filters' => $filters,
                 'actionUrl' => $actionUrl,
-                'extraHiddenFields' => ['id' => $storeId] // (Opsional, jika partial butuh)
+                'extraHiddenFields' => ['id' => $storeId]
             ]);
-            // Kirim sebagai JSON
             $this->json(['html' => $html]);
             return;
         }
 
-        // 5. Render view dengan data baru
         $this->render('pages/stores/detail', [
             'store'        => $storeInfo,
             'productsData' => $productsData,
             'categories'   => $categories,
             'filters'      => $filters,
-            'actionUrl'    => $actionUrl, // Kirim ke view utama
+            'actionUrl'    => $actionUrl,
             'pageTitle'    => View::escape($storeInfo['store_name']),
             'cssFiles' => [
                 '/css/pages/store-detail.css',

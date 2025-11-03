@@ -1,6 +1,4 @@
 <?php
-// File: src/app/views/pages/orders/index.php
-// SEKARANG JADI LEBIH RINGKAS
 $currentStatus = $status_filter ?? 'all';
 $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 ?>
@@ -17,7 +15,7 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
     </div>
 
     <div id="order-list-container">
-        <?= View::render('components/order-list', [
+        <?= View::component('order-list', [
                 'orders' => $orders,
                 'current_page' => $current_page,
                 'total_pages' => $total_pages,

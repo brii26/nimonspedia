@@ -47,7 +47,7 @@ class BuyerOrdersController extends BaseController {
             ];
 
             if ($this->isAjax()) {
-                $html = View::render('components/order-list', $viewData);
+                $html = View::component('order-list', $viewData);
                 $this->json(['html' => $html]);
                 return;
             }

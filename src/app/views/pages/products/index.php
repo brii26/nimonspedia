@@ -2,7 +2,6 @@
     <div class="products-index-container">
 
         <?php
-        // Filter tetap di sini
         echo View::component('product-filter', [
             'actionUrl' => $actionUrl ?? '/',
             'categories' => $categories ?? [],
@@ -12,7 +11,7 @@
 
         <div id="product-list-container">
             <?php
-            echo View::render('components/product-list', [
+            echo View::component('product-list', [
                 'productsData' => $productsData,
                 'filters' => $filters,
                 'actionUrl' => $actionUrl ?? '/'

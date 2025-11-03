@@ -34,7 +34,7 @@ abstract class BaseController {
         $data['content'] = $pageContent;
 
         try {
-            echo View::render('components/layout', $data);
+            echo View::component('layout', $data);
         } catch (Exception $e) {
             error_log("Error rendering layout 'components/layout': " . $e->getMessage());
             echo "<h1>Application Layout Error</h1>";

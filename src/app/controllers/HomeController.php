@@ -87,18 +87,15 @@ class HomeController extends BaseController {
         $actionUrl = '/';
 
         if ($isAjax) {
-            // Jika AJAX, render HANYA partial-nya
-            $html = View::render('components/product-list', [
+            $html = View::component('product-list', [
                 'productsData' => $productsData,
                 'filters' => $filters,
                 'actionUrl' => $actionUrl
             ]);
-            // Kirim sebagai JSON
             $this->json(['html' => $html]);
             return;
         }
 
-        // Jika bukan AJAX (full page load), render seperti biasa
         $this->render('pages/products/index', [
             'productsData' => $productsData,
             'categories'   => $categories,

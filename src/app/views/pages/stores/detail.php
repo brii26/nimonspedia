@@ -54,8 +54,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                 
                 <div id="product-list-container">
                      <?php
-                    // Load partial-nya untuk pertama kali
-                    echo View::render('components/product-list', [
+                    echo View::component('components/product-list', [
                         'productsData' => $productsData,
                         'filters' => $filters,
                         'actionUrl' => $actionUrl ?? '/store',
