@@ -21,16 +21,6 @@ class AuthService {
             throw new Exception('Email already registered');
         }
         
-        $userData = [
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'role' => $data['role'],
-            'address' => $data['address']
-        ];
-
-        $userId = $this->userRepository->createUser($userData);
-
 		$storeName = null;
         if ($data['role'] === 'SELLER') {
             $storeName = $data['store_name'] ?? ($data['name'] . "'s Store");
