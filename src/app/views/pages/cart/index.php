@@ -20,7 +20,7 @@
                     <div class="cart-store-card" data-store-id="<?= (int)($storeData['store_id'] ?? 0) ?>">
                         
                         <div class="cart-store-header">
-                            <strong><?= htmlspecialchars($storeName) ?></strong>
+                            <?= htmlspecialchars($storeName) ?>
                         </div>
 
                         <div class="cart-item-list">

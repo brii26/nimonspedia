@@ -61,14 +61,14 @@ $activePage = $currentPage ?? '';
                             <span class="nav-text">Home</span>
                         </a>
                         <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
-                            <span class="nav-icon">🛒</span>
-                            <span class="nav-text">Cart</span>
-                            
-                            <span class="cart-badge" 
-                                id="navbar-cart-badge" 
-                                style="<?= ($cartCount == 0) ? 'display: none;' : '' ?>">
-                                <?= $cartCount ?>
+                            <span class="nav-icon">🛒
+                                <span class="cart-badge" 
+                                    id="navbar-cart-badge" 
+                                    style="<?= ($cartCount == 0) ? 'display: none;' : '' ?>">
+                                    <?= $cartCount ?>
+                                </span>
                             </span>
+                            <span class="nav-text">Cart</span>
                         </a>
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
