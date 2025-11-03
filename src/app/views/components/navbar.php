@@ -97,14 +97,12 @@ $activePage = $currentPage ?? '';
                 </div>
                 
                 <?php if ($isLoggedIn): ?>
-                    <!-- User Profile Dropdown -->
                     <div class="navbar-user">
-                        <!-- Balance Display for Buyers -->
                         <?php if ($userRole === 'BUYER'): ?>
-                            <div class="user-balance">
+                            <a class="user-balance" href = "/profile#balance">
                                 <span class="balance-icon">💰</span>
                                 <span class="balance-amount"><?= View::currency($currentUser['balance'] ?? 0) ?></span>
-                            </div>
+                            </a>
                         <?php endif; ?>
                         
                         <!-- Profile Dropdown -->
@@ -132,11 +130,6 @@ $activePage = $currentPage ?? '';
                                         <span class="dropdown-text">Top Up Balance</span>
                                     </a>
                                 <?php endif; ?>
-                                
-                                <a href="/settings" class="dropdown-item">
-                                    <span class="dropdown-icon">⚙️</span>
-                                    <span class="dropdown-text">Settings</span>
-                                </a>
                                 
                                 <div class="dropdown-divider"></div>
                                 
