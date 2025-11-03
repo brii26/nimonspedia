@@ -15,7 +15,7 @@ $extraHiddenFields = $extraHiddenFields ?? [];
 
 <section class="filter-card">
     <form action="<?= View::escape($actionUrl) ?>" method="GET" class="filter-form">
-        
+        <input type="hidden" name="page" value="<?= View::escape($filters['page'] ?? 1) ?>">
         <?php foreach ($extraHiddenFields as $name => $value): ?>
             <input type="hidden" name="<?= View::escape($name) ?>" value="<?= View::escape($value) ?>">
         <?php endforeach; ?>
