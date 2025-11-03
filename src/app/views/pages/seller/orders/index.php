@@ -1,11 +1,10 @@
 <?php
-// Variabel-variabel ini sudah didefinisikan oleh Controller
-$statuses = ['waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
-$currentStatus = $currentStatus ?? null;
-$search = $search ?? '';
-$currentPage = $currentPage ?? 1;
-$orders = $ordersData['orders'] ?? [];
-$totalPages = $ordersData['totalPages'] ?? 1; // <--- $totalPages didefinisikan di sini
+	$statuses = ['waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
+	$currentStatus = $currentStatus ?? null;
+	$search = $search ?? '';
+	$currentPage = $currentPage ?? 1;
+	$orders = $ordersData['orders'] ?? [];
+	$totalPages = $ordersData['totalPages'] ?? 1; 
 ?>
 
 <div class="orders-container">
@@ -32,7 +31,6 @@ $totalPages = $ordersData['totalPages'] ?? 1; // <--- $totalPages didefinisikan 
 	
     <div id="seller-order-list-container">
         <?= View::render('components/seller-order-list', [
-                // Kirim semua variabel yang dibutuhkan oleh komponen
                 'ordersData' => $ordersData,
                 'currentStatus' => $currentStatus
             ]);

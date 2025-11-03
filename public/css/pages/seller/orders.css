@@ -761,6 +761,7 @@ footer .copyright {
 /* Header card (Info Toko, Tanggal, Status) */
 .order-card-header {
     display: flex;
+	justify-content: space-between;
     flex-wrap: wrap; /* Agar rapi di mobile */
     gap: 10px;
     align-items: center;
@@ -769,6 +770,13 @@ footer .copyright {
     border-bottom: 1px solid #ecf0f1;
     font-size: 0.85rem;
     color: #5d6d7e;
+}
+
+#right-order-header-section {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap : 15px;
 }
 
 .order-card-store {

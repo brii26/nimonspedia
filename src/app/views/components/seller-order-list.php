@@ -10,13 +10,18 @@ $orders = $ordersData['orders'] ?? ($orders ?? []);
     <?php else: ?>
         <?php foreach ($orders as $order): ?>
             <article class="order-card">
-                <header class="order-card-header">
-                    <span class="order-card-store">Pembeli: <strong><?= View::escape($order['buyer_name'] ?? 'N/A') ?></strong></span>
-                    <span class="order-card-date"><?= View::date($order['created_at'], 'd M Y') ?></span>
-                    <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
-                        <?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
-                    </span>
-                </header>
+			<header class="order-card-header">
+				<div>
+					<span class="order-card-store">Pembeli: <strong><?= View::escape($order['buyer_name'] ?? 'N/A') ?></strong></span>
+					<span class="order-id-display">Order ID: #<?= View::escape($order['order_id']) ?></span>
+				</div>
+				<div id="right-order-header-section">
+					<span class="order-card-date"><?= View::date($order['created_at'], 'd M Y') ?></span>
+					<span class="status-badge <?= htmlspecialchars($order['status']) ?>">
+						<?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
+					</span>
+				</div>
+			</header>
 
                 <div class="order-card-body">
                     <?php if (!empty($order['items'])): ?>
