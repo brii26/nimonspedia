@@ -27,7 +27,7 @@ $extraHiddenFields = $extraHiddenFields ?? [];
                 <input type="text" id="filter-search" name="searchTerm" 
                        value="<?= View::escape($filters['searchTerm'] ?? '') ?>" 
                        placeholder="Cari produk...">
-                <button type="submit" class="btn btn-search">
+                <button type="submit" class="btn btn-search" aria-label="Cari">
                     <svg xmlns="http://www.w3.org/2000/svg" 
                         width="24" 
                         height="24" 

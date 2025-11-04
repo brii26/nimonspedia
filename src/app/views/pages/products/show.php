@@ -1,7 +1,7 @@
 <?php
 // Ambil data produk
 $productName = View::escape($product['product_name']);
-$productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.png');
+$productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.svg');
 $storeLink = "/store?id=" . View::escape($product['store_id']);
 $storeName = View::escape($product['store_name']);
 $storeDescription = SanitizerService::sanitizeRichText($product['store_description']) ?? '<i>Toko ini belum memiliki deskripsi.</i>';
@@ -53,7 +53,7 @@ $isOutOfStock = $stock <= 0;
             <div class="purchase-card">
                 <div class="purchase-card-body">
                     <div class="store-info-simple">
-                        <img src="<?= '/storage/' . View::escape($product['store_logo_path'] ?? 'store_logos/default-store.png') ?>" alt="Logo <?= $storeName ?>" class="store-logo-small">
+                        <img src="<?= '/storage/' . View::escape($product['store_logo_path'] ?? 'store_logos/default-store.svg') ?>" alt="Logo <?= $storeName ?>" class="store-logo-small">
                         <a href="<?= $storeLink ?>" class="store-link"><?= $storeName ?></a>
                     </div>
                     

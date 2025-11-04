@@ -14,7 +14,7 @@
                                             $imageUrl = '/storage/' . View::escape($logoPath);
                                             $altText = View::escape($store['store_name'] ?? 'Store') . ' Logo';
                                         } else {
-                                            $imageUrl = '/storage/'. 'store_logos/default-store.png'; 
+                                            $imageUrl = '/storage/'. 'store_logos/default-store.svg'; 
                                             $altText = 'Default Store Logo';
                                         }
                                     ?>

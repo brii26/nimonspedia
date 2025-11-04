@@ -28,7 +28,7 @@
                                 <div class="cart-item" data-product-id="<?= (int)($it['product_id'] ?? 0) ?>">
                                     
                                     <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>">
-                                        <img src="<?= '/storage/' . View::escape(!empty($it['product_image']) ? $it['product_image'] : 'product_images/default-product.png') ?>" 
+                                        <img src="<?= '/storage/' . View::escape(!empty($it['product_image']) ? $it['product_image'] : 'product_images/default-product.svg') ?>" 
                                             alt="<?= View::escape($it['product_name']) ?>" 
                                             class="cart-item-image"> </a>
 

@@ -51,7 +51,7 @@
                             <tr class="cart-item">
                                 <td>
                                     <div class="cart-product">
-                                        <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.png') ?>" 
+                                        <img src="<?= '/storage/' . View::escape($it['product_image'] ?? 'product_images/default-product.svg') ?>" 
                                                 alt="<?= View::escape($it['product_name']) ?>" 
                                                 class="cart-product-image"> <div class="cart-product-info">
                                             <a href="/product?id=<?= (int)($it['product_id'] ?? 0) ?>" class="cart-product-name">
