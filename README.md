@@ -316,45 +316,46 @@ This application employs a containerized microservices architecture with two pri
 ### Roles and Responsibilities
 | Server-Side Feature   | Author              |
 |-----------------------|---------------------|
-| Docker Config         | xxx,xxx,xxx         |
-| DB Connection         | xxx,xxx,xxx         |
-| Core Logic            | xxx,xxx,xxx         |
-| Login                 | xxx,xxx,xxx         |
-| Register              | xxx,xxx,xxx         |
-| Logout                | xxx,xxx,xxx         |
-| Update Profil         | xxx,xxx,xxx         |
-| Create & Update Store | xxx,xxx,xxx         |
-| Product Discovery     | xxx,xxx,xxx         |
-| Search n Filter Prod  | xxx,xxx,xxx         |
-| Prod Detail Logic     | xxx,xxx,xxx         |
-| Store Detail Logic    | xxx,xxx,xxx         |
-| Top-up                | xxx,xxx,xxx         |
-| Cart Logic            | xxx,xxx,xxx         |
-| Checkout              | xxx,xxx,xxx         |
-| Order History         | xxx,xxx,xxx         |
-| Confirm Order         | xxx,xxx,xxx         |
-| Seller Dashboard Logic| xxx,xxx,xxx         |
-| Product Management    | xxx,xxx,xxx         |
-| Order Management      | xxx,xxx,xxx         |
+| Docker Config         | 149                 |
+| DB Connection         | 149         |
+| Core Logic            | 149         |
+| Login                 | 149         |
+| Register              | 149         |
+| Logout                | 149         |
+| Update Profil         | 149         |
+| Create & Update Store | 126         |
+| Product Discovery     | 135         |
+| Search n Filter Prod  | 149         |
+| Prod Detail Logic     | 135         |
+| Store Detail Logic    | 126         |
+| Top-up                | 149         |
+| Cart Logic            | 135         |
+| Checkout              | 135         |
+| Order History         | 135         |
+| Confirm Order         | 135         |
+| Seller Dashboard Logic| 126         |
+| Product Management    | 126         |
+| Order Management      | 126         |
+| Export CSV            | 149         |
 
 | Client-Side Feature   | Author              |
 |-----------------------|---------------------|
-| Core Layout           | xxx,xxx,xxx         |
-| Global Component      | xxx,xxx,xxx         |
-| Register Page         | xxx,xxx,xxx         |
-| Login Page            | xxx,xxx,xxx         |
-| Profile Page          | xxx,xxx,xxx         |
-| Prod Discovery Page   | xxx,xxx,xxx         |
-| Prod Detail Page      | xxx,xxx,xxx         |
-| Store Detail Page     | xxx,xxx,xxx         |
-| Cart Page             | xxx,xxx,xxx         |
-| Checkout Page         | xxx,xxx,xxx         |
-| Order History Page    | xxx,xxx,xxx         |
-| Balance Management    | xxx,xxx,xxx         |
-| Seller Dashboard Page | xxx,xxx,xxx         |
-| Store Management Page | xxx,xxx,xxx         |
-| Prod Management Page  | xxx,xxx,xxx         |
-| Order Management Page | xxx,xxx,xxx         |
+| Core Layout           | 149         |
+| Global Component      | 149         |
+| Register Page         | 149         |
+| Login Page            | 149         |
+| Profile Page          | 149         |
+| Prod Discovery Page   | 135         |
+| Prod Detail Page      | 135         |
+| Store Detail Page     | 135         |
+| Cart Page             | 135         |
+| Checkout Page         | 135         |
+| Order History Page    | 135         |
+| Balance Management    | 149         |
+| Seller Dashboard Page | 126         |
+| Store Management Page | 126         |
+| Prod Management Page  | 126         |
+| Order Management Page | 126         |
 
 ## Bonuses
 - [x] All Responsive Web Design
