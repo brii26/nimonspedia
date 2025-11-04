@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Helper Validasi ---
     const showError = (input, message) => {
         if (!input) return;
-        const errorElId = input.id + '-error'; // cth: 'email-error'
+        const errorElId = input.id + '-error';
         const errorEl = document.getElementById(errorElId);
         if (errorEl) {
             errorEl.textContent = message;
