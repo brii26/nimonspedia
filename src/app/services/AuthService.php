@@ -71,7 +71,6 @@ class AuthService {
             throw $e;
         }
 
-        // Return created user
         return $this->userRepository->find($userId);
     }
     
@@ -83,12 +82,12 @@ class AuthService {
         $user = $this->userRepository->findByEmail($email);
         
         if (!$user) {
-            throw new Exception('Invalid email or password');
+            throw new ValidationException('Invalid email or password');
         }
         
         // Verify password
         if (!password_verify($password, $user['password'])) {
-            throw new Exception('Invalid email or password');
+            throw new ValidationException('Invalid email or password');
         }
         
         return $user;
