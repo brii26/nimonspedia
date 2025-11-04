@@ -36,18 +36,26 @@
                         <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Produk tidak ditemukan)</span>
                     <?php endif; ?>
                 </div>
-
                 <footer class="order-card-footer">
-                    <div class="order-total">
-                        <span>Total Belanja</span>
-                        <strong><?= View::currency($order['total_price']) ?></strong>
-                    </div>
-                    <div class="order-actions">
-                        <a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn btn-detail">
-                            Lihat Detail
-                        </a>
-                    </div>
-                </footer>
+					<div class="order-total">
+						<span>Total Belanja</span>
+						<strong><?= View::currency($order['total_price']) ?></strong>
+					</div>
+					<div class="order-actions">
+						<a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn btn-detail">
+							Lihat Detail
+						</a>
+						<?php if ($order['status'] === 'on_delivery'): ?>
+							<form action="/orders/confirm-received" method="POST" data-form="confirm-received" style="display: inline;">
+								<input type="hidden" name="csrf-token" value="<?= Auth::csrfToken() ?>">
+								<input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
+								<button type="submit" class="btn btn-success confirm-received-btn">
+									Konfirmasi Diterima
+								</button>
+							</form>
+						<?php endif; ?>
+					</div>
+				</footer>
             </article>
         <?php endforeach; ?>
     <?php endif; ?>
@@ -56,7 +64,6 @@
 <?php if ($total_pages > 1): ?>
     <div class="pagination">
         <?php
-        // Logika paginasi tetap sama
         $queryParams = $_GET;
         $window = 2;
         $lastNum = 0;

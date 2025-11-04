@@ -14,10 +14,7 @@ class HomeController extends BaseController {
         $this->categoryService = new CategoryService();
     }
 
-    /**
-     * - Jika Seller: Tampilkan Dashboard Seller
-     * - Jika Buyer/Guest: Tampilkan Daftar Produk
-     */
+
     public function index() {
         $user = Auth::user();
 

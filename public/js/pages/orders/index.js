@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateActiveTab = (url) => {
         const urlParams = new URL(url, window.location.origin).searchParams;
         const newStatus = urlParams.get('status') || 'all';
-        
         const allTabs = container.querySelectorAll('.status-tabs .tab');
         
         allTabs.forEach(tab => {
@@ -64,5 +63,70 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = paginationLink.getAttribute('href');
             fetchOrders(url);
         }
+    });
+
+    orderListContainer.addEventListener('submit', (e) => {
+        const form = e.target.closest('form[data-form="confirm-received"]');
+        if (!form) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const submitButton = form.querySelector('.confirm-received-btn');
+        if (!submitButton) return;
+
+        AppConfirm.ask('Apakah Anda yakin sudah menerima pesanan ini?');
+
+        const handleConfirmOk = () => {
+            App.showLoading(submitButton, 'Memproses...');
+            const formData = new FormData(form);
+            const actionUrl = form.getAttribute('action');
+
+            App.request(actionUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().then(data => ({
+                    ok: response.ok,
+                    data: data
+                }));
+            })
+            .then(result => {
+                if (result.ok) {
+                    App.showAlert(result.data.message, 'success');
+                    const orderCard = form.closest('.order-card');
+                    if (orderCard) {
+                        const statusBadge = orderCard.querySelector('.status-badge');
+                        if (statusBadge) {
+                            statusBadge.textContent = 'Completed';
+                            statusBadge.className = 'status-badge completed';
+                        }
+                    }
+                    form.remove();
+                } else {
+                    App.showAlert(result.data.message || 'Gagal memproses permintaan.', 'error');
+                    App.hideLoading(submitButton);
+                }
+            })
+            .catch(error => {
+                console.error('Error confirming order:', error);
+                App.showAlert('Gagal terhubung ke server. Coba lagi.', 'error');
+                if (submitButton) {
+                    App.hideLoading(submitButton);
+                }
+            })
+            .finally(() => {
+                document.removeEventListener('confirm:cancel', handleConfirmCancel);
+            });
+        };
+
+        const handleConfirmCancel = () => {
+            document.removeEventListener('confirm:ok', handleConfirmOk);
+        };
+
+        document.addEventListener('confirm:ok', handleConfirmOk, { once: true });
+        document.addEventListener('confirm:cancel', handleConfirmCancel, { once: true });
     });
 });

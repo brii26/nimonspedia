@@ -216,6 +216,11 @@
     white-space: nowrap;
 }
 
+.confirm-received-btn {
+	background-color: #27ae60;
+	color: white;
+}
+
 .orders-table td .btn-detail,
 .orders-table td #btn-approve,
 .orders-table td #btn-reject,

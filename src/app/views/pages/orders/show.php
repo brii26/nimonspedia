@@ -49,7 +49,7 @@ $statusClasses = [
                                 <form method="POST" action="/orders/confirm">
                                     <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                                     <input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
-                                    <button type="submit" class="btn-approve mt-2">Konfirmasi Diterima</button>
+                                    <!-- <button type="submit" class="btn-approve mt-2">Konfirmasi Diterima</button> -->
                                 </form>
                             <?php else: ?>
                                 <p class="text-muted"><small>Anda dapat mengonfirmasi setelah estimasi pengiriman berlalu.</small></p>

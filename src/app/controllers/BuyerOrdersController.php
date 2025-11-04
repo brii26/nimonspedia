@@ -28,8 +28,6 @@ class BuyerOrdersController extends BaseController {
             $page = (int)($this->getQuery('page', 1));
             $status = $this->getQuery('status');
             $perPage = 10;
-            
-            // Logika ini tetap sama
             $ordersData = $this->buyerOrderService->getBuyerOrders(
                 Auth::user()['user_id'],
                 $page,
@@ -121,21 +119,24 @@ class BuyerOrdersController extends BaseController {
         try {
             $orderId = (int)($this->getPost('order_id'));
             if (!$orderId) {
-                $this->redirect('/orders?error=' . urlencode('Order tidak valid'));
+                $this->json(['success' => false, 'message' => 'Order tidak valid'], 400);
                 return;
             }
 
             $buyerId = Auth::user()['user_id'];
             $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
             if ($ok) {
-                $this->redirect('/orders?success=' . urlencode('Pesanan dikonfirmasi diterima.'));
+                $this->json(['success' => true, 'message' => 'Pesanan dikonfirmasi diterima.']);
             } else {
-                $this->redirect('/orders?error=' . urlencode('Tidak dapat mengkonfirmasi pesanan. Pastikan status sudah on_delivery dan estimasi pengiriman terlewati.'));
+                $this->json([
+                    'success' => false, 
+                    'message' => 'Tidak dapat mengkonfirmasi pesanan. Pastikan status sudah "on_delivery" dan estimasi pengiriman terlewati.'
+                ], 422);
             }
 
         } catch (Exception $e) {
             error_log('Error confirming received: ' . $e->getMessage());
-            $this->redirect('/orders?error=' . urlencode('Terjadi kesalahan saat mengkonfirmasi pesanan.'));
+            $this->json(['success' => false, 'message' => 'Terjadi kesalahan saat mengkonfirmasi pesanan.'], 500);
         }
     }
     

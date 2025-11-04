@@ -65,6 +65,7 @@ window.App = {
         if (options.method === 'POST' && csrfToken) {
             if (options.body instanceof FormData) {
                 options.body.append('csrf_token', csrfToken);
+				delete defaultOptions.headers['Content-Type'];
             } else {
                 options.body = JSON.stringify({
                     ...JSON.parse(options.body || '{}'),
