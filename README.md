@@ -61,35 +61,39 @@
 
 | Product Discovery | Product Details |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Product Discovery](img/product_discovery_page.png) | ![Product Details](img/product_details_page.png) |
 
 | Cart | Checkout |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Cart](img/cart_page.png) | ![Checkout](img/checkout_page.png) |
 
 | Order History | Store Details |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Order History](img/order_history_page.png) | ![Store Details](img/store_details_page.png) |
 
 ### Seller
 
-| Seller Dashboard | Product List |
+| Seller Dashboard | Product Create |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Seller Dashboard](img/seller_dashboard_page.png) | ![Product Create](img/create_product_page.png) |
 
 | Product Management | Order Management |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Product Management](img/product_management_page.png) | ![Order Management](img/order_management_page.png) |
+
+| Store Update |
+| :---: |
+| ![Store Update](img/update_store_page.png) |
 
 ### Halaman Autentikasi & Profil
 
 | Login | Register |
 | :---: | :---: |
-| *(Screenshot Here)* | *(Screenshot Here)* |
+| ![Login](img/login_page.png) | ![Register](img/register_page.png) |
 
 | Profile |
 | :---: |
-| *(Screenshot Here)* |
+| ![Profile](img/profile_page.png) |
 
 
 ## Technology Stack
