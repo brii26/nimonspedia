@@ -157,16 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     };
 
-    /**
-     * Fungsi Toggle Seller (dari sebelumnya, sedikit di-update)
-     */
+
     function toggleSellerFields() {
         if (!roleSelect || !sellerFields || !storeNameInput) return;
 
         if (roleSelect.value === 'SELLER') {
             sellerFields.style.display = 'block';
             storeNameInput.required = true;
-            // Tambahkan validasi live untuk store name
             storeNameInput.addEventListener('blur', validateStoreName);
             storeNameInput.addEventListener('input', () => clearError(storeNameInput));
 

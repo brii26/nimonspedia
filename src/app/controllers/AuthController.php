@@ -206,12 +206,9 @@ class AuthController extends BaseController {
                 $this->verifyCsrf();
                 Auth::logout();
             } catch (Exception $e) {
-                // Handle CSRF error, maybe log it or show a message
-                // For simplicity, just redirecting
                 error_log("Logout CSRF failed: " . $e->getMessage());
              }
         } else {
-            // Allow GET logout too for simplicity, though POST is safer
             Auth::logout();
         }
         $this->redirect('/');

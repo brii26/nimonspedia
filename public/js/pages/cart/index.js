@@ -25,8 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const minVal = parseInt(input.min, 10);
         const prevValue = input.dataset.previousValue || minVal;
 
-        // --- [LOGIKA REVERT] ---
-        // Jika input tidak valid (NaN) atau < 0, kembalikan ke nilai sebelumnya
         if (isNaN(quantity) || quantity < minVal) {
             App.showAlert(`Kuantitas minimal adalah ${minVal}`, 'error');
             input.value = prevValue;

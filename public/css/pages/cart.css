@@ -264,27 +264,26 @@
     .cart-item-image {
         width: 60px;
         height: 60px;
-        flex-shrink: 0; /* Jangan biarkan gambar mengecil */
+        flex-shrink: 0;
     }
 
-    /* [FIX] Hapus 'order: -1' dan 'flex-basis: 100%' */
     .cart-item-details {
-        flex-grow: 1;    /* Biarkan dia tumbuh di sisa ruang */
-        flex-basis: 150px; /* Beri basis agar bisa wrap */
+        flex-grow: 1;   
+        flex-basis: 150px;
         min-width: 0;
-        /* HAPUS 'order: -1' */
+
     }
 
     .cart-product-price {
-        display: none; /* Sembunyikan harga satuan (opsional, tapi bersih) */
+        display: none;
     }
     
     .item-subtotal-desktop {
-        display: none; /* Sembunyikan subtotal desktop */
+        display: none;
     }
     
     .item-subtotal-mobile {
-        display: block; /* Tampilkan subtotal mobile */
+        display: block;
         font-size: 0.9rem;
         color: #555;
         margin-top: 8px;
@@ -293,25 +292,22 @@
         color: #333;
     }
 
-    /* [FIX] Hapus 'order: 1', biarkan dia wrap secara alami */
     .cart-item-actions {
-        width: 100%; /* Buat actions full width */
-        justify-content: space-between; /* Qty di kiri, Hapus di kanan */
+        width: 100%; 
+        justify-content: space-between; 
         margin-left: 0;
-        flex-direction: row-reverse; /* Balik urutan (Tombol Hapus | Qty) */
-        /* HAPUS 'order: 1' */
+        flex-direction: row-reverse;
     }
 
-    /* Rapikan summary card di mobile */
     .cart-summary-card {
         padding: 12px 16px;
         flex-direction: column;
         align-items: stretch;
-        border-radius: 0; /* Full width di mobile */
+        border-radius: 0;
         border-left: none;
         border-right: none;
         margin-top: 12px;
-        margin-bottom: 0; /* Hapus margin bawah di mobile */
+        margin-bottom: 0;
     }
     .summary-total-group {
         flex-direction: row;

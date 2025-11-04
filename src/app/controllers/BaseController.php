@@ -11,7 +11,6 @@ abstract class BaseController {
      * Render template with data
      */
     protected function render($template, $data = []) {
-        // Add global data available to all templates
         $data = array_merge($data, [
             'user' => Auth::user(),
             'csrf_token' => Auth::csrfToken(),

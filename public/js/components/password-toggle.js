@@ -4,7 +4,6 @@ class PasswordToggle {
     }
 
     init() {
-        // Wait for DOM to be ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.initializeToggles());
         } else {
@@ -16,7 +15,6 @@ class PasswordToggle {
         const toggleButtons = document.querySelectorAll('.password-toggle');
         
         toggleButtons.forEach(button => {
-            // Add click event listener
             button.addEventListener('click', (e) => this.handleToggle(e));
         });
     }
