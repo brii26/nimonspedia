@@ -58,39 +58,36 @@ class Application {
         $this->router = new Router();
     }
     
-    // Tolong lengkapin cokkk
     private function setupRoutes() {
         $this->router->get('/', 'HomeController@index');
         
-        // Auth routes (Track 1)
+        // Auth routes
 		$this->router->get('/login', 'AuthController@loginForm');
         $this->router->post('/login', 'AuthController@login');
 		$this->router->get('/register', 'AuthController@registerForm');
         $this->router->post('/register', 'AuthController@register');
         $this->router->post('/logout', 'AuthController@logout');
         
-        // Dashboard & profile (authenticated users)
+        // Dashboard & profile
         $this->router->get('/profile', 'AuthController@profileForm');
         $this->router->post('/profile', 'AuthController@updateProfile');
         $this->router->post('/profile/password', 'AuthController@changePassword');
         $this->router->post('/balance/topup', 'AuthController@topUp');
         
-        // Product discovery routes (Track 2)
+        // Product discovery routes
         $this->router->get('/products', 'ProductController@index');
         $this->router->get('/product', 'ProductController@show');
 
         $this->router->get('/store', 'StoreController@show');
-        // $this->router->get('/stores/{id}', 'StoreController@show');
         
-        // Cart routes (Track 2) 
-        // Cart routes (Track 2)
+        // Cart routes 
         $this->router->get('/cart', 'CartController@index');
         $this->router->post('/cart/add', 'CartController@add');
         $this->router->post('/cart/update', 'CartController@update');
         $this->router->post('/cart/remove', 'CartController@remove');
         $this->router->get('/api/cart/count', 'CartController@count');
         
-        // Order routes (Track 2 & 3)
+        // Order routes
         $this->router->get('/orders', 'BuyerOrdersController@index');
         $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 
         $this->router->post('/orders/checkout', 'BuyerOrdersController@checkout');
@@ -98,7 +95,7 @@ class Application {
         $this->router->post('/orders/confirm', 'BuyerOrdersController@confirmReceived');
         $this->router->get('/orders/success', 'BuyerOrdersController@successCheckout');
         
-        // Seller routes (Track 3 - TODO)
+        // Seller routes
         $this->router->get('/seller/products', 'SellerController@listProducts');
 		$this->router->post('/seller/products/filter', 'SellerController@filter');
         $this->router->get('/seller/products/create', 'SellerController@createProductForm');
@@ -108,7 +105,8 @@ class Application {
 		$this->router->get('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/update', 'SellerController@updateProduct');
 		$this->router->post('/seller/products/delete', 'SellerController@deleteProduct');
-    		// Seller Orders Management
+
+    	// Seller Orders Management
 		$this->router->get('/seller/orders', 'SellerOrdersController@index');
 		$this->router->get('/seller/orders/show', 'SellerOrdersController@showOrder');
 		$this->router->post('/seller/orders/approve', 'SellerOrdersController@approve');
@@ -118,10 +116,6 @@ class Application {
 
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
         
-        // API routes for AJAX (TODO)
-        // $this->router->get('/api/cart/count', 'CartController@count');
-        // $this->router->post('/api/cart/update', 'CartController@updateQuantity');
-        // $this->router->get('/api/balance/check', 'AuthController@checkBalance');
     }
     
     public function run() {

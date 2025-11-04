@@ -3,7 +3,7 @@
     margin-bottom: 1.5rem;
 }
 
-/* Card Toko (style dari dashboard.css) */
+/* Card Toko  */
 .cart-store-card {
     background: #ffffff;
     border-radius: 12px;
@@ -13,7 +13,7 @@
     overflow: hidden;
 }
 
-/* Header Toko (Nama Toko) */
+/* Header Toko  */
 .cart-store-header {
     padding: 16px 24px;
     border-bottom: 1px solid #f0f0f0;
@@ -23,15 +23,15 @@
     background-color: #fcfcfc;
 }
 
-/* List Item (Pengganti <tbody>) */
+/* List Item */
 .cart-item-list {
     padding: 0 24px;
 }
 
-/* Container per Item (Pengganti <tr>) */
+/* Container per Item */
 .cart-item {
     display: flex;
-    flex-wrap: wrap; /* Agar responsif di mobile */
+    flex-wrap: wrap; 
     align-items: center;
     gap: 16px;
     padding: 24px 0;
@@ -41,7 +41,7 @@
     border-bottom: none;
 }
 
-/* Kolom 1: Gambar */
+/* Gambar */
 .cart-item-image {
     width: 80px;
     height: 80px;
@@ -51,10 +51,10 @@
     flex-shrink: 0;
 }
 
-/* Kolom 2: Info (Nama & Harga) */
+/* Info (Nama & Harga) */
 .cart-item-details {
-    flex-grow: 1; /* Ambil sisa ruang */
-    min-width: 150px; /* Agar tidak terlalu kecil */
+    flex-grow: 1; 
+    min-width: 150px; 
 }
 .cart-product-name {
     font-size: 1rem;
@@ -73,15 +73,15 @@
     color: var(--primary-color, #667eea);
 }
 
-/* Kolom 3: Aksi (Qty & Hapus) */
+/* Aksi (Qty & Hapus) */
 .cart-item-actions {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-left: auto; /* Dorong ke kanan di desktop */
+    margin-left: auto; 
 }
 
-/* Input Quantity (Style baru) */
+/* Input Quantity*/
 .quantity-selector {
     display: flex;
     align-items: center;
@@ -134,7 +134,7 @@
     margin: 0;
 }
 
-/* Tombol Hapus (Style baru - Icon) */
+/* Tombol Hapus */
 .btn-remove {
     background: none;
     border: none;
@@ -145,7 +145,7 @@
     transition: background-color 0.2s, color 0.2s;
 }
 .btn-remove:hover {
-    color: #dc3545; /* Merah saat hover */
+    color: #dc3545; 
     background-color: #fef0f0;
 }
 
@@ -158,7 +158,7 @@
     color: #333;
 }
 .item-subtotal-mobile {
-    display: none; /* Sembunyikan di desktop */
+    display: none;
 }
 
 /* Footer Toko (Subtotal Toko) */
@@ -177,10 +177,6 @@
     font-weight: 700;
 }
 
-/*
- * [FIX] Footer Halaman (Total & Checkout) - BUKAN STICKY LAGI
- * Diubah menjadi card biasa, mengambil style dari .stat-card referensi
- */
 .cart-summary-card {
     background: #ffffff;
     border-radius: 12px;
@@ -193,10 +189,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Agar rapi di mobile */
+    flex-wrap: wrap;
     gap: 16px;
 }
-/* [AKHIR FIX] */
 
 .summary-total-group {
     display: flex;
@@ -207,19 +202,17 @@
     color: var(--text-muted, #6c757d);
 }
 .grand-total {
-    color: var(--text-dark, #2c3e50); /* Diubah dari primary ke text-dark */
+    color: var(--text-dark, #2c3e50);
     font-size: 1.3rem;
     font-weight: 700;
     margin: 0;
 }
 
-/* Tombol Aksi di Footer */
 .cart-actions {
     display: flex;
     gap: 12px;
 }
 
-/* Sembunyikan Tombol "Update Keranjang" */
 #updateCart {
     display: none;
 }
@@ -238,23 +231,17 @@
     color: #555;
     margin-bottom: 1.5rem;
 }
-.cart-empty .btn-primary {
-    /* (Style sudah ada di global) */
-}
 
-
-/* Tampilan Mobile */
-/* Tampilan Mobile */
+/* Responsive */
 @media (max-width: 768px) {
     .container {
         padding: 0;
     }
     
-    /* [FIX] Rapikan margin/padding judul di mobile */
     .container h1.mb-4 {
         margin-top: 1rem;
         margin-bottom: 1rem;
-        padding: 0 1rem; /* Tambahkan padding samping */
+        padding: 0 1rem; 
     }
 
     .cart-store-card {
@@ -271,7 +258,7 @@
 
     .cart-item {
         gap: 12px;
-        flex-wrap: wrap; /* Pastikan item bisa wrap */
+        flex-wrap: wrap; 
     }
 
     .cart-item-image {

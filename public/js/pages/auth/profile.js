@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cek jika input ada
         if (!input) return; 
         
-        const errorElId = input.id + '-error'; // cth: 'name-error' atau 'confirm_password-error'
+        const errorElId = input.id + '-error'; 
         const errorEl = document.getElementById(errorElId);
         
         if (errorEl) {

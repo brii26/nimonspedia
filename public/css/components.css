@@ -33,7 +33,7 @@
 .brand-link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.3rem;
     text-decoration: none;
     color: var(--primary);
 }
@@ -573,39 +573,29 @@
    QUILL EDITOR COMPONENT
    ========================================================================== */
 
-/*
- * Kita buat agar dia menyatu dengan form group.
- */
 #editor {
-    min-height: 150px; /* Beri tinggi minimal */
+    min-height: 150px; 
     background: #fff;
-    font-size: 1rem; /* Samakan dengan input */
+    font-size: 1rem; 
 }
 
-/* * Style untuk Toolbar Quill (B, I, U, dll.)
- * Kita buat agar terlihat seperti 'header' dari input.
- */
 .ql-toolbar.ql-snow {
-    background: #f8f9fa; /* Warna abu-abu muda */
+    background: #f8f9fa; 
     border: 1px solid #ddd;
-    border-bottom: 0; /* Hapus border bawah */
+    border-bottom: 0;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     padding: 8px;
 }
 
-/* * Style untuk Container Teks (tempat mengetik)
- * Kita buat agar terlihat seperti <textarea>
- */
 .ql-container.ql-snow {
     border: 1px solid #ddd;
-    border-top: 0; /* Hapus border atas (sudah ada di toolbar) */
+    border-top: 0; 
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
-    font-size: 1rem; /* Samakan dengan input */
+    font-size: 1rem; 
 }
 
-/* Beri style 'focus' seperti input lainnya */
 .ql-container.ql-snow:focus-within {
     border-color: var(--primary-color, #667eea);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -616,22 +606,21 @@
    ========================================================================== */
 
 .footer {
-    background: var(--text-dark, #2c3e50); /* Warna gelap untuk kontras */
-    color: var(--gray-300, #adb5bd); /* Teks abu-abu terang */
-    padding: 3rem 0 0 0; /* Padding atas, tanpa padding bawah */
-    border-top: 4px solid var(--primary-color, #667eea); /* Aksen warna primer */
+    background: var(--text-dark, #2c3e50); 
+    color: var(--gray-300, #adb5bd);
+    padding: 3rem 0 0 0; 
+    border-top: 4px solid var(--primary-color, #667eea); 
 }
 
-/* Konten utama footer, menggunakan grid */
 .footer-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* <-- UBAH BARIS INI */
+    grid-template-columns: repeat(3, 1fr); 
     gap: 2rem;
     padding-bottom: 2rem;
 }
 
 .footer-section h4 {
-    color: var(--white, #fff); /* Judul section lebih terang */
+    color: var(--white, #fff); 
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 1rem;
@@ -639,7 +628,6 @@
     padding-bottom: 0.5rem;
 }
 
-/* Garis aksen di bawah judul section */
 .footer-section h4::after {
     content: '';
     position: absolute;
@@ -655,7 +643,6 @@
     line-height: 1.6;
 }
 
-/* Styling untuk list link */
 .footer-links {
     list-style: none;
     padding: 0;
@@ -675,12 +662,11 @@
 .footer-links a:hover {
     color: var(--white, #fff);
     text-decoration: underline;
-    padding-left: 5px; /* Efek hover kecil */
+    padding-left: 5px;
 }
 
-/* Bagian copyright di paling bawah */
 .footer-bottom {
-    border-top: 1px solid var(--gray-700, #495057); /* Garis pemisah */
+    border-top: 1px solid var(--gray-700, #495057); 
     padding: 1.5rem 0;
     text-align: center;
 }
@@ -731,7 +717,7 @@
    ========================================================================== */
 
 @media (max-width: 992px) {
-    /* Mobile Navbar */
+	/* Mobile Navbar */
     .navbar-toggle {
         display: flex;
         background-color: var(--primary, #667eea);
@@ -762,15 +748,12 @@
         left: 0;
         width: 75%;
         max-width: 320px;
-
         height: 100%;
         overflow-y: auto;
-
         background: linear-gradient(180deg, var(--primary, #667eea) 0%, var(--primary-dark, #5a67d8) 100%);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Tambahkan shadow */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
         border-bottom-left-radius: 12px;
         border-bottom-right-radius: 12px;
-
         flex-direction: column;
         align-items: flex-start;
         padding: 2rem;
@@ -822,7 +805,7 @@
     .navbar-menu .user-balance {
         width: 100%; 
         justify-content: center;
-        margin-top: 0.5rem; /* Beri jarak */
+        margin-top: 0.5rem; 
         margin-bottom: 0.5rem;
         background: rgba(255, 255, 255, 0.1);
         color: var(--white, #fff);
@@ -850,7 +833,7 @@
         justify-content: flex-start;
         padding: 1rem;
         background: rgba(255, 255, 255, 0.1);
-        margin-top: 0.5rem; /* Beri jarak */
+        margin-top: 0.5rem; 
         margin-bottom: 1.5rem;
     }
 
@@ -868,7 +851,6 @@
         opacity: 1;
         visibility: visible;
         transform: none;
-        
         z-index: 1002; 
     }
     
@@ -931,7 +913,6 @@
     }
     
     .footer-section h4::after {
-        /* Pusatkan garis aksen di mobile */
         left: 50%;
         transform: translateX(-50%);
     }

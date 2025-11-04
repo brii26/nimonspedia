@@ -64,12 +64,11 @@ abstract class BaseRepository {
     }
     
     /**
-     * Delete record (soft delete if deleted_at column exists)
+     * Delete record 
      */
     public function delete($id) {
         $primaryKey = $this->getPrimaryKey();
         
-        // Check if table has deleted_at column for soft delete
         if ($this->hasDeletedAtColumn()) {
             $sql = "UPDATE {$this->table} SET deleted_at = NOW() WHERE {$primaryKey} = ?";
             return $this->db->update($sql, [$id]) > 0;
@@ -115,7 +114,7 @@ abstract class BaseRepository {
     }
     
     /**
-     * Get primary key name (default: table_name + _id)
+     * Get primary key name 
      */
     protected function getPrimaryKey() {
         return $this->table . '_id';
@@ -137,11 +136,7 @@ abstract class BaseRepository {
      */
     public function paginate($page = 1, $perPage = 10, $where = null, $params = []) {
         $offset = ($page - 1) * $perPage;
-        
-        // Get total count
         $total = $this->count($where, $params);
-        
-        // Get records for current page
         $sql = "SELECT * FROM {$this->table}";
         if ($where) {
             $sql .= " WHERE {$where}";

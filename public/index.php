@@ -1,5 +1,4 @@
 <?php
-// Bootstrap the application
 require_once __DIR__ . '/../src/core/Application.php';
 
 try {
