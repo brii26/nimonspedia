@@ -186,13 +186,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const topUpForm = document.getElementById("topUpForm");
     if (topUpForm) {
-        topUpForm.addEventListener("submit", (e) =>{
-            e.preventDefault();
+        const amountInput = document.getElementById('amount');
+        const submitButton = document.getElementById('topUpButton');
+        const resultDiv = document.getElementById('topUpResult');
 
-                const formData = new FormData(topUpForm);
-                const resultDiv = document.getElementById('topUpResult');
-                const submitButton = document.getElementById('topUpButton');
+        const validateAmount = () => {
+            clearError(amountInput);
+            const amount = parseInt(amountInput.value, 10);
+            
+            if (isNaN(amount) || amountInput.value.trim() === '') {
+                showError(amountInput, 'Amount is required.');
+                return false;
+            }
+            if (amount < 10000) {
+                showError(amountInput, 'Minimum top up is Rp 10.000.');
+                return false;
+            }
+            return true;
+        };
 
+        const submitTopUpAjax = () => {
+            if (submitButton) App.showLoading(submitButton, 'Processing...');
+            
+            const formData = new FormData(topUpForm);
             formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
 
             fetchXhr('/balance/topup', {
@@ -209,21 +225,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     const sidebarBalance = document.querySelector('#sidebar-balance-amount');
                     const formBalance = document.querySelector('#balance-display');
                     if (navBalance && sidebarBalance && formBalance && data.new_balance) {
-                        content = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance);
+                        const content = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance);
                         navBalance.textContent = content;
                         sidebarBalance.textContent = content;
                         formBalance.value = content;
                     }
+                    topUpForm.reset();
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
-                } reset(submitButton, resultDiv);
+                } 
+                reset(submitButton, resultDiv);
             })
             .catch(error => {
                 resultDiv.innerHTML = '<div class="alert alert-error">An error occurred : ' + error + '</div>';
                 reset(submitButton, resultDiv);
             });
+        };
 
-        })
+        amountInput.addEventListener('input', () => clearError(amountInput));
+
+        topUpForm.addEventListener("submit", (e) =>{
+            e.preventDefault();
+            resultDiv.innerHTML = '';
+            
+            if (submitButton) App.showLoading(submitButton, 'Validating...');
+
+            if (!validateAmount()) {
+                reset(submitButton, resultDiv);
+                return;
+            }
+            
+            const amountValue = new Intl.NumberFormat('id-ID').format(amountInput.value);
+
+            const onConfirm = () => {
+                submitTopUpAjax();
+                cleanupListeners();
+            };
+
+            const onCancel = () => {
+                reset(submitButton, resultDiv);
+                cleanupListeners();
+            };
+
+            const cleanupListeners = () => {
+                document.removeEventListener('confirm:ok', onConfirm);
+                document.removeEventListener('confirm:cancel', onCancel);
+            };
+
+            document.addEventListener('confirm:ok', onConfirm, { once: true });
+            document.addEventListener('confirm:cancel', onCancel, { once: true });
+
+            if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+                window.AppConfirm.ask(`Anda yakin ingin top up sebesar Rp ${amountValue}?`);
+            } else {
+                confirm(`Anda yakin ingin top up sebesar Rp ${amountValue}?`) ? onConfirm() : onCancel();
+            }
+        });
     }
 
     const changePassword = document.getElementById("changePasswordForm");
