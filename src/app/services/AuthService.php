@@ -82,12 +82,12 @@ class AuthService {
         $user = $this->userRepository->findByEmail($email);
         
         if (!$user) {
-            throw new ValidationException('Invalid email or password');
+            throw new Exception('Email doesn\'t exist! Register first.');
         }
         
         // Verify password
         if (!password_verify($password, $user['password'])) {
-            throw new ValidationException('Invalid email or password');
+            throw new Exception('Invalid password!');
         }
         
         return $user;

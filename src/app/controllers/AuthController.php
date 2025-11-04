@@ -188,7 +188,7 @@ class AuthController extends BaseController {
             ]);
         } catch (Exception $e) {
             $this->render('pages/auth/login', [
-                'errors' => $e->getErrors(),
+                'error' => $e->getMessage(),
                 'old' => $this->getPost(),
                 'pageTitle' => 'Login',
                 'cssFiles' => ['/css/pages/auth.css'],
