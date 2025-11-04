@@ -123,9 +123,7 @@
     width: 100%;
     min-height: 24;
     border: 1px solid #ccc;
-    border-radius: 8px;
     background: #fff;
-    padding: 0.85rem 1rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 

@@ -199,12 +199,11 @@ input[type="file"]#edit_file { display: none; }
 
 /* Editor Teks */
 #editor {
-    border: 1px solid #ced4da;
     border-radius: 8px;
     min-height: 150px;
     background-color: #fff;
-    padding: 10px;
 }
+
 #editor:focus-within, #editor.focus {
     outline: none;
     border-color: #4a90e2;
