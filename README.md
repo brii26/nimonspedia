@@ -85,7 +85,7 @@
 | :---: |
 | ![Store Update](img/update_store_page.png) |
 
-### Halaman Autentikasi & Profil
+### Auth
 
 | Login | Register |
 | :---: | :---: |
@@ -365,5 +365,39 @@ This application employs a containerized microservices architecture with two pri
 - [x] Google Lighthouse
 
 ### Google Lighthouse
-(insert screenshot)
+
+#### Buyer
+
+| Product Discovery | Product Details |
+| :---: | :---: |
+| ![Product Discovery](img/lighthouse/product_discovery_page.png) | ![Product Details](img/lighthouse/product_details_page.png) |
+
+| Cart | Checkout |
+| :---: | :---: |
+| ![Cart](img/lighthouse/cart_page.png) | ![Checkout](img/lighthouse/checkout_page.png) |
+
+| Order History | Store Details |
+| :---: | :---: |
+| ![Order History](img/lighthouse/order_history_page.png) | ![Store Details](img/lighthouse/store_details_page.png) |
+
+#### Seller
+
+| Seller Dashboard | Product Create |
+| :---: | :---: |
+| ![Seller Dashboard](img/lighthouse/seller_dashboard_page.png) | ![Product Create](img/lighthouse/create_product_page.png) |
+
+| Product Management | Order Management |
+| :---: | :---: |
+| ![Product Management](img/lighthouse/product_management_page.png) | ![Order Management](img/lighthouse/order_management_page.png) |
+
+#### Auth
+
+| Login | Register |
+| :---: | :---: |
+| ![Login](img/lighthouse/login_page.png) | ![Register](img/lighthouse/register_page.png) |
+
+| Profile |
+| :---: |
+| ![Profile](img/lighthouse/profile_page.png) |
+
 
