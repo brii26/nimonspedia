@@ -16,7 +16,6 @@ class CartController extends BaseController {
      */
     public function index() {
         $this->requireRole('BUYER');
-        $this->verifyCsrf();
 
         try {
             $cartData = $this->cartService->getCart();
