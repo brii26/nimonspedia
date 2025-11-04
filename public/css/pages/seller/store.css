@@ -3,14 +3,13 @@
     background-color: #f9f9f9; 
     border-radius: 8px;
     padding: 4rem;
+    box-sizing: border-box; 
 }
 body.edit-mode #store-display { display: none; }
 body.edit-mode #store-edit { display: block; }
 
 
-/* ===================================
-   DISPLAY MODE
-   =================================== */
+/* DISPLAY MODE */
 
 .display-layout {
     display: grid;
@@ -19,28 +18,20 @@ body.edit-mode #store-edit { display: block; }
     align-items: center;
 }
 
-/* --- Kolom Kiri: Logo Display --- */
 .store-logo-container {
     width: 220px;
     height: 220px;
     border-radius: 12px;
     background-color: #f8f9fa;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
-    overflow: hidden; /* Pastikan gambar membulat */
+    overflow: hidden; 
 }
 .store-logo-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-.flex-preview {
-	margin-top: 13px;
-	display : flex;
-	justify-content: center;
-	align-items: stretch;
-}
 
-/* --- Kolom Kanan: Info Display --- */
 .display-col-details {
     padding-left: 1rem;
 }
@@ -66,6 +57,8 @@ body.edit-mode #store-edit { display: block; }
     color: #495057;
     line-height: 1.6;
     margin-bottom: 2rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 .btn-edit-custom {
     padding: 12px 28px;
@@ -84,23 +77,29 @@ body.edit-mode #store-edit { display: block; }
     box-shadow: 0 6px 16px rgba(0, 123, 255, 0.35);
 }
 
+/* EDIT MODE */
+
 .edit-layout-simple {
     display: grid;
-    grid-template-columns: 500px 1fr; 
+    grid-template-columns: minmax(0, 500px) 1fr;
     gap: 0 4rem; 
 }
 
-/* --- Kolom Kiri (Logo & Preview) --- */
+.edit-col-image-simple {
+    max-width: 300px;
+    aspect-ratio: 1/1;
+}
 .edit-col-image-simple .form-group label {
     font-weight: 600;
     font-size: 0.95rem;
     color: #333;
     margin-bottom: 8px;
 }
-
-input[type="file"]#edit_file { display: none; }
+input[type="file"]#edit_file { 
+    display: none; 
+}
 #store-edit .file-upload-label {
-	margin-top : 20px;
+    margin-top : 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,13 +114,18 @@ input[type="file"]#edit_file { display: none; }
     background-color: var(--primary-hover);
     color: white;
 }
-
 #store-edit .file-upload-label:hover { 
     text-decoration: underline;
     color: white;
     transform: translateY(-0.5px); 
 }
 
+.flex-preview {
+    margin-top: 13px;
+    display : flex;
+    justify-content: center;
+    align-items: stretch;
+}
 #preview-wrapper {
     display: flex;
     justify-content: center;
@@ -136,7 +140,6 @@ input[type="file"]#edit_file { display: none; }
     position: relative;
     box-sizing: border-box;
 }
-
 #preview-wrapper::before {
     content: 'Logo Preview';
     color: #aaa;
@@ -146,26 +149,18 @@ input[type="file"]#edit_file { display: none; }
     left: 50%;
     transform: translate(-50%, -50%);
 }
-
 #image-preview {
     display: none;
     width: 100%;
-	height: 100%;
+    height: 100%;
     object-fit: contain;
     border-radius: 6px;
     background-color: #fff;
     z-index: 10;
 }
-
-.edit-col-image-simple {
-	max-width: 300px;
-	aspect-ratio: 1/1;
-}
-
 #preview-wrapper.has-image #image-preview {
     display: block;
 }
-
 .text-danger-custom {
     color: #dc3545; 
     font-size: 0.85rem;
@@ -173,18 +168,17 @@ input[type="file"]#edit_file { display: none; }
     display: block;
 }
 
-/* --- Kolom Kanan (Teks) --- */
 .edit-col-details-simple .form-group label {
     font-weight: 600;
     font-size: 0.95rem;
     color: #333;
     margin-bottom: 8px;
 }
-
-/* Input Teks */
 .form-control-custom {
     display: block;
     width: 100%;
+    box-sizing: border-box; 
+    max-width: 100%;
     padding: 12px 16px;
     font-size: 1rem;
     border: 1px solid #ced4da;
@@ -197,20 +191,20 @@ input[type="file"]#edit_file { display: none; }
     border-color: #4a90e2;
 }
 
-/* Editor Teks */
 #editor {
     border-radius: 8px;
     min-height: 150px;
     background-color: #fff;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
-
 #editor:focus-within, #editor.focus {
     outline: none;
     border-color: #4a90e2;
 }
 
-
-/* --- Action tombol --- */
 .edit-actions {
     display: flex;
     justify-content: flex-start;
@@ -219,7 +213,6 @@ input[type="file"]#edit_file { display: none; }
     margin-top: 1.5rem;
     border-top: 1px solid #e9ecef;
 }
-
 .btn {
     padding: 0.85rem 1.75rem;
     font-size: 0.95rem;
@@ -228,9 +221,8 @@ input[type="file"]#edit_file { display: none; }
     font-weight: 600;
     transition: all 0.3s ease;
 }
-
 .btn-cancel, .btn-save {
-	color: white; 
+    color: white; 
     padding: 12px 28px;
     border: none;
     border-radius: 8px;
@@ -244,19 +236,18 @@ input[type="file"]#edit_file { display: none; }
     border-color: rgb(228, 62, 62);
 }
 .btn-cancel:hover {
-	background-color: red;
+    background-color: red;
     border-color: red;
-	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     transform: translateY(-2px);
 }
-
 .btn-save {
     background-color:rgb(33, 161, 33);
     border-color: rgb(33, 161, 33);
     box-shadow: 0 4px 15px var(--primary-shadow);
 }
 .btn-save:hover {
-	background-color: rgb(13, 192, 13);;
+    background-color: rgb(13, 192, 13);;
     border-color: rgb(13, 192, 13);;
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     transform: translateY(-2px);
@@ -265,4 +256,59 @@ input[type="file"]#edit_file { display: none; }
     background-color: #218838;
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .display-layout {
+        grid-template-columns: 1fr; 
+        gap: 1.5rem;
+        text-align: center;
+    }
+    .store-logo-container {
+        margin: 0 auto;
+        width: 150px;
+        height: 150px;
+    }
+    .display-col-details {
+        padding-left: 0;
+    }
+
+    .edit-layout-simple {
+        grid-template-columns: 1fr !important; 
+    }
+    .flex-preview {
+        order: -1; 
+        margin-bottom: 1.5rem;
+    }
+    .edit-col-image-simple {
+        margin: 0 auto; 
+    }
+}
+
+@media (max-width: 576px) {
+    .store-logo-container {
+        width: 120px;
+        height: 120px;
+    }
+    #store-name-display {
+        font-size: 1.75rem;
+    }
+    #store-description-display {
+        font-size: 0.95rem;
+    }
+
+    #store-edit {
+        padding: 1.5rem !important; 
+    }
+    .edit-col-image-simple {
+        max-width: 250px !important;
+    }
+    .edit-actions {
+        flex-direction: column; 
+    }
+    .btn-cancel, .btn-save {
+        width: 100%; 
+    }
 }

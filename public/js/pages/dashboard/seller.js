@@ -1,17 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const MAX_SIZE_BYTES = 2 * 1024 * 1024;
 
-    const editBtn   = document.getElementById('edit-store-button');
+    const editBtn = document.getElementById('edit-store-button');
     const cancelBtn = document.getElementById('cancel-button');
     const storeForm = document.querySelector('#store-edit form');
-    const saveBtn   = document.getElementById('save-button');
+    const saveBtn = document.getElementById('save-button');
 
     const editor = createEditor('#editor', 'store_description');
 
-    const fileInput      = document.getElementById('edit_file');
+    const fileInput = document.getElementById('edit_file');
     const previewWrapper = document.getElementById('preview-wrapper');
-    const previewImage   = document.getElementById('image-preview');
-    const imageErrorEl   = document.getElementById('image-error');
+    const previewImage = document.getElementById('image-preview');
+    const imageErrorEl = document.getElementById('image-error');
 
     const enterEdit = () => {
         document.body.classList.add('edit-mode');
@@ -56,8 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     });
 
-    storeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const handleStoreUpdate = async () => {
         const file = fileInput.files[0];
         if (file && file.size > MAX_SIZE_BYTES) {
             fileInput.value = '';
@@ -102,6 +101,25 @@ document.addEventListener('DOMContentLoaded', () => {
             App.hideLoading(saveBtn);
             console.error('Request error:', err);
             App.showAlert('Error updating store', 'error');
+        }
+    };
+
+    storeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
+            window.AppConfirm.ask('Are you sure you want to update this store?');
+
+            document.addEventListener('confirm:ok', function onConfirm() {
+                handleStoreUpdate();
+            }, { once: true });
+
+            document.addEventListener('confirm:cancel', function onCancel() {
+            }, { once: true });
+
+        } else {
+            console.error('AppConfirm modal not found.');
+            handleStoreUpdate();
         }
     });
 });

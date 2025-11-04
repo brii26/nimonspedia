@@ -206,3 +206,51 @@ form .row > [class*="col-"] {
 }
 
 #product-form small.text-danger { display: none !important; }
+
+
+@media (max-width: 768px) {
+    .product-form-card .card-body {
+        padding: 1.5rem;
+    }
+
+    form .row {
+        flex-direction: column;
+    }
+
+    #preview-wrapper {
+        order: -1; 
+        right: 0;  
+        margin-bottom: 2rem; 
+        min-height: 250px; 
+    }
+
+    form .row > [class*="col-"] {
+        margin-right: 0;
+    }
+
+    #product_name, #price, #stock, #category_id, #input_file {
+        width: 100%;
+    }
+
+    .row.mb-3.align-items-center {
+        flex-direction: column;
+        align-items: flex-start; 
+    }
+
+    .row.mb-3 .col-form-label {
+         margin-bottom: 8px;
+    }
+    
+    .row.mb-3 .col-md-9 {
+        width: 100%;
+    }
+
+    .btn-container {
+        flex-direction: column-reverse; 
+        gap: 12px;
+    }
+
+    .btn-container .btn {
+        width: 100%; 
+    }
+}

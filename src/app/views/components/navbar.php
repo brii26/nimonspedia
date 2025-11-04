@@ -127,7 +127,7 @@ $activePage = $currentPage ?? '';
                                         <span class="dropdown-icon">💳</span>
                                         <span class="dropdown-text">Top Up Balance</span>
                                     </a>
-                                    <a href="/orders" class="nav-link <?= $activePage === 'orders' ? 'active' : '' ?>">
+                                    <a href="/orders" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
                                         <span class="nav-icon">📦</span>
                                         <span class="nav-text">Orders</span>
                                     </a>

@@ -98,6 +98,8 @@
     color: #495057;
     line-height: 1.6;
     margin-bottom: 2rem;
+	overflow-wrap: break-word;
+    word-break: break-word;
 }
 #store-description-display p {
     margin-bottom: 0;
@@ -419,8 +421,8 @@ body.edit-mode .card {
     .display-col-details {
         padding-left: 0;
     }
-    /* Atur ulang layout form edit */
-    .edit-layout-simple {
+
+	.edit-layout-simple {
         grid-template-columns: 1fr;
     }
     .flex-preview {
@@ -444,7 +446,6 @@ body.edit-mode .card {
 }
 
 @media (max-width: 576px) {
-    /* Kode Asli Anda */
     .stats-grid-4 {
         grid-template-columns: 1fr;
     }
@@ -455,13 +456,11 @@ body.edit-mode .card {
         margin-bottom: 1.5rem;
     }
     
-    /* [PERBAIKAN] Buat .btn 100% width HANYA di dalam .actions-nav */
     .actions-nav .btn {
         width: 100%;
         text-align: center;
     }
     
-    /* [PERBAIKAN] Kecilkan ukuran di mobile */
     .card {
         padding: 1.5rem;
     }
