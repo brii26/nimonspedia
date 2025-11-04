@@ -2,9 +2,6 @@
 	$statuses = ['waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 	$currentStatus = $currentStatus ?? null;
 	$search = $search ?? '';
-	$currentPage = $currentPage ?? 1;
-	$orders = $ordersData['orders'] ?? [];
-	$totalPages = $ordersData['totalPages'] ?? 1; 
 ?>
 
 <div class="orders-container">
@@ -32,24 +29,12 @@
     <div id="seller-order-list-container">
         <?= View::component('seller-order-list', [
                 'ordersData' => $ordersData,
-                'currentStatus' => $currentStatus
+                'currentStatus' => $currentStatus,
+                'currentPage' => $currentPage ?? 1,
+                'totalPages' => $totalPages ?? 1
             ]);
         ?>
     </div>
-
-    <?php if ($totalPages > 1): ?>
-        <div class="pagination">
-            <?php
-            $queryParams = $_GET;
-            for ($i = 1; $i <= $totalPages; $i++) {
-                $queryParams['page'] = $i;
-                $queryString = http_build_query($queryParams);
-                $class = $i === $currentPage ? 'active' : '';
-                echo "<a href='?{$queryString}' class='{$class}'>{$i}</a>";
-            }
-            ?>
-        </div>
-    <?php endif; ?>
 </div>
 
 <!-- Reject Popup-->

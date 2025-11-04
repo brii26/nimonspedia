@@ -5,7 +5,7 @@
     <div class="filter-group">
       <label for="search-input">Search</label>
       <input type="search" id="search-input" name="searchTerm" class="form-control"
-             placeholder="Search product name..." value="<?= View::escape($searchVal) ?>">
+             placeholder="Search product..." value="<?= View::escape($searchVal) ?>">
     </div>
 
     <div class="filter-group">

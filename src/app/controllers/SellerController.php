@@ -121,7 +121,7 @@ class SellerController extends BaseController {
 				'/css/pages/seller/products/index.css'
 			],
 			'jsFiles' => [
-				'/js/utils/FetchXhr.js',
+				'/js/utils/fetchXhr.js',
 				'/js/pages/seller/products/index.js'
 			]
 		]);

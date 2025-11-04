@@ -1,5 +1,7 @@
 <?php
 $orders = $ordersData['orders'] ?? ($orders ?? []);
+$currentPage = $currentPage ?? 1;
+$totalPages = $totalPages ?? 1;
 ?>
 
 <div class="order-card-list">
@@ -77,3 +79,17 @@ $orders = $ordersData['orders'] ?? ($orders ?? []);
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+
+<?php if ($totalPages > 1): ?>
+    <div class="pagination">
+        <?php
+        $queryParams = $_GET; // Menggunakan $_GET untuk mengambil parameter filter yang ada (search, status)
+        for ($i = 1; $i <= $totalPages; $i++) {
+            $queryParams['page'] = $i;
+            $queryString = http_build_query($queryParams);
+            $class = $i === $currentPage ? 'active' : '';
+            echo "<a href='?{$queryString}' class='{$class}'>{$i}</a>";
+        }
+        ?>
+    </div>
+<?php endif; ?>

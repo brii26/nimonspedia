@@ -97,6 +97,5 @@
       <a href="/seller/products" class="btn btn-outline-secondary">Clear Filters</a>
     </div>
   <?php endif; ?>
-  
-  <button type="button" class="btn go-back mt-3">Back</button>
+
 </main>
