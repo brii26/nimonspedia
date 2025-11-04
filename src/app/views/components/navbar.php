@@ -3,6 +3,7 @@
 $currentUser = Auth::user();
 $isLoggedIn = Auth::check();
 $userRole = $currentUser ? $currentUser['role'] : null;
+$storeBalance = $storeBalance ?? 0;
 
 // Get cart count for buyers
 $productRepo = new ProductRepository();
@@ -99,6 +100,11 @@ $activePage = $currentPage ?? '';
                                 <span class="balance-icon">💰</span>
                                 <span class="balance-amount"><?= View::currency($currentUser['balance'] ?? 0) ?></span>
                             </a>
+                        <?php elseif ($userRole === 'SELLER'): ?>
+                            <div class="user-balance" style="cursor: default; text-decoration: none;" aria-label="Store Balance">
+                                <span class="balance-icon">🏦</span>
+                                <span class="balance-amount"><?= View::currency($storeBalance) ?></span>
+                            </div>
                         <?php endif; ?>
                         
                         <!-- Profile Dropdown -->

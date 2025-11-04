@@ -20,6 +20,17 @@ abstract class BaseController {
             'is_seller' => Auth::isSeller(),
             'current_url' => $_SERVER['REQUEST_URI']
         ]);
+
+        if ($data['is_seller'] && $data['user']) {
+            try {
+                $storeRepo = new StoreRepository(); 
+                $store = $storeRepo->findByUserId($data['user']['user_id']);
+                $data['storeBalance'] = $store['balance'] ?? 0;
+            } catch (Exception $e) {
+                error_log("Failed to fetch store balance for navbar: " . $e->getMessage());
+                $data['storeBalance'] = 0;
+            }
+        }
         
         try {
             $pageContent = View::render($template, $data);
