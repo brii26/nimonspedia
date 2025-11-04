@@ -3,10 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.orders-container');
     const orderListContainer = document.getElementById('seller-order-list-container'); 
 
+    const searchForm = document.querySelector('.search-form');
+    const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
+    const searchButton = searchForm ? searchForm.querySelector('button[type="submit"]') : null;
+
     const fetchOrders = (url) => {
         if (!orderListContainer) return; 
         
         orderListContainer.style.opacity = '0.5';
+        
+        // [REVISI] Tampilkan loading di tombol search
+        if (searchButton && window.App) {
+            App.showLoading(searchButton, 'Loading...');
+        }
+        
         return fetchXhr(url, {
             method: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -30,6 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .finally(() => {
             if (orderListContainer) {
                 orderListContainer.style.opacity = '1';
+            }
+            // [REVISI] Pastikan loading di tombol search berhenti,
+            // baik saat sukses maupun gagal.
+            if (searchButton && window.App) {
+                App.hideLoading(searchButton);
             }
         });
     };
@@ -59,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners untuk Navigasi ---
     if (container && orderListContainer) {
+        
+        // Listener untuk Tab Status (Tidak berubah)
         container.addEventListener('click', (e) => {
             const tab = e.target.closest('.status-tabs .tab');
             if (tab) {
@@ -67,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Listener untuk Pagination (Tidak berubah)
         orderListContainer.addEventListener('click', (e) => {
             const paginationLink = e.target.closest('.pagination a');
             if (paginationLink) {
@@ -75,18 +93,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const searchForm = document.querySelector('.search-form');
-        if (searchForm) {
+        // --- [REVISI] Logika baru untuk Search Form ---
+        if (searchForm && searchInput && searchButton && window.App && typeof App.debounce === 'function') {
+            
+            // Helper function untuk mem-build URL dan memanggil fetch
+            const triggerFetch = (page = 1) => {
+                const formData = new FormData(searchForm);
+                const params = new URLSearchParams(formData);
+                // Selalu reset ke page 1 saat search baru
+                params.set('page', String(page)); 
+                
+                const url = `${searchForm.action}?${params.toString()}`;
+                fetchOrders(url);
+            };
+
+            // Buat versi debounced (untuk live search)
+            // 500ms delay, sesuai spesifikasi product discovery
+            const debouncedTriggerFetch = App.debounce(() => triggerFetch(1), 500);
+
+            // 1. Listener untuk 'submit' (Klik tombol atau tekan Enter)
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+                triggerFetch(1); // Langsung panggil (tidak perlu debounce)
+            });
+
+            // 2. Listener untuk 'input' (Live search saat mengetik)
+            searchInput.addEventListener('input', () => {
+                debouncedTriggerFetch(); // Panggil versi debounced
+            });
+
+        } else if (searchForm) {
+            // Fallback jika App.debounce tidak ada (seperti kode asli)
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault(); 
                 const formData = new FormData(searchForm);
                 const params = new URLSearchParams(formData);
                 params.delete('page'); 
-                
                 const url = `${searchForm.action}?${params.toString()}`;
                 fetchOrders(url);
             });
         }
+        // --- [AKHIR REVISI] ---
     }
 
     // == (APPROVE, REJECT, DETAIL) ===
