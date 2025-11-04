@@ -23,7 +23,7 @@ $activePage = $currentPage ?? '';
             <!-- Brand/Logo -->
             <div class="navbar-brand">
                 <a href="/" class="brand-link" aria-label="Nimonspedia Home">
-                    <img src="/assets/images/logo.png" alt="Nimonspedia Logo" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <img src="/assets/images/logo.svg" alt="Nimonspedia Logo" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                     <span class="brand-text">Nimonspedia</span>
                 </a>
             </div>

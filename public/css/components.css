@@ -615,8 +615,8 @@
 .footer-content {
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
-    gap: 2rem;
+    justify-content: space-between;
+    gap: 10rem;
     padding-bottom: 2rem;
 }
 
@@ -911,6 +911,7 @@
         flex-direction: column;
         text-align: center;
         justify-content: center;
+        gap: 2rem;
     }
     
     .footer-section h4::after {
