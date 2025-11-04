@@ -13,7 +13,7 @@ $products = $productsData['data'] ?? [];
             
             <div class="product-card">
                 <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-image-link">
-                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.png') ?>" 
+                    <img src="<?= '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                          alt="<?= View::escape($product['product_name']) ?>" 
                          class="product-image">
                 </a>
@@ -33,7 +33,8 @@ $products = $productsData['data'] ?? [];
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                         <input type="hidden" name="quantity" value="1">
                         <?php if (Auth::check()):?>
-                            <button type="submit" class="btn badd to carttn-primary" style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
+                            <button type="submit" class= "btn <?= (($product['stock'] > 0) ? " btn-primary" : "") ?>"  
+                            style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
                                 <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
                             </button>
                         <?php endif; ?>

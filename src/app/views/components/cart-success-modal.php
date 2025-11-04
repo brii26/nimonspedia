@@ -20,7 +20,7 @@
                     <div class="recommend-grid">
                         <?php foreach ($recommendations as $rec): ?>
                             <a href="/product?id=<?= View::escape($rec['product_id']) ?>" class="recommend-card">
-                                <img src="/storage/<?= View::escape($rec['main_image_path'] ?? 'product_images/default-product.png') ?>" 
+                                <img src="/storage/<?= View::escape($rec['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                                      alt="<?= View::escape($rec['product_name']) ?>" 
                                      class="recommend-img">
                                 <div class="recommend-info">

@@ -13,7 +13,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                 <a href="javascript:history.back()" class="store-header-back-link">Kembali</a>
 
                 <div class="store-header-main">
-                    <img src="<?= '/storage/' . View::escape($store['store_logo_path'] ?? 'images/default-store.png') ?>" 
+                    <img src="<?= '/storage/' . View::escape($store['store_logo_path'] ?? 'images/default-store.svg') ?>" 
                          alt="<?= View::escape($store['store_name']) ?> Logo" 
                          class="store-header-logo">
                     

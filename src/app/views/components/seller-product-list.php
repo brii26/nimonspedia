@@ -16,7 +16,7 @@
               $stockText = "Low Stock: $stock";
             }
             
-            $path = $product['main_image_path'] ?? 'product_images/default-product.png';
+            $path = $product['main_image_path'] ?? 'product_images/default-product.svg';
             $imageUrl = '/storage/' . View::escape($path);
           ?>
 

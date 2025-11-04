@@ -2,10 +2,10 @@
 .env.local
 
 /storage/product_images/*
-!/storage/product_images/default-product.png
+!/storage/product_images/default-product.svg
 !/storage/product_images/.gitkeep
 /storage/store_logos/*
-!/storage/store_logos/default-store.png
+!/storage/store_logos/default-store.svg
 !/storage/store_logos/.gitkeep
 
 *.log

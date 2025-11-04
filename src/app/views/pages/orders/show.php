@@ -76,7 +76,7 @@ $statusClasses = [
                                 <tr>
                                     <td data-label="Produk">
                                         <div class="order-item-preview">
-                                            <img src="/storage/<?= View::escape($item['main_image_path'] ?? 'product_images/default-product.png') ?>" 
+                                            <img src="/storage/<?= View::escape($item['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                                                  alt="<?= View::escape($item['product_name']) ?>" 
                                                  class="order-item-thumbnail">
                                             <div class="order-item-info">
