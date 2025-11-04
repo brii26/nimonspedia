@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         orderListContainer.style.opacity = '0.5';
         
-        // [REVISI] Tampilkan loading di tombol search
         if (searchButton && window.App) {
             App.showLoading(searchButton, 'Loading...');
         }
@@ -41,17 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (orderListContainer) {
                 orderListContainer.style.opacity = '1';
             }
-            // [REVISI] Pastikan loading di tombol search berhenti,
-            // baik saat sukses maupun gagal.
             if (searchButton && window.App) {
                 App.hideLoading(searchButton);
             }
         });
     };
 
-    /**
-     * Helper untuk update tab status yang 'active'
-     */
     const updateActiveTab = (url) => {
         const urlParams = new URL(url, window.location.origin).searchParams;
         const newStatus = urlParams.get('status') || 'all'; 
@@ -63,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabStatus = tabUrl.searchParams.get('status') || 'all';
             
             if (tabStatus === 'all' && newStatus === 'all' && !tab.href.includes('?status')) {
-                 tab.classList.add('active');
+                tab.classList.add('active');
             } else if (tabStatus === newStatus && tab.href.includes(newStatus)) {
                 tab.classList.add('active');
             } else {
@@ -72,10 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- Event Listeners untuk Navigasi ---
     if (container && orderListContainer) {
         
-        // Listener untuk Tab Status (Tidak berubah)
         container.addEventListener('click', (e) => {
             const tab = e.target.closest('.status-tabs .tab');
             if (tab) {
@@ -84,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Listener untuk Pagination (Tidak berubah)
         orderListContainer.addEventListener('click', (e) => {
             const paginationLink = e.target.closest('.pagination a');
             if (paginationLink) {
@@ -93,37 +84,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // --- [REVISI] Logika baru untuk Search Form ---
         if (searchForm && searchInput && searchButton && window.App && typeof App.debounce === 'function') {
             
-            // Helper function untuk mem-build URL dan memanggil fetch
             const triggerFetch = (page = 1) => {
-                const formData = new FormData(searchForm);
-                const params = new URLSearchParams(formData);
-                // Selalu reset ke page 1 saat search baru
+                const currentURLParams = new URLSearchParams(window.location.search);
+                const currentStatus = currentURLParams.get('status');
+
+                const params = new URLSearchParams();
+                params.set('search', searchInput.value);
+
+                if (currentStatus) {
+                    params.set('status', currentStatus);
+                }
+                
                 params.set('page', String(page)); 
                 
                 const url = `${searchForm.action}?${params.toString()}`;
                 fetchOrders(url);
             };
 
-            // Buat versi debounced (untuk live search)
-            // 500ms delay, sesuai spesifikasi product discovery
             const debouncedTriggerFetch = App.debounce(() => triggerFetch(1), 500);
 
-            // 1. Listener untuk 'submit' (Klik tombol atau tekan Enter)
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault(); 
-                triggerFetch(1); // Langsung panggil (tidak perlu debounce)
+                triggerFetch(1);
             });
 
-            // 2. Listener untuk 'input' (Live search saat mengetik)
             searchInput.addEventListener('input', () => {
-                debouncedTriggerFetch(); // Panggil versi debounced
+                debouncedTriggerFetch();
             });
 
         } else if (searchForm) {
-            // Fallback jika App.debounce tidak ada (seperti kode asli)
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault(); 
                 const formData = new FormData(searchForm);
@@ -133,10 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchOrders(url);
             });
         }
-        // --- [AKHIR REVISI] ---
     }
 
-    // == (APPROVE, REJECT, DETAIL) ===
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                       document.querySelector('input[name="csrf_token"]')?.value;
 
@@ -225,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('order_id', orderId);
             formData.append('csrf_token', csrfToken);
 
-            // Promise 1: Approve Order
             fetchXhr('/seller/orders/approve', {
                 method: 'POST',
                 body: formData,
@@ -235,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(result => {
                 if (result.success) {
                     App.showAlert('Order successfully approved!', 'success');
-                    
                     fetchOrders(window.location.href); 
                 } else {
                     AppError.show(result.message || 'Gagal menyetujui pesanan.');
