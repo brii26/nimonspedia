@@ -123,7 +123,7 @@ $activePage = $currentPage ?? '';
                                 </a>
                                 
                                 <?php if ($userRole === 'BUYER'): ?>
-                                    <a href="/profile#balance" class="dropdown-item">
+                                    <a href="/profile" class="dropdown-item">
                                         <span class="dropdown-icon">💳</span>
                                         <span class="dropdown-text">Top Up Balance</span>
                                     </a>

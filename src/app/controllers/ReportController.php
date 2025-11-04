@@ -11,19 +11,10 @@ class ReportController extends BaseController {
         $this->storeRepository = new StoreRepository();
     }
 
-    /**
-     * Menangani permintaan /seller/reports/sales
-     */
     public function exportSales() {
         try {
-            // 1. Keamanan: Pastikan ini adalah Seller
-            // (Memanfaatkan method dari BaseController)
             $this->requireRole('SELLER');
-            
-            // 2. Dapatkan ID user yang sedang login
             $userId = Auth::id();
-            
-            // 3. Dapatkan info toko dari ID user
             $store = $this->storeRepository->findByUserId($userId);
             if (!$store || !isset($store['store_id'])) {
                 throw new Exception("Informasi toko tidak ditemukan untuk seller ini.");

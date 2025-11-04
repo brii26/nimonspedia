@@ -1,8 +1,3 @@
-/**
- * Main application JavaScript
- */
-
-// Global utilities and shared functions
 window.App = {
     /**
      * Spinner loading
@@ -53,7 +48,7 @@ window.App = {
     },
     
     /**
-     * AJAX helper with CSRF token
+     * AJAX helper (CSRF token)
      */
     request: function(url, options = {}) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
@@ -202,7 +197,7 @@ window.addEventListener('unhandledrejection', function(event) {
         window.AppConfirm = { ask: openConfirmModal };
     }
 
-    // --- 2. API UNTUK MODAL SUKSES (AppCartSuccess) ---
+    // --- API UNTUK MODAL SUKSES (AppCartSuccess) ---
     const successModalNode = document.getElementById('cart-success-modal');
     let lastActiveButton = null; 
     if (successModalNode) {

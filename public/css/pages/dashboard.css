@@ -1,6 +1,4 @@
-/* Dashboard Pages Styles */
-
-/* Navbar (dari file Anda) */
+/* Navbar */
 .user-nav {
     display: flex;
     align-items: center;
@@ -24,35 +22,30 @@
     display: inline;
 }
 
-/* Main Content (dari file Anda) */
+/* Main Content */
 .dashboard-main {
     padding: 2rem 0;
     min-height: calc(100vh - 80px);
     background: #f8f9fa;
 }
 
-/* Container utama di seller.php (dari file Anda) */
 .container.mt-4 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
 }
 
-/* ===================================
-   [PERBAIKAN] Store Profile Card
-   Style ini menargetkan <div class="card"> pertama di seller.php
-   =================================== */
 .card {
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     padding: 2.5rem;
-    margin-bottom: 2rem; /* Jarak ke stats grid */
+    margin-bottom: 2rem;
     border: none;
-    overflow: hidden; /* Pastikan padding bekerja */
+    overflow: hidden; 
 }
 
-/* --- Tampilan Mode --- */
+/* --- Display Mode --- */
 .display-layout {
     display: grid;
     grid-template-columns: 220px 1fr;
@@ -116,7 +109,6 @@
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-    /* [REVISI] Pastikan tidak 100% width */
     width: auto !important;
 }
 .btn-edit-custom:hover {
@@ -131,10 +123,8 @@
     border-radius: 8px;
     padding: 2rem;
 }
-/* Sembunyikan/tampilkan div yang benar saat .edit-mode aktif */
 body.edit-mode #store-display { display: none; }
 body.edit-mode #store-edit { display: block; }
-/* Hapus padding dari .card utama saat mode edit */
 body.edit-mode .card { 
     padding: 0; 
     background: none; 
@@ -229,7 +219,7 @@ body.edit-mode .card {
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    background-color: #5a67d8; /* primary-hover */
+    background-color: #5a67d8;
     color: white;
 }
 .edit-actions {
@@ -248,23 +238,21 @@ body.edit-mode .card {
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    width: auto !important; /* [REVISI] Pastikan tombol ini tidak 100% width */
+    width: auto !important; 
 }
 .btn-cancel { background-color: rgb(228, 62, 62); }
 .btn-cancel:hover { background-color: red; }
 .btn-save { background-color:rgb(33, 161, 33); }
 .btn-save:hover { background-color: rgb(13, 192, 13); }
-/* --- [AKHIR BAGIAN STYLE BARU] --- */
 
 
-/* Stats Section (Kode Asli Anda) */
+/* Stats Section  */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
 }
 
-/* [PENTING] Menargetkan .mt-4 untuk memberi jarak dari card profil di atasnya */
 .stats-grid.mt-4 {
     margin-top: 1.5rem;
 }
@@ -275,7 +263,6 @@ body.edit-mode .card {
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    /* [REVISI] Hapus padding dan margin dari stat-card */
     padding: 0;
     margin-bottom: 0;
 }
@@ -285,8 +272,12 @@ body.edit-mode .card {
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
+.revenue {
+	margin-top: 23px;
+}
+
 .stat-header {
-    background: var(--primary-color, #667eea);
+	background: linear-gradient(135deg, #5559e3, #7187ea);
     color: white;
     padding: 1rem 1.5rem;
 }
@@ -311,7 +302,7 @@ body.edit-mode .card {
     margin-bottom: 1rem;
 }
 
-/* Sections (Kode Asli Anda) */
+/* Sections */
 .quick-actions,
 .recent-activity,
 .development-area {
@@ -329,7 +320,7 @@ body.edit-mode .card {
     margin-top: 1.5rem;
 }
 
-/* Quick Actions (Kode Asli Anda) */
+/* Quick Actions */
 .actions-nav {
     display: flex;
     flex-wrap: wrap;
@@ -340,7 +331,7 @@ body.edit-mode .card {
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-/* Alert Styles (Kode Asli Anda) */
+/* Alert Styles */
 .alert {
     border-radius: 6px;
     padding: 1rem 1.5rem;
@@ -356,7 +347,7 @@ body.edit-mode .card {
     margin: 0;
 }
 
-/* Button Styles (Kode Asli Anda) */
+/* Button Styles */
 .btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
@@ -369,15 +360,15 @@ body.edit-mode .card {
     cursor: pointer;
     transition: all 0.3s ease;
     box-sizing: border-box;
-    width: auto; /* [REVISI] Set default width ke auto */
+    width: auto;
 }
 
 .btn-primary {
-    background-color: var(--primary-color, #667eea);
+	background: #5c60e8;
     color: white;
 }
 .btn-primary:hover {
-    background-color: var(--primary-hover, #5a67d8);
+	background: #5c60e8;
     transform: translateY(-1px);
 }
 .btn-secondary {
@@ -388,11 +379,11 @@ body.edit-mode .card {
     background-color: #5a6268;
 }
 .btn-success {
-    background-color: #28a745;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
     color: white;
 }
 .btn-success:hover {
-    background-color: #218838;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
     transform: translateY(-1px);
 }
 .btn-danger {
@@ -405,16 +396,15 @@ body.edit-mode .card {
     background-color: #c82333;
 }
 
-/* Responsive Design (Gabungan) */
+/* Responsive Design */
 @media (max-width: 768px) {
-    /* [PERBAIKAN] Atur ulang layout profile card di tablet */
     .display-layout {
-        grid-template-columns: 1fr; /* Buat jadi 1 kolom */
+        grid-template-columns: 1fr;
         gap: 1.5rem;
-        text-align: center; /* Pusatkan teks */
+        text-align: center; 
     }
     .store-logo-container {
-        margin: 0 auto; /* Pusatkan logo */
+        margin: 0 auto; 
         width: 150px;
         height: 150px;
     }
@@ -426,14 +416,13 @@ body.edit-mode .card {
         grid-template-columns: 1fr;
     }
     .flex-preview {
-        order: -1; /* Pindahkan preview ke atas form */
+        order: -1;
         margin-bottom: 1.5rem;
     }
     .edit-col-image-simple {
         margin: 0 auto;
     }
     
-    /* Kode Asli Anda */
     .stats-grid {
         grid-template-columns: 1fr;
     }

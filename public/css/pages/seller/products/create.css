@@ -190,11 +190,16 @@ form .row {
 	flex-direction: row;
 }
 
-form .row > [class*="col-"] {
+.row > [class*="col-"] {
     position: relative;
     width: 100%;
     margin-right: 33px;
 }
+form .row > .col-md-5 {
+	max-width: 290px;
+	aspect-ratio: 1/1;
+}
+
 
 .product-form-card .ts-dropdown {
     background-color: rgba(255,255,255,0.99);

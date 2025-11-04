@@ -1,5 +1,4 @@
 <?php
-// Ensure $pageTitle and $currentPage are set
 $pageTitle = $pageTitle ?? 'Nimonspedia';
 $currentPage = $currentPage ?? '';
 ?>
@@ -25,13 +24,9 @@ $currentPage = $currentPage ?? '';
     <!-- CSRF Token for JavaScript -->
     <meta name="csrf-token" content="<?= Auth::csrfToken() ?>">
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-    
     <!-- CSS Framework - External files only -->
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/components.css">
-    <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/components/modal.css"> <?php if (isset($cssFiles)): ?><?php endif; ?>
     
     <!-- Page-specific CSS -->

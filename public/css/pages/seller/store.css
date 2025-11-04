@@ -10,7 +10,6 @@ body.edit-mode #store-edit { display: block; }
 
 
 /* DISPLAY MODE */
-
 .display-layout {
     display: grid;
     grid-template-columns: 220px 1fr;
@@ -78,7 +77,6 @@ body.edit-mode #store-edit { display: block; }
 }
 
 /* EDIT MODE */
-
 .edit-layout-simple {
     display: grid;
     grid-template-columns: minmax(0, 500px) 1fr;
@@ -261,7 +259,6 @@ input[type="file"]#edit_file {
 }
 
 /* RESPONSIVE */
-
 @media (max-width: 768px) {
     .display-layout {
         grid-template-columns: 1fr; 

@@ -1,8 +1,3 @@
-/**
- * Password Toggle Component
- * Adds show/hide functionality to password fields using SVG icons
- */
-
 class PasswordToggle {
     constructor() {
         this.init();

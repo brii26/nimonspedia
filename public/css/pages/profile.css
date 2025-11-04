@@ -1,5 +1,3 @@
-/* Profile Page Styles */
-
 .user-info {
     color: var(--text-dark, #2c3e50);
     font-weight: 500;
@@ -137,7 +135,6 @@
     min-height: 80px;
 }
 
-/* Password Input Container */
 .password-input-container {
     position: relative;
     display: flex;
@@ -145,7 +142,7 @@
 }
 
 .password-input-container input {
-    padding-right: 3rem; /* Space for toggle button */
+    padding-right: 3rem;
 }
 
 .password-toggle {
@@ -210,7 +207,6 @@
     font-weight: 600;
 }
 
-/* -- Password Criteria Checklist -- */
 #password-criteria {
     margin-top: 0.75rem;
     display: flex;
@@ -220,24 +216,24 @@
 
 .criteria-item {
     font-size: 0.875rem;
-    color: #dc3545; /* Default: Merah (invalid) */
+    color: #dc3545; 
     transition: all 0.2s ease;
 }
 
 .criteria-item::before {
-    content: '✖'; /* Ikon 'X' */
+    content: '✖';
     margin-right: 0.5rem;
     font-weight: bold;
     display: inline-block;
 }
 
-/* Style untuk kriteria yang valid */
+
 .criteria-item.valid {
-    color: #28a745; /* Hijau (valid) */
+    color: #28a745;
 }
 
 .criteria-item.valid::before {
-    content: '✔'; /* Ikon 'check' */
+    content: '✔'; 
 }
 
 /* Alert Styles */
@@ -313,7 +309,7 @@
     background-color: #c82333;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
     .profile-grid {
         grid-template-columns: 1fr;
@@ -353,14 +349,14 @@
     position: fixed;
     inset: 0;
     z-index: 1200;
-    display: none; /* shown by JS */
+    display: none;
     -webkit-font-smoothing: antialiased;
 }
 
 .app-confirm-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55); /* semi-opaque black */
+    background: rgba(0, 0, 0, 0.55); 
     backdrop-filter: blur(2px);
 }
 
@@ -400,7 +396,6 @@
     opacity: 1;
 }
 
-/* Buttons sizing */
 .app-confirm-footer .btn { padding: 0.5rem 1rem; }
 
 @media (max-width: 520px) {

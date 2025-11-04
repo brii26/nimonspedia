@@ -4,7 +4,6 @@
     background: linear-gradient(180deg, #f7f9fc 0%, #f8f9fa 100%);
 }
 
-/* Center the error card */
 .error-section .section-content {
     max-width: 820px;
     margin: 0.75rem auto;
@@ -72,13 +71,12 @@
     border-top: 1px solid rgba(0,0,0,0.06);
 }
 
-/* Make sure links inside the card look like buttons */
 .error-section a.btn {
     text-decoration: none;
     display: inline-block;
 }
 
-/* Responsive tweaks */
+/* Responsive */
 @media (max-width: 768px) {
     .error-section .section-content {
         padding: 1.5rem;

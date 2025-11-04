@@ -91,7 +91,6 @@
 			const headers = init.headers || {};
 			const isForm = init.body instanceof FormData;
 
-			// Auto-set Content-Type ke JSON jika bodynya objek
 			if (!isForm 
 				&& init.body 
 				&& typeof init.body === 'object' 

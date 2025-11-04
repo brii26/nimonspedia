@@ -1,8 +1,4 @@
-/* ==========================================================================
-   PRODUCT DETAIL PAGE (3-COLUMN LAYOUT)
-   ========================================================================== */
-
-/* --- 1. Main Layout --- */
+/* --- Main Layout --- */
 .product-detail-container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -33,11 +29,11 @@ hr.card-divider {
 }
 
 /* ==========================================================================
-   2. Kolom 1: Galeri Gambar
+	Galeri Gambar
    ========================================================================== */
 .product-gallery {
     position: sticky;
-    top: 80px; /* Jarak dari navbar */
+    top: 80px;
 }
 
 .product-main-image-wrapper {
@@ -56,14 +52,14 @@ hr.card-divider {
 }
 
 /* ==========================================================================
-   3. Kolom 2: Info & Deskripsi
+   Info & Deskripsi
    ========================================================================== */
 .product-info-main {
     background: white;
     border: 1px solid #e9ecef;
     border-radius: 12px;
     padding: 1.5rem 2rem;
-    min-width: 0; /* Mencegah flex/grid overflow */
+    min-width: 0;
 }
 
 h1.product-name {
@@ -110,33 +106,27 @@ h1.product-name {
     margin-bottom: 1rem;
 }
 
-/* =================================================== */
-/* PERBAIKAN KERAPIAN DESKRIPSI            */
-/* =================================================== */
 .product-description-html {
     font-size: 1rem;
     line-height: 1.6;
     color: #343a40;
-    /* Mencegah teks/gambar deskripsi meluber */
     overflow-wrap: break-word;
     word-break: break-word;
 }
-/* Style dasar untuk tag <p> dari Quill */
 .product-description-html p {
     margin-bottom: 1em;
 }
 .product-description-html p:last-child {
     margin-bottom: 0;
 }
-/* =================================================== */
 
 
 /* ==========================================================================
-   4. Kolom 3: Kartu Keranjang
+    Kartu Keranjang
    ========================================================================== */
 .product-purchase-sidebar {
     position: sticky;
-    top: 80px; /* Jarak dari navbar */
+    top: 80px; 
 }
 
 .purchase-card {
@@ -177,11 +167,8 @@ h1.product-name {
     border: 1px solid #eee;
 }
 
-/* =================================================== */
-/* STYLE UNTUK DESKRIPSI DI SIDEBAR         */
-/* =================================================== */
 .sidebar-store-description {
-    font-size: 0.875rem; /* Lebih kecil */
+    font-size: 0.875rem;
     color: var(--text-muted, #6c757d);
     line-height: 1.5;
     padding-left: calc(40px + 0.75rem);
@@ -192,7 +179,6 @@ h1.product-name {
     margin: 0;
     padding: 0;
 }
-/* =================================================== */
 
 .quantity-selector-wrapper {
     display: flex;
@@ -273,11 +259,10 @@ h1.product-name {
 }
 
 /* ==========================================================================
-   5. Responsive
+   Responsive
    ========================================================================== */
 @media (max-width: 992px) {
     .product-detail-grid {
-        /* 2 kolom: Gambar di kiri, Info di kanan. Kartu keranjang di bawah */
         grid-template-columns: 1fr 1fr;
     }
     
@@ -291,52 +276,43 @@ h1.product-name {
     }
     
     .product-purchase-sidebar {
-        grid-column: 1 / -1; /* Lebar penuh di baris kedua */
+        grid-column: 1 / -1; 
         grid-row: 2 / 3;
-        position: static; /* Hapus sticky */
+        position: static; 
     }
 }
 
-/* === PERUBAHAN DIMULAI DI SINI === */
 
 @media (max-width: 768px) {
-    
-    /* 1. Hapus padding & margin atas dari container */
     .product-detail-container {
         padding: 0;
         margin: 0;
     }
     
     .product-detail-grid {
-        /* 1 kolom: Semua menumpuk */
         grid-template-columns: 1fr;
-        gap: 0; /* Hapus jarak antar grid item */
+        gap: 0; 
     }
     
-    /* 2. Reset urutan grid agar kembali ke urutan HTML (Gambar -> Info -> Keranjang) */
     .product-gallery,
     .product-info-main,
     .product-purchase-sidebar {
-        grid-column: initial; /* Reset kolom */
-        grid-row: initial;    /* Reset baris (INI YANG FIX URUTANNYA) */
+        grid-column: initial; 
+        grid-row: initial;  
         position: static;
     }
     
-    /* 3. Buat gambar jadi full-width tanpa border/radius */
     .product-main-image-wrapper {
         border: none;
         border-radius: 0;
-        /* Beri garis pemisah tipis di bawah gambar */
         border-bottom: 1px solid #e9ecef;
     }
     
-    /* 4. Hapus style "card" dari info & keranjang agar jadi section full-width */
     .product-info-main {
         padding: 1.5rem;
         border-radius: 0;
         border-left: none;
         border-right: none;
-        /* Beri garis pemisah */
         border-bottom: 1px solid #e9ecef;
     }
     
@@ -344,12 +320,10 @@ h1.product-name {
         border-radius: 0;
         border-left: none;
         border-right: none;
-        border-top: 10px solid #f1f3f5; /* Beri jarak pemisah tebal */
-        border-bottom: none;
+        border-top: 10px solid #f1f3f5; 
         box-shadow: none;
     }
 
-    /* 5. (Opsional) Sesuaikan ukuran font di mobile */
     h1.product-name {
         font-size: 1.5rem;
     }

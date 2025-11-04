@@ -1,8 +1,4 @@
-/* ==========================================================================
-   Store Detail Page Styles
-   ========================================================================== */
-
-/* --- 1. Main Layout --- */
+/* --- Main Layout --- */
 .store-detail-main {
     padding-top: 2rem;
     padding-bottom: 2rem;
@@ -16,7 +12,7 @@
     padding: 0 1rem;
 }
 
-/* --- 2. Store Header Section --- */
+/* --- Store Header Section --- */
 .store-header-card {
     background: white;
     border-radius: 12px;
@@ -156,7 +152,7 @@
     margin: 0;
 }
 
-/* --- 3. Products Section --- */
+/* --- Products Section --- */
 .store-products-section {
     background: white;
     border-radius: 12px;
@@ -213,9 +209,7 @@
     }
 }
 
-/* ===================================
-   UBAHAN UTAMA UNTUK MOBILE
-   =================================== */
+/* Responsive */
 @media (max-width: 576px) {
     .store-detail-main {
         padding-top: 1rem;

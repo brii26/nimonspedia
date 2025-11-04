@@ -2,23 +2,18 @@
    Global CSS Reset & Base Styles
    ========================================================================== */
 
-/*
- * 1. Set default box-sizing to border-box.
- * Ini membuat padding dan border TIDAK menambah lebar/tinggi elemen.
- * Sangat direkomendasikan untuk layout yang lebih mudah.
- * 2. Hapus margin default browser dari body.
- */
+
 html {
-  box-sizing: border-box; /* 1 */
-  font-family: sans-serif; /* Atur font dasar jika perlu */
-  line-height: 1.15; /* Default line height */
-  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
+  box-sizing: border-box; 
+  font-family: sans-serif;
+  line-height: 1.15; 
+  -webkit-text-size-adjust: 100%
 }
 
 *,
 *::before,
 *::after {
-  box-sizing: inherit; /* Wariskan box-sizing dari html */
+  box-sizing: inherit;
 }
 
 body {
@@ -37,31 +32,30 @@ body {
   flex-grow: 1;
 }
 
-/* Aturan dasar lainnya (opsional, sesuaikan kebutuhan) */
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
-  margin-bottom: 0.5rem; /* Beri sedikit jarak bawah untuk heading */
-  font-weight: 600; /* Sedikit lebih tebal */
+  margin-bottom: 0.5rem;
+  font-weight: 600; 
 }
 
 p {
   margin-top: 0;
-  margin-bottom: 1rem; /* Jarak antar paragraf */
+  margin-bottom: 1rem; 
 }
 
 a {
-  color: #0d6efd; /* Warna link default */
-  text-decoration: none; /* Hapus underline default */
+  color: #0d6efd;
+  text-decoration: none; 
 }
 
 a:hover {
-  text-decoration: underline; /* Tambahkan underline saat hover */
+  text-decoration: underline;
 }
 
 img, svg, video, canvas, audio, iframe, embed, object {
-  display: block; /* Agar tidak ada space aneh di bawah gambar */
-  max-width: 100%; /* Agar gambar tidak meluber */
-  height: auto; /* Pertahankan rasio aspek gambar */
+  display: block; 
+  max-width: 100%; 
+  height: auto; 
 }
 
 /* ==========================================================================

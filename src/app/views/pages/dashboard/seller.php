@@ -81,8 +81,7 @@
                         <h3>Revenue</h3>
                     </header>
                     <div class="stat-content">
-					<div class="stat-value"><?= View::currency(isset($stats['revenue']) ? (int)$stats['revenue'] : 0 )?></div> 
-                        <a href="/seller/analytics" class="btn btn-secondary">Analytics</a>
+					<div class="stat-value revenue"><?= View::currency(isset($stats['revenue']) ? (int)$stats['revenue'] : 0 )?></div> 
                     </div>
                 </article>
 
@@ -125,8 +124,8 @@
         <nav class="actions-nav">
             <a href="/seller/products/create" class="btn btn-success">Add New Product</a>
             <a href="/seller/products" class="btn btn-primary">Manage Products</a>
-            <a href="/seller/orders" class="btn btn-secondary">View Orders</a>
-            <a href="/seller/reports/sales" class="btn btn-secondary">Export Laporan (CSV)</a>
+            <a href="/seller/orders" class="btn btn-primary">View Orders</a>
+            <a href="/seller/reports/sales" class="btn btn-primary">Export Laporan (CSV)</a>
         </nav>
     </section>
 </div>
