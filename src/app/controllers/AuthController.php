@@ -66,9 +66,21 @@ class AuthController extends BaseController {
 				'address' => ['required', 'min:10'],
 			];
 
+            if (isset($_FILES['store_logo'])) {
+                $postData['store_logo'] = $_FILES['store_logo'];
+            }
+
 			$rules['store_name'] = (isset($postData['role']) && $postData['role'] === 'SELLER')
 				? ['required', 'max:100']
 				: ['max:100'];
+
+            if (isset($postData['role']) && $postData['role'] === 'SELLER') {
+				$rules['store_name'] = ['required', 'max:100'];
+				$rules['store_logo'] = ['size:2097152', 'mimes:jpeg,png,jpg,webp'];
+			} else {
+				$rules['store_name'] = ['max:100'];
+                $rules['store_logo'] = []; // Tidak perlu validasi jika bukan seller
+            }
 
 			$this->validate($postData, $rules);
 			$user = $this->authService->register($postData);

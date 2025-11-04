@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sellerFields = document.getElementById('seller-fields');
     const storeNameInput = document.getElementById('store_name');
+    const storeLogoInput = document.getElementById('input_file');
+    const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
+    const ALLOWED_LOGO_EXTENSIONS = ['jpeg', 'jpg', 'png', 'webp'];
+
     let isEditorInitialized = false;
 
     const submitButton = form.querySelector('button[type="submit"]');
@@ -130,6 +134,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     };
 
+    const validateStoreLogo = () => {
+        if (!storeLogoInput) return true;
+        clearError(storeLogoInput);
+        const file = storeLogoInput.files[0];
+
+        if (!file) {
+            return true;
+        }
+
+        if (file.size > MAX_LOGO_SIZE) {
+            showError(storeLogoInput, 'File terlalu besar. Ukuran maksimal 2MB.');
+            return false;
+        }
+
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_LOGO_EXTENSIONS.includes(fileExt)) {
+             showError(storeLogoInput, 'Tipe file tidak valid. Gunakan: jpg, jpeg, png, atau webp.');
+             return false;
+        }
+
+        return true;
+    };
+
     /**
      * Fungsi Toggle Seller (dari sebelumnya, sedikit di-update)
      */
@@ -146,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isEditorInitialized) {
                 createEditor('#editor', 'store_description');
                 isEditorInitialized = true;
+            }
+            if (storeLogoInput) {
+                storeLogoInput.addEventListener('change', validateStoreLogo);
             }
         } else {
             sellerFields.style.display = 'none';
@@ -186,9 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isPasswordValid = validatePasswordLive();
         const isConfirmValid = validatePasswordConfirmation();
         const isStoreNameValid = validateStoreName();
+        const isStoreLogoValid = validateStoreLogo();
 
         if (!isNameValid || !isEmailValid || !isAddressValid || !isRoleValid || 
-            !isPasswordValid || !isConfirmValid || !isStoreNameValid) {
+            !isPasswordValid || !isConfirmValid || !isStoreNameValid || !isStoreLogoValid) {
             
             e.preventDefault();
             

@@ -53,7 +53,7 @@ class AuthService {
             // Jika user adalah SELLER, buat juga tokonya
             if ($data['role'] === 'SELLER') {
                 $storeDesc = SanitizerService::sanitizeRichText($data['store_description']) ?? null;
-                $storeLogo = $_FILES['store_logo'];
+                $storeLogo = $data['store_logo'] ?? null;
                 $storeLogoPath = FileService::saveUploadedImage($storeLogo,'store_logo') ?? null;
                 
                 // Kita gunakan $storeName yang sudah divalidasi di atas

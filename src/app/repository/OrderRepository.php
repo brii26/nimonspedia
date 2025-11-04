@@ -281,7 +281,7 @@ class OrderRepository extends BaseRepository {
             
             $itemsByStore = [];
             foreach ($items as $item) {
-                $prodSql = "SELECT store_id FROM products WHERE product_id = ?";
+                $prodSql = "SELECT store_id FROM products WHERE product_id = ? AND deleted_at IS NULL FOR UPDATE";
                 $product = $this->db->selectOne($prodSql, [$item['product_id']]);
                 if (!$product) {
                     throw new ValidationException("Produk '{$item['product_name']}' tidak ditemukan.");
