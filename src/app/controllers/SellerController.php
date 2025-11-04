@@ -5,6 +5,7 @@ class SellerController extends BaseController {
     private $productService;
     private $storeService;
 	private $categoryService;
+	private $sanitizerService;
 
 
     public function __construct() {
@@ -12,6 +13,7 @@ class SellerController extends BaseController {
         $this->productService = new ProductService();
         $this->storeService = new StoreService();
 		$this->categoryService = new CategoryService();
+		$this->sanitizerService = new SanitizerService();
 
         $this->requireRole('SELLER');
     }
@@ -150,10 +152,9 @@ class SellerController extends BaseController {
     public function storeProduct() {
         $postData = $this->getPost();
 
-		if (isset($postData['product-description'])) {
-            $plainText = trim(strip_tags($postData['product-description']));
-            $postData['description_plain_text'] = $plainText;
-        }
+		$postData['product-description'] = $this->sanitizerService->sanitizeRichText($postData['product-description'] ?? null);
+        $plainText = trim(strip_tags($postData['product-description']));
+        $postData['description_plain_text'] = $plainText;
 
 		$categories = $this->categoryService->getAllCategories();
 
@@ -260,10 +261,9 @@ class SellerController extends BaseController {
 		$postData = $this->getPost(); 
 		$productId = (int)($this->getQuery('id', 0) ?: ($postData['product_id'] ?? 0)); 
 
-		if (isset($postData['product-description'])) {
-            $plainText = trim(strip_tags($postData['product-description']));
-            $postData['description_plain_text'] = $plainText;
-		}
+		$postData['product-description'] = $this->sanitizerService->sanitizeRichText($postData['product-description'] ?? null);
+        $plainText = trim(strip_tags($postData['product-description']));
+        $postData['description_plain_text'] = $plainText;
 
 		$categories = $this->categoryService->getAllCategories();
 
@@ -348,6 +348,7 @@ class SellerController extends BaseController {
                 'store_name'        => ['required', 'min:0', 'max:100'],
                 'store_description' => ['max:1000'],
             ]);
+			$post['store_description'] = $this->sanitizerService->sanitizeRichText($post['store_description'] ?? null);
 
 			$storeId = $this->getSellerStoreId();
 			if (!$storeId) {
