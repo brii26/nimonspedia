@@ -43,7 +43,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="cart-item-actions"> <button type="button" class="btn-remove" data-product-id="<?= (int)($it['product_id'] ?? 0)?>">
+                                    <div class="cart-item-actions"> <button type="button" aria-label="Hapus produk" 
+                                    class="btn-remove" data-product-id="<?= (int)($it['product_id'] ?? 0)?>">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M3 6h18"></path>
                                                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
@@ -63,7 +64,7 @@
                                                 <?= $currentQty <= $minQty ? 'disabled' : '' ?>
                                             >-</button>
                                             
-                                            <input type="number" class="cart-quantity" 
+                                            <input type="number" class="cart-quantity"  aria-label = "Jumlah sekarang"
                                                 value="<?= $currentQty ?>" 
                                                 min="<?= $minQty ?>" max="<?= $maxStock ?>"
                                                 data-previous-value="<?= $currentQty ?>">
