@@ -88,16 +88,7 @@ $currentPage = $currentPage ?? '';
                     <ul class="footer-links">
                         <li><a href="/">Home</a></li>
                         <li><a href="/">Products</a></li>
-                        <li><a href="/about">About</a></li>
-                        <li><a href="/contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul class="footer-links">
-                        <li><a href="/privacy">Privacy Policy</a></li>
-                        <li><a href="/terms">Terms of Service</a></li>
-                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="https://wa.me/628123543448" target="_blank">Contact</a></li>
                     </ul>
                 </div>
             </div>
