@@ -1,188 +1,106 @@
 # Nimonspedia - E-commerce Platform
 
-Nimonspedia is a modern e-commerce platform built to serve the digital marketplace needs of the Nimons community. This platform is developed using cutting-edge technologies with a scalable and efficient architecture.
+<p align="center">
+  <img src="public/assets/images/logo.png" alt="Nimonspedia Logo" width="200"/>
+</p>
 
-## Docker Container Architecture
+<p align="center">
+  Nimonspedia is a full-featured e-commerce platform built from scratch in pure PHP. It provides a complete marketplace experience: Buyers can browse, search, and filter products, manage a shopping cart, and purchase items using an internal balance. Sellers can register their own stores, manage their product inventory (full CRUD), and fulfill incoming orders.
+</p>
 
-### Overview
-This application employs a **containerized microservices architecture** with two primary services:
-- **Web Application Container** (PHP + Nginx + Alpine Linux)
-- **Database Container** (PostgreSQL 16 Alpine)
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.3-blue" alt="PHP 8.3">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL_16-blue" alt="PostgreSQL 16">
+  <img src="https://img.shields.io/badge/Web_Server-Nginx-green" alt="Nginx">
+  <img src="https://img.shields.io/badge/Container-Docker-blue" alt="Docker">
+  <img src="https://img.shields.io/badge/Base_Image-Alpine_Linux-darkblue" alt="Alpine Linux">
+</p>
 
-### Technology Stack Rationale
+---
 
-#### **Why Alpine Linux?**
-```dockerfile
-FROM php:8.3-fpm-alpine
-```
+## Table of Contents
 
-**Strategic Benefits:**
-- **Ultra-lightweight**: Base image only ~8MB (vs Ubuntu ~74MB)
-- **Security-focused**: Minimal attack surface with regular security updates
-- **Performance**: Faster container startup and deployment cycles
-- **Production-ready**: Adopted by major enterprises for production workloads
-- **Package management**: Efficient APK package manager with minimal overhead
+* [Key Features](#key-features)
+  * [Buyer Features](#buyer-features)
+  * [Seller Features](#seller-features)
+* [Screenshots](#screenshots)
+* [Technology Stack](#technology-stack)
+* [Quick Start](#quick-start)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Access Points](#access-points)
+* [System Architecture](#system-architecture)
+* [Project Structure](#project-structure)
+* [Author](#author)
+  * [Roles and Responsibilities](#roles-and-responsibilities)
+* [Bonuses](#bonuses)
+  * [Google Lighthouse](#google-lighthouse)
+---
 
-**Result**: Final image size of **148MB** instead of 400MB+ with Debian/Ubuntu base images.
+## Key Features
 
-#### **Why PHP-FPM (FastCGI Process Manager)?**
+### Buyer Features
+* **Authentication & Profile**: User registration, login, logout, and profile management.
+* **Balance Management**: View and top-up account balance.
+* **Product Discovery**: Browse all products, search by name, and filter by category or price.
+* **Product & Store Details**: View detailed product information (description, stock, store) and visit store-specific pages.
+* **Shopping Cart**: Add, update, and remove items from the shopping cart.
+* **Checkout**: Place orders from the cart, which validates and deducts balance and stock.
+* **Order History**: View past orders, confirm order reception, and manage order status.
+* **Advanced Search**: Product Search will return all relevant items 
 
-```dockerfile
-FROM php:8.3-fpm-alpine  # FPM variant
-```
+### Seller Features
+* **Store Authentication**: Register as a seller and manage store profile (name, logo, description).
+* **Product Management**: Full CRUD (Create, Read, Update, Delete) for products within the seller's store.
+* **Order Management**: View and manage incoming orders, with the ability to approve or reject them.
+* **Data Export**: Export performance list to Excel/CSV
 
-**Architectural Benefits:**
-- **Process Separation**: Clean separation between web server (Nginx) and application processor (PHP)
-- **Scalability**: Multiple PHP worker processes handle concurrent requests efficiently
-- **Resource Efficiency**: Process pooling eliminates fork() overhead per request
-- **Fault Isolation**: PHP crashes do not affect Nginx stability and vice versa
-- **Performance**: Approximately 10x faster than traditional CGI implementations
+## Screenshots
 
-#### **Why Nginx?**
-```dockerfile
-RUN apk add --no-cache nginx
-```
+### Buyer
 
-**Performance Advantages over Apache:**
-- **High Concurrency**: Event-driven architecture handles 10,000+ concurrent connections
-- **Low Memory Footprint**: ~2.5MB RAM usage vs Apache's ~25MB per process
-- **Static Content Optimization**: Excellent performance for CSS, JS, images without PHP overhead
-- **Reverse Proxy Capabilities**: Optimized FastCGI communication with PHP-FPM
-- **Modern Web Standards**: Native HTTP/2, load balancing, and caching support
+| Product Discovery | Product Details |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-**Request Processing Architecture:**
-```
-Client Request → Nginx (Port 80) → FastCGI (Port 9000) → PHP-FPM Workers → Database
-```
+| Cart | Checkout |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-**Architecture Benefits:**
-- **Process Separation**: Nginx (web server) is separated from PHP (application processor)
-- **Scalability**: Multiple PHP worker processes handle concurrent requests
-- **Resource Efficiency**: Process pooling, no fork() overhead per request
-- **Stability**: PHP's crash won't affect nginx, and vice versa
-- **Performance**: ~10x faster than traditional CGI
+| Order History | Store Details |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-#### **Why Nginx?**
-```dockerfile
-RUN apk add --no-cache nginx
-```
+### Seller
 
-**Advantages over Apache:**
-- **High Performance**: Event-driven architecture, handles 10K+ concurrent connections
-- **Low Memory**: ~2.5MB RAM usage vs Apache's ~25MB per process  
-- **Static File Serving**: Excellent for CSS, JS, images (no PHP involvement)
-- **Reverse Proxy**: Perfect for FastCGI communication with PHP-FPM
-- **Modern Features**: HTTP/2, load balancing, caching built-in
+| Seller Dashboard | Product List |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-**Nginx + PHP-FPM Architecture:**
-```
-Browser Request → Nginx (Port 80) → FastCGI (Port 9000) → PHP-FPM Workers → Database
-```
+| Product Management | Order Management |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-### Container Initialization Process
+### Halaman Autentikasi & Profil
 
-#### 1. **Base Layer Establishment**
-```dockerfile
-FROM php:8.3-fmp-alpine
-```
+| Login | Register |
+| :---: | :---: |
+| *(Screenshot Here)* | *(Screenshot Here)* |
 
-#### 2. **Runtime Dependencies Installation**
-```dockerfile
-RUN apk update && apk add --no-cache \
-    nginx \                   # High-performance web server
-    libpng \                  # Image processing library (GD extension)
-    libjpeg-turbo \           # Optimized JPEG processing
-    freetype \                # Advanced font rendering
-    libpq \                   # PostgreSQL client library
-```
+| Profile |
+| :---: |
+| *(Screenshot Here)* |
 
-#### 3. **PHP Extensions Compilation**
-```dockerfile
-RUN apk update && apk add --no-cache \
-    nginx \
-    supervisor \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    postgresql-dev \
-    libpng \
-    libjpeg-turbo \
-    freetype \
-    postgresql-client \
-    libpq \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_pgsql \
-    && apk del --no-cache \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-        postgresql-dev
-```
 
-**Image Size Optimization Strategy:**
-- **Virtual Build Packages**: Temporary installation of build dependencies with automatic removal
-- **Multi-stage Compilation**: Extension compilation followed by development tools cleanup
-- **Cache Management**: APK cache removal to minimize final image footprint
+## Technology Stack
 
-#### 4. **Configuration Layer Integration**
-```dockerfile
-COPY php.ini /usr/local/etc/php/conf.d/php.ini          # PHP runtime configuration
-COPY nginx.conf /etc/nginx/http.d/default.conf          # Web server routing rules
-COPY supervisord.conf /etc/supervisor/conf.d/           # Process orchestration
-```
-
-#### 5. **Process Management Architecture**
-```dockerfile
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-```
-
-**Supervisor Process Orchestration:**
-- **PHP-FPM Master Process** with dynamically managed worker pool
-- **Nginx Master Process** with event-driven worker processes
-- **Automatic Recovery**: Process restart on failure detection
-- **Centralized Logging**: Unified log aggregation to stdout/stderr
-
-### **Database Architecture**
-
-#### PostgreSQL 16 Alpine Selection
-```yaml
-db:
-  image: postgres:16-alpine
-```
-
-**PostgreSQL Advantages over MySQL:**
-- **ACID Compliance**: Superior data integrity for e-commerce transaction processing
-- **Advanced Feature Set**: Native JSON support, full-text search, custom data types
-- **Extensibility**: PostGIS for geospatial data, pg_trgm for fuzzy search capabilities
-- **Query Performance**: Optimized handling of complex queries and large datasets
-- **Standards Compliance**: Enhanced SQL standard conformance
-
-### **Performance Metrics**
-
-| Metric | Value | Comparison |
-|--------|-------|------------|
-| **Image Size** | 148MB | vs 470MB (Debian-based) |
-| **Startup Time** | ~3 seconds | vs ~8 seconds (traditional) |
-| **Memory Usage** | ~50MB idle | vs ~150MB (Apache+mod_php) |
-| **Request Handling** | 1000+ req/sec | vs ~100 req/sec (CGI) |
-
-### **Security Architecture**
-
-#### Container Security Implementation
-- **Non-privileged Execution**: PHP-FPM processes run under `www-data` user context
-- **Minimal Attack Surface**: Alpine Linux reduces potential vulnerability vectors
-- **Shell Access Restriction**: Production containers exclude unnecessary shell utilities
-- **Immutable Filesystem**: Application files protected against runtime modifications
-
-#### Web Server Security Layer
-- **Sensitive File Protection**: Access control for `.env`, `.git`, and configuration files
-- **Request Size Limitations**: DoS attack prevention through payload restrictions
-- **FastCGI Parameter Validation**: Input sanitization at the proxy layer
-
-#### Database Security Framework
-- **Network Segmentation**: Database accessibility restricted to application containers only
-- **Credential Management**: Environment-based secrets handling via Docker Compose
-- **Connection Pool Management**: Resource exhaustion prevention mechanisms
+* **Backend**: PHP 8.3-FPM (Pure, no frameworks)
+* **Frontend**: HTML, CSS, JavaScript (Pure, no frameworks)
+* **Web Server**: Nginx
+* **Database**: PostgreSQL 16 Alpine
+* **Containerization**: Docker & Docker Compose
+* **Base Image**: Alpine Linux (for Nginx, PHP, and PostgreSQL)
+* **Process Manager**: Supervisor (managing Nginx & PHP-FPM processes)
 
 ---
 
@@ -190,7 +108,7 @@ db:
 
 ### Prerequisites
 - Docker & Docker Compose
-- Port 8080 dan 5433 available
+- Port 8080 and 5433 available on the host machine.
 
 ### Installation
 ```bash
@@ -198,7 +116,7 @@ db:
 git clone <repository-url>
 cd nimonspedia
 
-# Build and start containers  
+# Build and start containers  
 docker-compose up --build -d
 
 # Verify installation
@@ -206,6 +124,241 @@ curl http://localhost:8080
 ```
 
 ### Access Points
-- **Web Application**: http://localhost:8080
-- **Database**: localhost:5433 (PostgreSQL)
-- **Development**: Live reload via volume mounting
+- Web Application: http://localhost:8080
+- Database: localhost:5433 (PostgreSQL)
+- Development: Live reload via volume mounting
+
+## System Architecture
+This application employs a containerized microservices architecture with two primary services:
+- Web Application Container (PHP + Nginx + Alpine Linux)
+- Database Container (PostgreSQL 16 Alpine)
+
+## Project Structure
+### Project Structure
+```
+.
+├── database/
+│   └── init.sql
+├── public/
+│   ├── assets/
+│   │   ├── icons/
+│   │   │   ├── eye-off.svg
+│   │   │   ├── eye.svg
+│   │   │   └── search.svg
+│   │   └── images/
+│   │       └── logo.png
+│   ├── css/
+│   │   ├── components/
+│   │   │   ├── modal.css
+│   │   │   └── product-filter.css
+│   │   ├── pages/
+│   │   │   ├── seller/
+│   │   │   │   ├── products/
+│   │   │   │   │   ├── create.css
+│   │   │   │   │   ├── edit.css
+│   │   │   │   │   └── index.css
+│   │   │   │   ├── orders.css
+│   │   │   │   └── store.css
+│   │   │   ├── auth.css
+│   │   │   ├── cart.css
+│   │   │   ├── checkout.css
+│   │   │   ├── dashboard.css
+│   │   │   ├── errors.css
+│   │   │   ├── product-detail.css
+│   │   │   ├── profile.css
+│   │   │   └── store-detail.css
+│   │   ├── components.css
+│   │   └── global.css
+│   ├── js/
+│   │   ├── components/
+│   │   │   ├── confirm-modal.js
+│   │   │   ├── password-toggle.js
+│   │   │   └── product-filter.js
+│   │   ├── pages/
+│   │   │   ├── auth/
+│   │   │   │   ├── login.js
+│   │   │   │   ├── profile.js
+│   │   │   │   └── register.js
+│   │   │   ├── cart/
+│   │   │   │   └── index.js
+│   │   │   ├── dashboard/
+│   │   │   │   ├── buyer.js
+│   │   │   │   └── seller.js
+│   │   │   ├── orders/
+│   │   │   │   ├── checkout.js
+│   │   │   │   └── index.js
+│   │   │   ├── products/
+│   │   │   │   ├── index.js
+│   │   │   │   └── show.js
+│   │   │   └── seller/
+│   │   │       ├── products/
+│   │   │       │   ├── create.js
+│   │   │       │   ├── edit.js
+│   │   │       │   └── index.js
+│   │   │       └── orders.js
+│   │   ├── utils/
+│   │   │   ├── fetchXhr.js
+│   │   │   └── quill-setup.js
+│   │   └── app.js
+│   ├── .htaccess
+│   ├── favicon.ico
+│   └── index.php
+├── src/
+│   ├── app/
+│   │   ├── controllers/
+│   │   │   ├── AuthController.php
+│   │   │   ├── BaseController.php
+│   │   │   ├── BuyerOrdersController.php
+│   │   │   ├── CartController.php
+│   │   │   ├── HomeController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── ReportController.php
+│   │   │   ├── SellerController.php
+│   │   │   ├── SellerOrdersController.php
+│   │   │   └── StoreController.php
+│   │   ├── models
+│   │   ├── repository/
+│   │   │   ├── BaseRepository.php
+│   │   │   ├── CartItemRepository.php
+│   │   │   ├── CategoryRepository.php
+│   │   │   ├── OrderRepository.php
+│   │   │   ├── ProductRepository.php
+│   │   │   ├── ReportRepository.php
+│   │   │   ├── StoreRepository.php
+│   │   │   └── UserRepository.php
+│   │   ├── services/
+│   │   │   ├── AuthService.php
+│   │   │   ├── BuyerOrderaService.php
+│   │   │   ├── CartService.php
+│   │   │   ├── CategoryService.php
+│   │   │   ├── FileService.php
+│   │   │   ├── ProductService.php
+│   │   │   ├── ReportService.php
+│   │   │   ├── SanitizerService.php
+│   │   │   ├── SellerOrderService.php
+│   │   │   ├── StatsService.php
+│   │   │   └── StoreService.php
+│   │   └── views/
+│   │       ├── components/
+│   │       │   ├── cart-success-modal.php
+│   │       │   ├── confirm-modal.php
+│   │       │   ├── error-modal.php
+│   │       │   ├── layout.php
+│   │       │   ├── navbar.php
+│   │       │   ├── order-list.php
+│   │       │   ├── product-filter.php
+│   │       │   ├── product-list.php
+│   │       │   ├── seller-order-list.php
+│   │       │   ├── seller-product-filter.php
+│   │       │   └── seller-product-list.php
+│   │       └── pages/
+│   │           ├── auth/
+│   │           │   ├── login.php
+│   │           │   ├── profile.php
+│   │           │   └── register.php
+│   │           ├── cart/
+│   │           │   └── index.php
+│   │           ├── dashboard/
+│   │           │   ├── buyer.php
+│   │           │   └── seller.php
+│   │           ├── errors/
+│   │           │   └── 404.php
+│   │           ├── orders/
+│   │           │   ├── checkout.php
+│   │           │   ├── index.php
+│   │           │   ├── show.php
+│   │           │   └── sucess.php
+│   │           ├── products/
+│   │           │   ├── index.php
+│   │           │   └── show.php
+│   │           ├── seller/
+│   │           │   ├── orders/
+│   │           │   │   └── index.php
+│   │           │   └── products/
+│   │           │       ├── create.php
+│   │           │       ├── edit.php
+│   │           │       └── index.php
+│   │           └── stores/
+│   │               └── detail.php
+│   ├── config/
+│   │   └── database.php
+│   ├── core/
+│   │   ├── Application.php
+│   │   ├── Auth.php
+│   │   ├── Database.php
+│   │   ├── Router.php
+│   │   └── View.php
+│   └── lib
+├── storage/
+│   ├── product_images/
+│   └── store_logos/
+├── .dockerignore
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── nginx.conf
+├── php.ini
+├── README.md
+└── supervisord.conf
+```
+
+## Author
+| Name                     | NIM      |
+|--------------------------|----------|
+| Brian Ricardo Tamin      | 13523126 |
+| Ahmad Syafiq             | 13523135 |
+| Naufarrel Zhafif Abhista | 13523149 | 
+
+### Roles and Responsibilities
+| Server-Side Feature   | Author              |
+|-----------------------|---------------------|
+| Docker Config         | xxx,xxx,xxx         |
+| DB Connection         | xxx,xxx,xxx         |
+| Core Logic            | xxx,xxx,xxx         |
+| Login                 | xxx,xxx,xxx         |
+| Register              | xxx,xxx,xxx         |
+| Logout                | xxx,xxx,xxx         |
+| Update Profil         | xxx,xxx,xxx         |
+| Create & Update Store | xxx,xxx,xxx         |
+| Product Discovery     | xxx,xxx,xxx         |
+| Search n Filter Prod  | xxx,xxx,xxx         |
+| Prod Detail Logic     | xxx,xxx,xxx         |
+| Store Detail Logic    | xxx,xxx,xxx         |
+| Top-up                | xxx,xxx,xxx         |
+| Cart Logic            | xxx,xxx,xxx         |
+| Checkout              | xxx,xxx,xxx         |
+| Order History         | xxx,xxx,xxx         |
+| Confirm Order         | xxx,xxx,xxx         |
+| Seller Dashboard Logic| xxx,xxx,xxx         |
+| Product Management    | xxx,xxx,xxx         |
+| Order Management      | xxx,xxx,xxx         |
+
+| Client-Side Feature   | Author              |
+|-----------------------|---------------------|
+| Core Layout           | xxx,xxx,xxx         |
+| Global Component      | xxx,xxx,xxx         |
+| Register Page         | xxx,xxx,xxx         |
+| Login Page            | xxx,xxx,xxx         |
+| Profile Page          | xxx,xxx,xxx         |
+| Prod Discovery Page   | xxx,xxx,xxx         |
+| Prod Detail Page      | xxx,xxx,xxx         |
+| Store Detail Page     | xxx,xxx,xxx         |
+| Cart Page             | xxx,xxx,xxx         |
+| Checkout Page         | xxx,xxx,xxx         |
+| Order History Page    | xxx,xxx,xxx         |
+| Balance Management    | xxx,xxx,xxx         |
+| Seller Dashboard Page | xxx,xxx,xxx         |
+| Store Management Page | xxx,xxx,xxx         |
+| Prod Management Page  | xxx,xxx,xxx         |
+| Order Management Page | xxx,xxx,xxx         |
+
+## Bonuses
+- [x] All Responsive Web Design
+- [x] UI/UX Seperti Tokopedia
+- [x] Data Export
+- [x] Advanced Search
+- [x] Google Lighthouse
+
+### Google Lighthouse
+(insert screenshot)
+
