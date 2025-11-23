@@ -36,6 +36,18 @@ services:
     networks:
       - nimonspedia-network
     
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:${NGINX_PORT}
+    container_name: nimonspedia-client
+    volumes:
+      - ./public:/public
+    networks:
+      - nimonspedia-network
+
   node-server:
     build:
       context: ./server
@@ -75,6 +87,7 @@ services:
     depends_on:
       - php
       - node-server
+      - client
     networks:
       - nimonspedia-network
 

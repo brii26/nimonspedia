@@ -9,9 +9,9 @@ class UserRepository {
     return result.rows[0];
   }
 
-  async findByUsername(username) {
-    const query = 'SELECT * FROM users WHERE username = $1';
-    const result = await pool.query(query, [username]);
+  async findByEmailAndRole(email, role) {
+    const query = 'SELECT * FROM users WHERE email = $1 AND role = $2';
+    const result = await pool.query(query, [email, role]);
     return result.rows[0];
   }
 
@@ -63,14 +63,14 @@ class UserRepository {
 
   async seedAdminUser() {
     const adminData = {
-      username: 'admin',
       email: 'admin@nimonspedia.com',
       password: 'admin123',
       name: 'System Administrator',
-      role: 'admin'
+      address: 'Admin Office',
+      role: 'ADMIN'
     };
 
-    const existingAdmin = await this.findByUsername(adminData.username);
+    const existingAdmin = await this.findByEmailAndRole(adminData.email, adminData.role);
     
     if (existingAdmin) {
       console.log('Admin user already exists, skipping seed...');
@@ -80,21 +80,21 @@ class UserRepository {
     const hashedPassword = await bcrypt.hash(adminData.password, 10);
 
     const query = `
-      INSERT INTO users (username, email, password, name, role, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      INSERT INTO users (email, password, name, address, role, balance, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5::user_role, 0, NOW(), NOW())
       RETURNING *
     `;
 
     const result = await pool.query(query, [
-      adminData.username,
       adminData.email,
       hashedPassword,
       adminData.name,
+      adminData.address,
       adminData.role
     ]);
 
     console.log('Admin user seeded successfully!');
-    console.log('Username:', adminData.username);
+    console.log('Email:', adminData.email);
     console.log('Password:', adminData.password);
     
     return result.rows[0];

@@ -4,10 +4,10 @@
 This script seeds a default admin user into the database with bcrypt-hashed password.
 
 ## Default Credentials
-- **Username**: `admin`
-- **Password**: `admin123`
 - **Email**: `admin@nimonspedia.com`
-- **Role**: `admin`
+- **Password**: `admin123`
+- **Name**: `System Administrator`
+- **Role**: `ADMIN`
 
 ## Usage
 
@@ -42,14 +42,15 @@ node src/scripts/seedAdmin.js
 
 ## Database Schema Required
 The script expects the following columns in the `users` table:
-- `user_id` (auto-increment primary key)
-- `username` (unique)
-- `email` (unique)
-- `password` (text)
-- `name` (text)
-- `role` (text/enum)
-- `created_at` (timestamp)
-- `updated_at` (timestamp)
+- `user_id` (SERIAL PRIMARY KEY)
+- `email` (VARCHAR(255) UNIQUE)
+- `password` (VARCHAR(255))
+- `name` (VARCHAR(255))
+- `address` (TEXT)
+- `role` (user_role ENUM: 'BUYER', 'SELLER', 'ADMIN')
+- `balance` (NUMERIC)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
 
 ## Security Notes
 - Password is hashed with bcrypt (10 salt rounds)
@@ -72,15 +73,14 @@ Deletes a user by ID (useful for cleanup/testing).
 Starting admin user seeding...
 
 Admin user seeded successfully!
-Username: admin
+Email: admin@nimonspedia.com
 Password: admin123
 
 ✓ Admin seeding completed successfully!
 
 === Admin Credentials ===
-Username: admin
-Password: admin123
 Email: admin@nimonspedia.com
+Password: admin123
 =========================
 ```
 

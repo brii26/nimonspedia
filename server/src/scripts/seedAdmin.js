@@ -8,9 +8,8 @@ async function seedAdmin() {
     
     console.log('\n✓ Admin seeding completed successfully!');
     console.log('\n=== Admin Credentials ===');
-    console.log('Username: admin');
-    console.log('Password: admin123');
     console.log('Email: admin@nimonspedia.com');
+    console.log('Password: admin123');
     console.log('=========================\n');
     
     process.exit(0);

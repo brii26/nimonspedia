@@ -7,14 +7,15 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    base: '/',
     build: {
-      outDir: '../public',
-      emptyOutDir: false,
+      outDir: 'dist',
+      emptyOutDir: true,
       rollupOptions: {
         output: {
-          entryFileNames: `assets/react-[name].js`,
-          chunkFileNames: `assets/react-[name].js`,
-          assetFileNames: `assets/react-[name].[ext]`
+          entryFileNames: `assets/[name]-[hash].js`,
+          chunkFileNames: `assets/[name]-[hash].js`,
+          assetFileNames: `assets/[name]-[hash].[ext]`
         }
       }
     },

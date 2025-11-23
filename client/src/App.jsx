@@ -7,15 +7,15 @@ import MainLayout from './views/components/layouts/MainLayout';
 
 import ProtectedRoute from './services/routes/ProtectedRoute';
 
-// Pages (Placeholder)
+// Pages
+import AdminLogin from './views/pages/admin/Login';
+import AdminDashboard from './views/pages/admin/Dashboard';
 import { 
-  AdminLogin, 
-  AdminDashboard, 
   AuctionList, 
   AuctionDetail, 
   ChatPage, 
   NotFound 
-} from './pages/Placeholders'; 
+} from './views/pages/Placeholders'; 
 
 function App() {
   return (
