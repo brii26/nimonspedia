@@ -4,7 +4,7 @@
 -- Database is already created by POSTGRES_DB environment variable
 -- Connect to the nimonspedia database
 
-CREATE TYPE user_role AS ENUM ('BUYER', 'SELLER');
+CREATE TYPE user_role AS ENUM ('BUYER', 'SELLER', 'ADMIN');
 
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
@@ -191,3 +191,101 @@ $$ LANGUAGE 'plpgsql';
 CREATE TRIGGER trg_update_product_search
 BEFORE INSERT OR UPDATE ON products
 FOR EACH ROW EXECUTE FUNCTION update_product_search_vector();
+
+
+-- ==========================================
+-- MILESTONE 2 ADDITIONS
+-- ==========================================
+
+-- Enums
+CREATE TYPE auction_status AS ENUM ('scheduled', 'active', 'ended', 'cancelled');
+CREATE TYPE message_type AS ENUM ('text', 'image', 'item_preview');
+CREATE TYPE feature_name AS ENUM ('checkout_enabled', 'chat_enabled', 'auction_enabled');
+
+CREATE TABLE auctions (
+    auction_id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL,
+    starting_price BIGINT NOT NULL CHECK (starting_price >= 0),
+    current_price BIGINT NOT NULL CHECK (current_price >= 0),
+    min_increment BIGINT NOT NULL CHECK (min_increment > 0),
+    quantity INT NOT NULL CHECK (quantity > 0),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP, -- Nullable, filled when auction ends
+    status auction_status DEFAULT 'scheduled',
+    winner_id INT, -- Nullable, FK to User (buyer)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE auction_bids (
+    bid_id SERIAL PRIMARY KEY,
+    auction_id INT NOT NULL,
+    bidder_id INT NOT NULL,
+    bid_amount BIGINT NOT NULL CHECK (bid_amount > 0),
+    bid_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (auction_id) REFERENCES auctions(auction_id) ON DELETE CASCADE,
+    FOREIGN KEY (bidder_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE chat_rooms (
+    store_id INT NOT NULL,
+    buyer_id INT NOT NULL,
+    last_message_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (store_id, buyer_id),
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE,
+    FOREIGN KEY (buyer_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE chat_messages (
+    message_id SERIAL PRIMARY KEY,
+    store_id INT NOT NULL,
+    buyer_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    message_type message_type DEFAULT 'text',
+    content TEXT,
+    product_id INT, -- Nullable, FK to Product (if type = item_preview)
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (store_id, buyer_id) REFERENCES chat_rooms(store_id, buyer_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL
+);
+
+CREATE TABLE push_subscriptions (
+    subscription_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    endpoint TEXT NOT NULL,
+    p256dh_key VARCHAR(255) NOT NULL,
+    auth_key VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE push_preferences (
+    user_id INT PRIMARY KEY,
+    chat_enabled BOOLEAN DEFAULT TRUE,
+    auction_enabled BOOLEAN DEFAULT TRUE,
+    order_enabled BOOLEAN DEFAULT TRUE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_feature_access (
+    access_id SERIAL PRIMARY KEY,
+    user_id INT, -- Nullable. If NULL, represents GLOBAL flag
+    feature_name feature_name NOT NULL,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    reason TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_auctions_status ON auctions(status);
+CREATE INDEX idx_auctions_product_id ON auctions(product_id);
+CREATE INDEX idx_auction_bids_auction_id ON auction_bids(auction_id);
+CREATE INDEX idx_chat_messages_room ON chat_messages(store_id, buyer_id);
+CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
+CREATE INDEX idx_push_subscriptions_user ON push_subscriptions(user_id);

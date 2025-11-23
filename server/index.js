@@ -20,12 +20,10 @@ const io = new Server(server, {
   }
 });
 
-// Middleware Global
 app.use(cors());
 app.use(express.json());
 
 // Routing API
-// Sesuai spek: endpoint Node.js diakses via /api/node/...
 app.use('/api/node/admin', adminRoutes);
 
 // Root Endpoint (Health Check)
