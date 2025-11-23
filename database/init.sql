@@ -289,3 +289,8 @@ CREATE INDEX idx_auction_bids_auction_id ON auction_bids(auction_id);
 CREATE INDEX idx_chat_messages_room ON chat_messages(store_id, buyer_id);
 CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
 CREATE INDEX idx_push_subscriptions_user ON push_subscriptions(user_id);
+
+INSERT INTO user_feature_access (user_id, feature_name, is_enabled, reason) VALUES 
+(NULL, 'auction_enabled', TRUE, NULL),
+(NULL, 'chat_enabled', TRUE, NULL),
+(NULL, 'checkout_enabled', TRUE, NULL);

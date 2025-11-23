@@ -1,12 +1,24 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
     plugins: [react()],
+    build: {
+      outDir: '../public',
+      emptyOutDir: false,
+      rollupOptions: {
+        output: {
+          entryFileNames: `assets/react-[name].js`,
+          chunkFileNames: `assets/react-[name].js`,
+          assetFileNames: `assets/react-[name].[ext]`
+        }
+      }
+    },
+
     server: {
       host: true,
       port: 5173,
