@@ -1,10 +1,17 @@
 const pool = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 class UserRepository {
   
   async findByEmail(email) {
     const query = 'SELECT * FROM users WHERE email = $1';
     const result = await pool.query(query, [email]);
+    return result.rows[0];
+  }
+
+  async findByUsername(username) {
+    const query = 'SELECT * FROM users WHERE username = $1';
+    const result = await pool.query(query, [username]);
     return result.rows[0];
   }
 
@@ -52,6 +59,51 @@ class UserRepository {
   async countTotal() {
     const result = await pool.query('SELECT COUNT(*) FROM users');
     return parseInt(result.rows[0].count);
+  }
+
+  async seedAdminUser() {
+    const adminData = {
+      username: 'admin',
+      email: 'admin@nimonspedia.com',
+      password: 'admin123',
+      name: 'System Administrator',
+      role: 'admin'
+    };
+
+    const existingAdmin = await this.findByUsername(adminData.username);
+    
+    if (existingAdmin) {
+      console.log('Admin user already exists, skipping seed...');
+      return existingAdmin;
+    }
+
+    const hashedPassword = await bcrypt.hash(adminData.password, 10);
+
+    const query = `
+      INSERT INTO users (username, email, password, name, role, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, [
+      adminData.username,
+      adminData.email,
+      hashedPassword,
+      adminData.name,
+      adminData.role
+    ]);
+
+    console.log('Admin user seeded successfully!');
+    console.log('Username:', adminData.username);
+    console.log('Password:', adminData.password);
+    
+    return result.rows[0];
+  }
+
+  async deleteUserById(userId) {
+    const query = 'DELETE FROM users WHERE user_id = $1 RETURNING *';
+    const result = await pool.query(query, [userId]);
+    return result.rows[0];
   }
 }
 
