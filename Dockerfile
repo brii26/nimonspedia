@@ -1,6 +1,8 @@
 FROM php:8.3-fpm-alpine
 
 RUN apk update && apk add --no-cache \
+    pcre-dev \
+    ${PHPIZE_DEPS} \
     nginx \
     supervisor \
     libpng-dev \
@@ -14,7 +16,11 @@ RUN apk update && apk add --no-cache \
     libpq \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_pgsql \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && apk del --no-cache \
+        pcre-dev \
+        ${PHPIZE_DEPS} \
         libpng-dev \
         libjpeg-turbo-dev \
         freetype-dev \
