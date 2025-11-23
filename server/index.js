@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const { socketAuth } = require('./src/middleware/authMiddleware');
 require('dotenv').config();
 
 // Import Routes
@@ -31,11 +32,13 @@ app.get('/', (req, res) => {
   res.send('Nimonspedia Node.js Server is Running...');
 });
 
+io.use(socketAuth);
+
 const registerAuctionHandlers = require('./src/sockets/auctionSocket');
 const registerChatHandlers = require('./src/sockets/chatSocket');
 
 io.on('connection', (socket) => {
-  console.log(`User Connected: ${socket.id}`);
+  console.log(`User Connected: ${socket.user.name} (${socket.user.user_id})`);
 
   registerAuctionHandlers(io, socket);
   registerChatHandlers(io, socket);
