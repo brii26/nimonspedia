@@ -35,18 +35,6 @@ services:
       - ./database:/docker-entrypoint-initdb.d
     networks:
       - nimonspedia-network
-    
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=http://localhost:${NGINX_PORT}
-    container_name: nimonspedia-client
-    volumes:
-      - ./public:/public
-    networks:
-      - nimonspedia-network
 
   node-server:
     build:
@@ -79,15 +67,21 @@ services:
   nginx:
     image: nginx:alpine
     container_name: nimonspedia-nginx
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+      args:
+        - VITE_API_BASE_URL=http://localhost:${NGINX_PORT}
     ports:
       - "${NGINX_PORT}:80"
     volumes:
-      - .:/var/www/html
+      - ./public/index.php:/var/www/html/public/index.php
+      - ./src:/var/www/html/src
+      - ./storage:/var/www/html/storage
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
       - node-server
-      - client
     networks:
       - nimonspedia-network
 
