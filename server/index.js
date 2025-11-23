@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routing API
-app.use('/api/node/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 
 // Root Endpoint (Health Check)
 app.get('/', (req, res) => {

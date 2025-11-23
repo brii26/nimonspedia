@@ -96,7 +96,7 @@ exports.updateGlobalFlag = async (req, res) => {
   const enabledBool = Boolean(is_enabled);
 
   try {
-    await featureFlagRepository.upsertGlobalFlag(featureName, enabledBool, reason);
+    await featureFlagRepository.upsertGlobalFlag(feature_name, enabledBool, reason);
     res.json({ success: true, message: `Global feature updated` });
   } catch (error) {
     console.error('Update Global Flag Error:', error);
