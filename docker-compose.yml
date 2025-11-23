@@ -53,6 +53,7 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
       - PORT=${NODE_PORT}
     networks:
       - nimonspedia-network
