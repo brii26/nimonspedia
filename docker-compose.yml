@@ -37,7 +37,7 @@ services:
     
   node-server:
     build:
-      context: ./server-node
+      context: ./server
       dockerfile: Dockerfile
     container_name: nimonspedia-node
     ports: 
