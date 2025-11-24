@@ -91,6 +91,8 @@ const Dashboard = () => {
       const usersData = await usersRes.json();
       const featuresData = await featuresRes.json();
 
+      console.log('Features Response:', featuresData); // Debug feature flags
+
       setUsers(usersData.data || []); 
 
       if (usersData.pagination) {
@@ -137,9 +139,9 @@ const Dashboard = () => {
     setSelectedUser(user);
     // Set current flags dari user data
     const currentFlags = {
-      checkout: user.feature_flags?.includes('checkout') ?? true,
-      chat: user.feature_flags?.includes('chat') ?? true,
-      auction: user.feature_flags?.includes('auction') ?? true
+      checkout: user.feature_flags?.some(f => f.feature_name === 'checkout_enabled' && f.is_enabled) ?? true,
+      chat: user.feature_flags?.some(f => f.feature_name === 'chat_enabled' && f.is_enabled) ?? true,
+      auction: user.feature_flags?.some(f => f.feature_name === 'auction_enabled' && f.is_enabled) ?? true
     };
     setUserFlags(currentFlags);
     setFlagReasons({ checkout: '', chat: '', auction: '' });
@@ -181,6 +183,12 @@ const Dashboard = () => {
     }
 
     try {
+      const flagNameMap = {
+        checkout: 'checkout_enabled',
+        chat: 'chat_enabled',
+        auction: 'auction_enabled'
+      };
+
       // Send requests untuk setiap flag yang berubah
       const flagUpdates = Object.keys(userFlags).map(async (flagName) => {
         const reason = userFlags[flagName] 
@@ -195,7 +203,7 @@ const Dashboard = () => {
           },
           body: JSON.stringify({
             user_id: selectedUser.user_id,
-            feature_name: flagName,
+            feature_name: flagNameMap[flagName],
             is_enabled: userFlags[flagName],
             reason: reason
           })
@@ -372,9 +380,8 @@ const Dashboard = () => {
                             </p>
                           </div>
                           <Switch
-                            checked={feature.enabled}
+                            checked={feature.is_enabled}
                             onChange={() => handleToggleFeature(feature.feature_name, feature.is_enabled)}
-                            label={feature.is_enabled ? 'Enabled' : 'Disabled'}
                           />
                         </div>
                       </CardBody>
