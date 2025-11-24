@@ -80,14 +80,11 @@ class AuthService {
     public function login($email, $password) {
         // Find user by email
         $user = $this->userRepository->findByEmail($email);
+
+        $isAdmin = $user['role'] === 'ADMIN';
         
-        if (!$user) {
-            throw new Exception('Email doesn\'t exist! Register first.');
-        }
-        
-        // Verify password
-        if (!password_verify($password, $user['password'])) {
-            throw new Exception('Invalid password!');
+        if (!$user || !password_verify($password, $user['password']) || $isAdmin) {
+            throw new Exception('Invalid credentials!');
         }
         
         return $user;

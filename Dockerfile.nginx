@@ -1,0 +1,26 @@
+# --- Build React App ---
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+COPY client/package*.json ./
+RUN npm install
+
+COPY client/ .
+
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
+RUN npm run build
+
+# --- Serve with Nginx ---
+FROM nginx:alpine
+
+WORKDIR /tmp/react-build
+COPY --from=builder /app/dist .
+
+WORKDIR /var/www/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

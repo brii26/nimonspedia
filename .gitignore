@@ -21,3 +21,6 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+node_modules
+index-*

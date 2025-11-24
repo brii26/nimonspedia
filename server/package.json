@@ -1,0 +1,28 @@
+{
+  "name": "nimonspedia-server",
+  "version": "1.0.0",
+  "description": "Node.js Backend for Nimonspedia",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "seed:admin": "node src/scripts/seedAdmin.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.26.0",
+    "fastify-socket.io": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "php-unserialize": "0.0.1",
+    "redis": "^4.6.10",
+    "pg": "^8.11.3",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

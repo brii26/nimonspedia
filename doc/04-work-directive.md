@@ -20,17 +20,17 @@ Dokumen ini berisi pembagian tugas dan jadwal pengerjaan untuk Milestone 2.
 
 #### Tugas Server-side (Node.js & Config):
 
-- [ ] [CRITICAL] Setup docker-compose.yml (gabung PHP, Nginx, Node.js, Postgres).
-- [ ] [CRITICAL] Update init.sql (tambah tabel auctions, chat, admin, dll).
-- [ ] Konfigurasi Nginx Reverse Proxy (routing /api vs /).
-- [ ] Middleware Auth: JWT untuk Admin & Session Verification (PHP Session) untuk WebSocket.
-- [ ] REST API Admin: CRUD User, Flag Management.
+- [v] [CRITICAL] Setup docker-compose.yml (gabung PHP, Nginx, Node.js, Postgres).
+- [v] [CRITICAL] Update init.sql (tambah tabel auctions, chat, admin, dll).
+- [v] Konfigurasi Nginx Reverse Proxy (routing /api vs /).
+- [v] Middleware Auth: JWT untuk Admin & Session Verification (PHP Session) untuk WebSocket.
+- [v] REST API Admin: R User, U Flag Management.
 
 #### Tugas Client-side (React):
 
-- [ ] Setup inisial React (Vite + Tailwind/CSS).
-- [ ] Halaman Admin Login.
-- [ ] Halaman Admin Dashboard (User List & Feature Flags Toggle).
+- [v] Setup inisial React (Vite + Tailwind/CSS).
+- [v] Halaman Admin Login.
+- [v] Halaman Admin Dashboard (User List & Feature Flags Toggle).
 
 ### Anggota 2: Auction Specialist
 
