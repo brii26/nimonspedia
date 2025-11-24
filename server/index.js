@@ -1,54 +1,68 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
-const { socketAuth } = require('./src/middleware/authMiddleware');
+// server/index.js
 require('dotenv').config();
+const Fastify = require('fastify');
+const cors = require('@fastify/cors');
+const socketio = require('fastify-socket.io');
 
-// Import Routes
 const adminRoutes = require('./src/routes/adminRoutes');
+const { socketAuth } = require('./src/middleware/authMiddleware');
 
-const app = express();
-const server = http.createServer(app);
+// 1. Init Fastify (Logger on buat debugging)
+const fastify = Fastify({ logger: true });
 
-// Setup Socket.io (WebSocket)
-const io = new Server(server, {
+// 2. Register Plugins
+// CORS
+fastify.register(cors, {
+  origin: [process.env.CLIENT_URL || "http://localhost:8080", "http://localhost:5173"],
+  methods: ["GET", "POST"],
+  credentials: true
+});
+
+// Socket.io
+fastify.register(socketio, {
   cors: {
-    // koneksi dari React (Vite default port 5173 atau Nginx 8080)
     origin: [process.env.CLIENT_URL || "http://localhost:8080", "http://localhost:5173"],
     methods: ["GET", "POST"],
-    credentials: true 
+    credentials: true
   }
 });
 
-app.use(cors());
-app.use(express.json());
+// 3. Register Routes (Prefixing lebih gampang di Fastify)
+fastify.register(adminRoutes, { prefix: '/admin' });
 
-// Routing API
-app.use('/admin', adminRoutes);
-
-// Root Endpoint (Health Check)
-app.get('/', (req, res) => {
-  res.send('Nimonspedia Node.js Server is Running...');
+// 4. Root Route
+fastify.get('/', async (request, reply) => {
+  return { status: 'ok', message: 'Nimonspedia Node.js Server is Running...' };
 });
 
-io.use(socketAuth);
+// 5. Start Server
+const start = async () => {
+  try {
+    await fastify.ready();
 
-const registerAuctionHandlers = require('./src/sockets/auctionSocket');
-const registerChatHandlers = require('./src/sockets/chatSocket');
+    fastify.io.use(socketAuth); 
 
-io.on('connection', (socket) => {
-  console.log(`User Connected: ${socket.user.name} (${socket.user.user_id})`);
+    const registerAuctionHandlers = require('./src/sockets/auctionSocket');
+    const registerChatHandlers = require('./src/sockets/chatSocket');
 
-  registerAuctionHandlers(io, socket);
-  registerChatHandlers(io, socket);
+    fastify.io.on('connection', (socket) => {
+      fastify.log.info(`User Connected: ${socket.user?.name} (${socket.user?.user_id})`);
+      registerAuctionHandlers(fastify.io, socket);
+      registerChatHandlers(fastify.io, socket);
+      
+      socket.on('disconnect', () => {
+        fastify.log.info(`User Disconnected ${socket.id}`);
+      });
+    });
 
-  socket.on('disconnect', () => {
-    console.log('User Disconnected', socket.id);
-  });
-});
+    const PORT = process.env.PORT || 3000;
+    await fastify.listen({ port: PORT, host: '0.0.0.0' });
+    console.log(`SERVER RUNNING ON PORT ${PORT}`);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`SERVER RUNNING ON PORT ${PORT}`);
-});
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();

@@ -31,24 +31,23 @@ const getPHPUser = async (cookieString) => {
 }
 
 /**
- * Middleware untuk Express (HTTP Routes)
+ * Middleware untuk Fastify (HTTP Routes)
  * Dipakai untuk route API yang butuh login
  */
-const requireAuth = async (req, res, next) => {
+const requireAuth = async (request, reply) => {
     try {
-        const user = await getPHPUser(req.headers.cookie);
+        const user = await getPHPUser(request.headers.cookie);
         
         if (!user) {
-            return res.status(401).json({ 
+            return reply.status(401).send({ 
                 success: false, 
                 message: 'Unauthorized: Login in PHP first' 
             });
         }
 
-        req.user = user;
-        next();
+        request.user = user;
     } catch (err) {
-        res.status(500).json({ message: 'Server Error during Auth' });
+        return reply.status(500).send({ message: 'Server Error during Auth' });
     }
 };
 
@@ -72,26 +71,26 @@ const socketAuth = async (socket, next) => {
     }
 };
 
-const verifyAdminToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
+const verifyAdminToken = async (request, reply) => {
+    const authHeader = request.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Format: Bearer <token>
   
     if (!token) {
-      return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
+      return reply.status(401).send({ success: false, message: 'Access denied. No token provided.' });
     }
   
     try {
+      const jwt = require('jsonwebtoken');
       const secret = process.env.JWT_SECRET || 'rahasia_negara_nimons';
       const decoded = jwt.verify(token, secret);
       
       if (decoded.role !== 'ADMIN') {
-          return res.status(403).json({ success: false, message: 'Access denied. Admins only.' });
+          return reply.status(403).send({ success: false, message: 'Access denied. Admins only.' });
       }
   
-      req.user = decoded;
-      next();
+      request.user = decoded;
     } catch (err) {
-      return res.status(403).json({ success: false, message: 'Invalid or expired token.' });
+      return reply.status(403).send({ success: false, message: 'Invalid or expired token.' });
     }
 };
 
