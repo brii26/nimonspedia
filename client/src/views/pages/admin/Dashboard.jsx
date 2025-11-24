@@ -81,6 +81,13 @@ const Dashboard = () => {
         })
       ]);
 
+      if (statsRes.status === 403 || usersRes.status === 403 || featuresRes.status === 403) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
       const statsData = await statsRes.json();
       if (statsData.success && statsData.data) {
         setStats(statsData.data);
