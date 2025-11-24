@@ -152,31 +152,31 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="container mt-4">
-      <header className="mb-4">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-gray-600">Manage users and system features</p>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p className="text-lg text-gray-600">Manage users and system features</p>
       </header>
 
       {error && (
-        <Alert variant="error" onClose={() => setError('')} className="mb-4">
+        <Alert variant="error" onClose={() => setError('')} className="mb-6">
           {error}
         </Alert>
       )}
 
       {success && (
-        <Alert variant="success" onClose={() => setSuccess('')} className="mb-4">
+        <Alert variant="success" onClose={() => setSuccess('')} className="mb-6">
           {success}
         </Alert>
       )}
 
-      <section className="stats-grid mb-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Total Users</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="stat-value">{stats.totalUsers}</div>
+            <div className="text-4xl font-bold text-[#667eea]">{stats.totalUsers}</div>
           </CardBody>
         </Card>
 
@@ -185,7 +185,7 @@ const Dashboard = () => {
             <CardTitle>Buyers</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="stat-value">{stats.totalBuyers}</div>
+            <div className="text-4xl font-bold text-blue-600">{stats.totalBuyers}</div>
           </CardBody>
         </Card>
 
@@ -194,7 +194,7 @@ const Dashboard = () => {
             <CardTitle>Sellers</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="stat-value">{stats.totalSellers}</div>
+            <div className="text-4xl font-bold text-green-600">{stats.totalSellers}</div>
           </CardBody>
         </Card>
 
@@ -203,70 +203,73 @@ const Dashboard = () => {
             <CardTitle>Active Auctions</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="stat-value">{stats.activeAuctions}</div>
+            <div className="text-4xl font-bold text-orange-600">{stats.activeAuctions}</div>
           </CardBody>
         </Card>
       </section>
 
-      <Card>
+      <Card className="shadow-lg">
         <CardBody>
           <Tabs value={activeTab} onChange={setActiveTab}>
             <TabList>
-              <Tab>User Management</Tab>
-              <Tab>Feature Flags</Tab>
+              <Tab eventKey={0}>User Management</Tab>
+              <Tab eventKey={1}>Feature Flags</Tab>
             </TabList>
 
             <TabPanels>
-              <TabPanel>
-                <div className="mb-4">
+              <TabPanel eventKey={0}>
+                <div className="mb-6">
                   <SearchInput
                     placeholder="Search users by name or email..."
                     value={searchTerm}
                     onSearch={setSearchTerm}
                     debounce={500}
+                    className="max-w-md"
                   />
                 </div>
 
-                <Table striped hover>
-                  <TableHead>
-                    <TableRow>
-                      <TableHeader>ID</TableHeader>
-                      <TableHeader>Name</TableHeader>
-                      <TableHeader>Email</TableHeader>
-                      <TableHeader>Role</TableHeader>
-                      <TableHeader>Registered</TableHeader>
-                      <TableHeader>Actions</TableHeader>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {users.map(user => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.id}</TableCell>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{getUserRoleBadge(user.role)}</TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setShowDeleteModal(true);
-                            }}
-                            disabled={user.role === 'admin'}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
+                <div className="overflow-hidden rounded-lg border border-gray-200">
+                  <Table striped hover>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeader>ID</TableHeader>
+                        <TableHeader>Name</TableHeader>
+                        <TableHeader>Email</TableHeader>
+                        <TableHeader>Role</TableHeader>
+                        <TableHeader>Registered</TableHeader>
+                        <TableHeader>Actions</TableHeader>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHead>
+                    <TableBody>
+                      {users.map(user => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-mono text-xs">{user.id}</TableCell>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell className="text-gray-600">{user.email}</TableCell>
+                          <TableCell>{getUserRoleBadge(user.role)}</TableCell>
+                          <TableCell className="text-gray-600">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setShowDeleteModal(true);
+                              }}
+                              disabled={user.role === 'admin'}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
 
-                <div className="mt-4 flex justify-center">
+                <div className="mt-6 flex justify-center">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -275,14 +278,14 @@ const Dashboard = () => {
                 </div>
               </TabPanel>
 
-              <TabPanel>
+              <TabPanel eventKey={1}>
                 <div className="space-y-4">
                   {features.map(feature => (
-                    <Card key={feature.id}>
+                    <Card key={feature.id} className="hover:shadow-md transition-shadow">
                       <CardBody>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg text-gray-900 mb-1">
                               {feature.name}
                             </h3>
                             <p className="text-gray-600 text-sm">
@@ -292,6 +295,7 @@ const Dashboard = () => {
                           <Switch
                             checked={feature.enabled}
                             onChange={() => handleToggleFeature(feature.id, feature.enabled)}
+                            label={feature.enabled ? 'Enabled' : 'Disabled'}
                           />
                         </div>
                       </CardBody>
@@ -310,16 +314,26 @@ const Dashboard = () => {
           setShowDeleteModal(false);
           setSelectedUser(null);
         }}
+        size="md"
       >
-        <ModalHeader>Confirm Delete User</ModalHeader>
+        <ModalHeader onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedUser(null);
+        }}>
+          Confirm Delete User
+        </ModalHeader>
         <ModalBody>
-          <p>
-            Are you sure you want to delete user{' '}
-            <strong>{selectedUser?.name}</strong>?
-          </p>
-          <p className="text-red-600 text-sm mt-2">
-            This action cannot be undone.
-          </p>
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              Are you sure you want to delete user{' '}
+              <strong className="text-gray-900">{selectedUser?.name}</strong> ({selectedUser?.email})?
+            </p>
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+              <p className="text-red-800 text-sm font-medium">
+                ⚠️ This action cannot be undone.
+              </p>
+            </div>
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button
@@ -331,7 +345,7 @@ const Dashboard = () => {
           >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleDeleteUser}>
+          <Button variant="danger" onClick={handleDeleteUser}>
             Delete User
           </Button>
         </ModalFooter>

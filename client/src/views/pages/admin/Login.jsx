@@ -40,21 +40,21 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <section className="auth-card">
-        <header className="auth-header">
-          <h1>Admin Login</h1>
-          <p>Access administrator dashboard</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] p-4">
+      <section className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Login</h1>
+          <p className="text-gray-600">Access administrator dashboard</p>
         </header>
         
         {error && (
-          <Alert variant="error" onClose={() => setError('')}>
+          <Alert variant="error" onClose={() => setError('')} className="mb-6">
             {error}
           </Alert>
         )}
         
-        <form onSubmit={handleSubmit} className="auth-form" noValidate>
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <div>
             <Input
               label="Email Address"
               type="email"
@@ -67,8 +67,8 @@ const Login = () => {
             />
           </div>
           
-          <div className="form-group">
-            <div className="password-input-container">
+          <div>
+            <div className="relative">
               <Input
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
@@ -81,13 +81,14 @@ const Login = () => {
               />
               <button 
                 type="button" 
-                className="password-toggle" 
+                className="absolute right-3 top-[42px] text-gray-400 hover:text-gray-600 transition-colors" 
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label="Toggle password visibility"
               >
                 <img 
                   src={showPassword ? '/assets/icons/eye-off.svg' : '/assets/icons/eye.svg'} 
-                  alt={showPassword ? 'Hide password' : 'Show password'} 
+                  alt={showPassword ? 'Hide password' : 'Show password'}
+                  className="w-5 h-5"
                 />
               </button>
             </div>
@@ -96,15 +97,19 @@ const Login = () => {
           <Button 
             type="submit" 
             variant="primary" 
-            className="btn-block"
+            className="w-full"
             disabled={loading}
           >
             {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         
-        <nav className="auth-nav">
-          <p><a href="/" className="btn-link">← Back to Main Site</a></p>
+        <nav className="mt-6 text-center">
+          <p>
+            <a href="/" className="text-[#667eea] hover:text-[#5a67d8] font-medium transition-colors inline-flex items-center gap-1">
+              ← Back to Main Site
+            </a>
+          </p>
         </nav>
       </section>
     </div>
