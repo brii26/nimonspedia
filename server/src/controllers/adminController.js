@@ -113,3 +113,23 @@ exports.getGlobalFlags = async (request, reply) => {
     return reply.status(500).send({ success: false, message: 'Database error' });
   }
 };
+
+exports.getStats = async (request, reply) => {
+  try {
+    const stats = await userRepository.getDashboardStats();
+
+    return reply.send({
+      success: true,
+      data: {
+        totalUsers: stats.totalUsers,
+        totalBuyers: stats.totalBuyers,
+        totalSellers: stats.totalSellers,
+        activeAuctions: stats.activeAuctions
+      }
+    });
+
+  } catch (error) {
+    request.log.error('Get Dashboard Stats Error:', error);
+    return reply.status(500).send({ success: false, message: 'Failed to fetch statistics' });
+  }
+};

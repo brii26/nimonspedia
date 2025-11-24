@@ -42,14 +42,9 @@ class FeatureFlagRepository {
 
   async getGlobalFlags() {
     const result = await pool.query(
-      'SELECT feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL'
+      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL'
     );
-    
-    const flags = {};
-    result.rows.forEach(row => {
-      flags[row.feature_name] = row;
-    });
-    return flags;
+    return result.rows; 
   }
 }
 

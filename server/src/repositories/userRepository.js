@@ -105,6 +105,26 @@ class UserRepository {
     const result = await pool.query(query, [userId]);
     return result.rows[0];
   }
+
+  async getDashboardStats() {
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM users) as total_users,
+        (SELECT COUNT(*) FROM users WHERE role = 'BUYER') as total_buyers,
+        (SELECT COUNT(*) FROM users WHERE role = 'SELLER') as total_sellers,
+        (SELECT COUNT(*) FROM auctions WHERE status = 'active') as active_auctions
+    `;
+    
+    const result = await pool.query(query);
+    
+    const row = result.rows[0];
+    return {
+      totalUsers: parseInt(row.total_users),
+      totalBuyers: parseInt(row.total_buyers),
+      totalSellers: parseInt(row.total_sellers),
+      activeAuctions: parseInt(row.active_auctions)
+    };
+  }
 }
 
 module.exports = new UserRepository();

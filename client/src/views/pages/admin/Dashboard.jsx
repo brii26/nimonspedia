@@ -56,32 +56,37 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const [statsRes, usersRes, featuresRes] = await Promise.all([
-        fetch('/api/admin/stats', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-          }
+        fetch('/api/node/admin/stats', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
         }),
-        fetch(`/api/admin/users?page=${currentPage}&search=${searchTerm}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-          }
+        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
         }),
-        fetch('/api/admin/features', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-          }
+        fetch('/api/node/admin/flags/global', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
         })
       ]);
 
       const statsData = await statsRes.json();
+      if (statsData.success && statsData.data) {
+        setStats(statsData.data);
+      } else {
+        setStats({ totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0 });
+      }
+      
       const usersData = await usersRes.json();
       const featuresData = await featuresRes.json();
 
-      setStats(statsData.data);
-      setUsers(usersData.data.users);
-      setTotalPages(usersData.data.totalPages);
-      setFeatures(featuresData.data);
+      setUsers(usersData.data || []); 
+
+      if (usersData.pagination) {
+        setTotalPages(usersData.pagination.total_pages || 1);
+      }
+
+      setFeatures(featuresData.data || []);
+
     } catch (err) {
+      console.error("Dashboard Error:", err); // Log error biar gampang debug
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -92,7 +97,7 @@ const Dashboard = () => {
     if (!selectedUser) return;
 
     try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      const response = await fetch(`/api/node/admin/users/${selectedUser.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
@@ -112,15 +117,19 @@ const Dashboard = () => {
     }
   };
 
-  const handleToggleFeature = async (featureId, currentStatus) => {
+  const handleToggleFeature = async (featureName, currentStatus) => {
     try {
-      const response = await fetch(`/api/admin/features/${featureId}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/node/admin/flags/global`, {
+        method: 'POST', 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
         },
-        body: JSON.stringify({ enabled: !currentStatus })
+        body: JSON.stringify({ 
+            feature_name: featureName,
+            is_enabled: !currentStatus,
+            reason: 'Changed via Dashboard'
+        })
       });
 
       if (response.ok) {
@@ -281,21 +290,21 @@ const Dashboard = () => {
               <TabPanel eventKey={1}>
                 <div className="space-y-4">
                   {features.map(feature => (
-                    <Card key={feature.id} className="hover:shadow-md transition-shadow">
+                    <Card key={feature.access_id} className="hover:shadow-md transition-shadow">
                       <CardBody>
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
                             <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                              {feature.name}
+                              {feature.feature_name}
                             </h3>
                             <p className="text-gray-600 text-sm">
-                              {feature.description}
+                              {feature.reason || "No reason"}
                             </p>
                           </div>
                           <Switch
                             checked={feature.enabled}
-                            onChange={() => handleToggleFeature(feature.id, feature.enabled)}
-                            label={feature.enabled ? 'Enabled' : 'Disabled'}
+                            onChange={() => handleToggleFeature(feature.feature_name, feature.is_enabled)}
+                            label={feature.is_enabled ? 'Enabled' : 'Disabled'}
                           />
                         </div>
                       </CardBody>

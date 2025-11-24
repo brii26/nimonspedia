@@ -27,6 +27,10 @@ async function adminRoutes(fastify, options) {
   fastify.get('/flags/global', { 
     preHandler: verifyAdminToken 
   }, adminController.getGlobalFlags);
+
+  fastify.get('/stats', { 
+    preHandler: verifyAdminToken 
+  }, adminController.getStats);
 }
 
 module.exports = adminRoutes;
