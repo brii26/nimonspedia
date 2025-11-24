@@ -246,31 +246,17 @@ const Dashboard = () => {
                         <TableHeader>Email</TableHeader>
                         <TableHeader>Role</TableHeader>
                         <TableHeader>Registered</TableHeader>
-                        <TableHeader>Actions</TableHeader>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {users.map(user => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-mono text-xs">{user.id}</TableCell>
+                        <TableRow key={user.user_id}>
+                          <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
                           <TableCell className="font-medium">{user.name}</TableCell>
                           <TableCell className="text-gray-600">{user.email}</TableCell>
                           <TableCell>{getUserRoleBadge(user.role)}</TableCell>
                           <TableCell className="text-gray-600">
                             {new Date(user.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setShowDeleteModal(true);
-                              }}
-                              disabled={user.role === 'admin'}
-                            >
-                              Delete
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
