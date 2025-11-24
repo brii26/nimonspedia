@@ -9,22 +9,19 @@ const Table = ({
   className = '',
   ...props 
 }) => {
-  const classes = [
-    'table',
-    striped ? 'table-striped' : '',
-    bordered ? 'table-bordered' : '',
-    hover ? 'table-hover' : '',
+  const tableClasses = [
+    'min-w-full divide-y divide-gray-200',
     className
   ].filter(Boolean).join(' ');
 
   const table = (
-    <table className={classes} {...props}>
+    <table className={tableClasses} {...props}>
       {children}
     </table>
   );
 
   if (responsive) {
-    return <div className="table-responsive">{table}</div>;
+    return <div className="overflow-x-auto border border-gray-200 rounded-lg">{table}</div>;
   }
 
   return table;
@@ -32,7 +29,7 @@ const Table = ({
 
 export const TableHead = ({ children, className = '', ...props }) => {
   return (
-    <thead className={`table-head ${className}`} {...props}>
+    <thead className={`bg-gray-50 ${className}`} {...props}>
       {children}
     </thead>
   );
@@ -40,7 +37,7 @@ export const TableHead = ({ children, className = '', ...props }) => {
 
 export const TableBody = ({ children, className = '', ...props }) => {
   return (
-    <tbody className={`table-body ${className}`} {...props}>
+    <tbody className={`bg-white divide-y divide-gray-200 ${className}`} {...props}>
       {children}
     </tbody>
   );
@@ -48,7 +45,7 @@ export const TableBody = ({ children, className = '', ...props }) => {
 
 export const TableRow = ({ children, className = '', ...props }) => {
   return (
-    <tr className={`table-row ${className}`} {...props}>
+    <tr className={`hover:bg-gray-50 transition-colors ${className}`} {...props}>
       {children}
     </tr>
   );
@@ -56,7 +53,7 @@ export const TableRow = ({ children, className = '', ...props }) => {
 
 export const TableHeader = ({ children, className = '', ...props }) => {
   return (
-    <th className={`table-header ${className}`} {...props}>
+    <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`} {...props}>
       {children}
     </th>
   );
@@ -64,7 +61,7 @@ export const TableHeader = ({ children, className = '', ...props }) => {
 
 export const TableCell = ({ children, className = '', ...props }) => {
   return (
-    <td className={`table-cell ${className}`} {...props}>
+    <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${className}`} {...props}>
       {children}
     </td>
   );

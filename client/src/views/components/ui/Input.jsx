@@ -16,11 +16,11 @@ const Input = ({
   ...props 
 }) => {
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`mb-4 ${className}`}>
       {label && (
-        <label htmlFor={id} className="form-label">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
           {label}
-          {required && <span className="text-danger">*</span>}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <input
@@ -32,10 +32,14 @@ const Input = ({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className={`form-control ${error ? 'is-invalid' : ''} ${inputClassName}`}
+        className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+          error 
+            ? 'border-red-500 focus:ring-red-500' 
+            : 'border-gray-300 focus:ring-[#667eea] focus:border-[#667eea]'
+        } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${inputClassName}`}
         {...props}
       />
-      {error && <div className="invalid-feedback">{error}</div>}
+      {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
     </div>
   );
 };
@@ -56,11 +60,11 @@ export const Textarea = ({
   ...props 
 }) => {
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`mb-4 ${className}`}>
       {label && (
-        <label htmlFor={id} className="form-label">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
           {label}
-          {required && <span className="text-danger">*</span>}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <textarea
@@ -72,10 +76,14 @@ export const Textarea = ({
         required={required}
         disabled={disabled}
         rows={rows}
-        className={`form-control ${error ? 'is-invalid' : ''} ${inputClassName}`}
+        className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors resize-y ${
+          error 
+            ? 'border-red-500 focus:ring-red-500' 
+            : 'border-gray-300 focus:ring-[#667eea] focus:border-[#667eea]'
+        } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${inputClassName}`}
         {...props}
       />
-      {error && <div className="invalid-feedback">{error}</div>}
+      {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
     </div>
   );
 };
@@ -96,11 +104,11 @@ export const Select = ({
   ...props 
 }) => {
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`mb-4 ${className}`}>
       {label && (
-        <label htmlFor={id} className="form-label">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
           {label}
-          {required && <span className="text-danger">*</span>}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <select
@@ -110,7 +118,11 @@ export const Select = ({
         onChange={onChange}
         required={required}
         disabled={disabled}
-        className={`form-control ${error ? 'is-invalid' : ''} ${inputClassName}`}
+        className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+          error 
+            ? 'border-red-500 focus:ring-red-500' 
+            : 'border-gray-300 focus:ring-[#667eea] focus:border-[#667eea]'
+        } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${inputClassName}`}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}
@@ -120,7 +132,7 @@ export const Select = ({
           </option>
         ))}
       </select>
-      {error && <div className="invalid-feedback">{error}</div>}
+      {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
     </div>
   );
 };

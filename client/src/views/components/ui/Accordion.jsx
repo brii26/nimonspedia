@@ -14,7 +14,7 @@ const Accordion = ({ children, allowMultiple = false, className = '', ...props }
   };
 
   return (
-    <div className={`accordion ${className}`} {...props}>
+    <div className={`flex flex-col gap-2 ${className}`} {...props}>
       {React.Children.map(children, (child, index) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, {
@@ -36,7 +36,10 @@ export const AccordionItem = ({
   ...props 
 }) => {
   return (
-    <div className={`accordion-item ${isOpen ? 'accordion-item-open' : ''} ${className}`} {...props}>
+    <div 
+      className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${className}`} 
+      {...props}
+    >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, { isOpen, onToggle });
@@ -57,13 +60,13 @@ export const AccordionHeader = ({
   return (
     <button
       type="button"
-      className={`accordion-header ${className}`}
+      className={`w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 text-left ${className}`}
       onClick={onToggle}
       aria-expanded={isOpen}
       {...props}
     >
-      <span className="accordion-title">{children}</span>
-      <span className={`accordion-icon ${isOpen ? 'accordion-icon-open' : ''}`}>
+      <span className="text-base font-semibold text-gray-900">{children}</span>
+      <span className={`text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
         ▼
       </span>
     </button>
@@ -79,7 +82,7 @@ export const AccordionBody = ({
   if (!isOpen) return null;
 
   return (
-    <div className={`accordion-body ${className}`} {...props}>
+    <div className={`px-6 py-4 border-t border-gray-200 ${className}`} {...props}>
       {children}
     </div>
   );

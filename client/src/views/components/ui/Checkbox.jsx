@@ -20,7 +20,7 @@ const Checkbox = ({
   }, [indeterminate]);
 
   return (
-    <div className={`form-check ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       <input
         ref={checkboxRef}
         type="checkbox"
@@ -29,11 +29,11 @@ const Checkbox = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="form-check-input"
+        className="w-4 h-4 text-[#667eea] bg-gray-100 border-gray-300 rounded focus:ring-[#667eea] focus:ring-2 disabled:opacity-50 cursor-pointer"
         {...props}
       />
       {label && (
-        <label htmlFor={id} className="form-check-label">
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 cursor-pointer">
           {label}
         </label>
       )}
@@ -53,7 +53,7 @@ export const Radio = ({
   ...props 
 }) => {
   return (
-    <div className={`form-check ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       <input
         type="radio"
         id={id}
@@ -62,11 +62,11 @@ export const Radio = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="form-check-input"
+        className="w-4 h-4 text-[#667eea] bg-gray-100 border-gray-300 focus:ring-[#667eea] focus:ring-2 disabled:opacity-50 cursor-pointer"
         {...props}
       />
       {label && (
-        <label htmlFor={id} className="form-check-label">
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 cursor-pointer">
           {label}
         </label>
       )}
@@ -85,7 +85,7 @@ export const Switch = ({
   ...props 
 }) => {
   return (
-    <div className={`form-switch ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`}>
       <input
         type="checkbox"
         id={id}
@@ -93,12 +93,12 @@ export const Switch = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="form-switch-input"
+        className="w-11 h-6 appearance-none bg-gray-300 rounded-full relative cursor-pointer transition-colors duration-200 checked:bg-[#667eea] disabled:opacity-50 disabled:cursor-not-allowed before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 before:transition-transform before:duration-200 checked:before:translate-x-5"
         role="switch"
         {...props}
       />
       {label && (
-        <label htmlFor={id} className="form-switch-label">
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 cursor-pointer">
           {label}
         </label>
       )}

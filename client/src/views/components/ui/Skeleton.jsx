@@ -9,10 +9,10 @@ const Skeleton = ({
   ...props 
 }) => {
   const variantClasses = {
-    text: 'skeleton-text',
-    circle: 'skeleton-circle',
-    rect: 'skeleton-rect',
-    avatar: 'skeleton-avatar',
+    text: 'h-4 rounded',
+    circle: 'rounded-full',
+    rect: 'rounded-md',
+    avatar: 'rounded-full',
   };
 
   const style = {
@@ -27,7 +27,7 @@ const Skeleton = ({
       {skeletons.map((_, index) => (
         <div
           key={index}
-          className={`skeleton ${variantClasses[variant]} ${className}`}
+          className={`bg-gray-200 animate-pulse ${variantClasses[variant]} ${className}`}
           style={style}
           {...props}
         />
@@ -38,9 +38,9 @@ const Skeleton = ({
 
 export const SkeletonCard = ({ className = '' }) => {
   return (
-    <div className={`skeleton-card ${className}`}>
+    <div className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${className}`}>
       <Skeleton variant="rect" height="200px" />
-      <div className="skeleton-card-body">
+      <div className="p-4 space-y-3">
         <Skeleton width="60%" height="1.5rem" />
         <Skeleton width="100%" count={2} />
         <Skeleton width="40%" />
@@ -51,15 +51,15 @@ export const SkeletonCard = ({ className = '' }) => {
 
 export const SkeletonTable = ({ rows = 5, columns = 4, className = '' }) => {
   return (
-    <div className={`skeleton-table ${className}`}>
-      <div className="skeleton-table-header">
+    <div className={`border border-gray-200 rounded-lg overflow-hidden ${className}`}>
+      <div className="grid gap-4 p-4 bg-gray-50 border-b border-gray-200" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         {Array(columns).fill(null).map((_, i) => (
           <Skeleton key={i} height="2rem" />
         ))}
       </div>
-      <div className="skeleton-table-body">
+      <div className="divide-y divide-gray-200">
         {Array(rows).fill(null).map((_, rowIndex) => (
-          <div key={rowIndex} className="skeleton-table-row">
+          <div key={rowIndex} className="grid gap-4 p-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
             {Array(columns).fill(null).map((_, colIndex) => (
               <Skeleton key={colIndex} height="1.5rem" />
             ))}

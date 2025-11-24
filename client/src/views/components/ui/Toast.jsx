@@ -32,32 +32,36 @@ const Toast = ({
   if (!isVisible) return null;
 
   const variantClasses = {
-    success: 'toast-success',
-    error: 'toast-error',
-    warning: 'toast-warning',
-    info: 'toast-info',
+    success: 'bg-green-50 border-green-500 text-green-800',
+    error: 'bg-red-50 border-red-500 text-red-800',
+    warning: 'bg-yellow-50 border-yellow-500 text-yellow-800',
+    info: 'bg-blue-50 border-blue-500 text-blue-800',
   };
 
   const positionClasses = {
-    'top-right': 'toast-top-right',
-    'top-left': 'toast-top-left',
-    'bottom-right': 'toast-bottom-right',
-    'bottom-left': 'toast-bottom-left',
-    'top-center': 'toast-top-center',
-    'bottom-center': 'toast-bottom-center',
+    'top-right': 'fixed top-4 right-4',
+    'top-left': 'fixed top-4 left-4',
+    'bottom-right': 'fixed bottom-4 right-4',
+    'bottom-left': 'fixed bottom-4 left-4',
+    'top-center': 'fixed top-4 left-1/2 -translate-x-1/2',
+    'bottom-center': 'fixed bottom-4 left-1/2 -translate-x-1/2',
   };
 
   return (
     <div 
-      className={`toast ${variantClasses[variant]} ${positionClasses[position]} ${isExiting ? 'toast-exit' : ''}`}
+      className={`flex items-center gap-3 min-w-[300px] max-w-md px-4 py-3 border-l-4 rounded-r-lg shadow-lg z-50 transition-all duration-300 ${
+        variantClasses[variant]
+      } ${positionClasses[position]} ${
+        isExiting ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'
+      }`}
       {...props}
     >
-      <div className="toast-content">
+      <div className="flex-1 text-sm font-medium">
         {message}
       </div>
       <button 
         type="button" 
-        className="toast-close" 
+        className="text-xl leading-none opacity-50 hover:opacity-100 transition-opacity" 
         onClick={handleClose}
         aria-label="Close"
       >
@@ -69,16 +73,16 @@ const Toast = ({
 
 export const ToastContainer = ({ children, position = 'top-right' }) => {
   const positionClasses = {
-    'top-right': 'toast-container-top-right',
-    'top-left': 'toast-container-top-left',
-    'bottom-right': 'toast-container-bottom-right',
-    'bottom-left': 'toast-container-bottom-left',
-    'top-center': 'toast-container-top-center',
-    'bottom-center': 'toast-container-bottom-center',
+    'top-right': 'fixed top-4 right-4 flex flex-col gap-2',
+    'top-left': 'fixed top-4 left-4 flex flex-col gap-2',
+    'bottom-right': 'fixed bottom-4 right-4 flex flex-col gap-2',
+    'bottom-left': 'fixed bottom-4 left-4 flex flex-col gap-2',
+    'top-center': 'fixed top-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 items-center',
+    'bottom-center': 'fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 items-center',
   };
 
   return (
-    <div className={`toast-container ${positionClasses[position]}`}>
+    <div className={`z-50 ${positionClasses[position]}`}>
       {children}
     </div>
   );

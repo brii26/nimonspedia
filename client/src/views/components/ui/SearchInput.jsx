@@ -55,20 +55,22 @@ const SearchInput = ({
   }, []);
 
   return (
-    <div className={`search-input ${className}`}>
-      {icon && <span className="search-input-icon">{icon}</span>}
+    <div className={`relative ${className}`}>
+      {icon && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</span>}
       <input
         type="text"
         value={localValue}
         onChange={handleChange}
         placeholder={placeholder}
-        className="search-input-field"
+        className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-[#667eea] transition-colors ${
+          icon ? 'pl-10' : ''
+        } ${localValue ? 'pr-10' : ''}`}
         {...props}
       />
       {localValue && (
         <button
           type="button"
-          className="search-input-clear"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl transition-colors"
           onClick={handleClear}
           aria-label="Clear"
         >

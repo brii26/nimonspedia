@@ -12,25 +12,21 @@ const Avatar = ({
   const [imageError, setImageError] = React.useState(false);
 
   const sizeClasses = {
-    xs: 'avatar-xs',
-    sm: 'avatar-sm',
-    md: 'avatar-md',
-    lg: 'avatar-lg',
-    xl: 'avatar-xl',
+    xs: 'w-6 h-6 text-xs',
+    sm: 'w-8 h-8 text-sm',
+    md: 'w-9 h-9 text-sm',
+    lg: 'w-12 h-12 text-base',
+    xl: 'w-16 h-16 text-lg',
   };
 
   const shapeClasses = {
-    circle: 'avatar-circle',
-    square: 'avatar-square',
-    rounded: 'avatar-rounded',
+    circle: 'rounded-full',
+    square: 'rounded-none',
+    rounded: 'rounded-lg',
   };
 
-  const classes = [
-    'avatar',
-    sizeClasses[size],
-    shapeClasses[shape],
-    className
-  ].filter(Boolean).join(' ');
+  const baseClasses = 'inline-flex items-center justify-center bg-[#667eea] text-white font-semibold overflow-hidden';
+  const classes = `${baseClasses} ${sizeClasses[size]} ${shapeClasses[shape]} ${className}`;
 
   const handleError = () => {
     setImageError(true);
@@ -39,7 +35,7 @@ const Avatar = ({
   if (imageError || !src) {
     return (
       <div className={classes} {...props}>
-        <span className="avatar-fallback">
+        <span>
           {fallback || alt.charAt(0).toUpperCase() || '?'}
         </span>
       </div>
@@ -51,7 +47,7 @@ const Avatar = ({
       <img 
         src={src} 
         alt={alt} 
-        className="avatar-img"
+        className="w-full h-full object-cover"
         onError={handleError}
       />
     </div>
@@ -64,11 +60,11 @@ export const AvatarGroup = ({ children, max = 3, className = '', ...props }) => 
   const remainingCount = childrenArray.length - max;
 
   return (
-    <div className={`avatar-group ${className}`} {...props}>
+    <div className={`flex items-center -space-x-2 ${className}`} {...props}>
       {visibleChildren}
       {remainingCount > 0 && (
-        <div className="avatar avatar-md avatar-circle">
-          <span className="avatar-fallback">+{remainingCount}</span>
+        <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#667eea] text-white text-sm font-semibold">
+          <span>+{remainingCount}</span>
         </div>
       )}
     </div>

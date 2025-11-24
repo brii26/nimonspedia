@@ -38,9 +38,15 @@ const Rating = ({
 
   const displayValue = hoverValue || value;
 
+  const sizeMap = {
+    sm: 'text-base',
+    md: 'text-xl',
+    lg: 'text-3xl',
+  };
+
   return (
     <div 
-      className={`rating ${sizeClasses[size]} ${readonly ? 'rating-readonly' : ''} ${className}`}
+      className={`flex items-center gap-1 ${sizeMap[size]} ${readonly ? 'cursor-default' : 'cursor-pointer'} ${className}`}
       onMouseLeave={handleMouseLeave}
       {...props}
     >
@@ -52,7 +58,9 @@ const Rating = ({
           <button
             key={rating}
             type="button"
-            className={`rating-star ${isFilled ? 'rating-star-filled' : ''}`}
+            className={`transition-colors ${
+              isFilled ? 'text-yellow-400' : 'text-gray-300'
+            } ${readonly ? 'cursor-default' : 'hover:scale-110 transform'}`}
             onClick={() => handleClick(rating)}
             onMouseEnter={() => handleMouseEnter(rating)}
             disabled={readonly}
@@ -68,15 +76,15 @@ const Rating = ({
 
 export const RatingDisplay = ({ value = 0, max = 5, count, showValue = true, className = '' }) => {
   return (
-    <div className={`rating-display ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       <Rating value={value} max={max} readonly />
       {showValue && (
-        <span className="rating-value">
+        <span className="text-sm font-medium text-gray-700">
           {value.toFixed(1)}
         </span>
       )}
       {count !== undefined && (
-        <span className="rating-count">
+        <span className="text-sm text-gray-500">
           ({count})
         </span>
       )}

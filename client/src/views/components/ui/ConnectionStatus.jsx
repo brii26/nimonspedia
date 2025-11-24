@@ -9,43 +9,43 @@ const ConnectionStatus = ({
 }) => {
   const statusConfig = {
     connected: {
-      class: 'status-connected',
+      bgColor: 'bg-green-500',
       text: 'Connected',
-      color: 'green'
+      textColor: 'text-green-700'
     },
     connecting: {
-      class: 'status-connecting',
+      bgColor: 'bg-yellow-500 animate-pulse',
       text: 'Connecting...',
-      color: 'yellow'
+      textColor: 'text-yellow-700'
     },
     disconnected: {
-      class: 'status-disconnected',
+      bgColor: 'bg-red-500',
       text: 'Disconnected',
-      color: 'red'
+      textColor: 'text-red-700'
     },
     reconnecting: {
-      class: 'status-reconnecting',
+      bgColor: 'bg-orange-500 animate-pulse',
       text: 'Reconnecting...',
-      color: 'orange'
+      textColor: 'text-orange-700'
     }
   };
 
   const config = statusConfig[status] || statusConfig.disconnected;
   
   const positionClasses = {
-    'top-right': 'connection-status-top-right',
-    'top-left': 'connection-status-top-left',
-    'bottom-right': 'connection-status-bottom-right',
-    'bottom-left': 'connection-status-bottom-left',
+    'top-right': 'fixed top-4 right-4',
+    'top-left': 'fixed top-4 left-4',
+    'bottom-right': 'fixed bottom-4 right-4',
+    'bottom-left': 'fixed bottom-4 left-4',
   };
 
   return (
     <div 
-      className={`connection-status ${config.class} ${positionClasses[position]} ${className}`}
+      className={`flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm ${positionClasses[position]} ${className}`}
       {...props}
     >
-      <span className="connection-indicator"></span>
-      {showText && <span className="connection-text">{config.text}</span>}
+      <span className={`w-2 h-2 rounded-full ${config.bgColor}`}></span>
+      {showText && <span className={`text-xs font-medium ${config.textColor}`}>{config.text}</span>}
     </div>
   );
 };

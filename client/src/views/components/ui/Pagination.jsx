@@ -30,9 +30,9 @@ const Pagination = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className={`pagination ${className}`}>
+    <div className={`flex flex-wrap items-center justify-center gap-2 ${className}`}>
       <button
-        className="pagination-item pagination-prev"
+        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
@@ -42,13 +42,13 @@ const Pagination = ({
       {currentPage > Math.ceil(maxVisiblePages / 2) && totalPages > maxVisiblePages && (
         <>
           <button
-            className="pagination-item"
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             onClick={() => onPageChange(1)}
           >
             1
           </button>
           {currentPage > Math.ceil(maxVisiblePages / 2) + 1 && (
-            <span className="pagination-item disabled">...</span>
+            <span className="px-3 py-2 text-gray-500">...</span>
           )}
         </>
       )}
@@ -56,7 +56,11 @@ const Pagination = ({
       {visiblePages.map((page) => (
         <button
           key={page}
-          className={`pagination-item ${page === currentPage ? 'active' : ''}`}
+          className={`px-3 py-2 border rounded-md text-sm font-medium transition-colors ${
+            page === currentPage
+              ? 'border-[#667eea] bg-[#667eea] text-white'
+              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+          }`}
           onClick={() => onPageChange(page)}
         >
           {page}
@@ -66,10 +70,10 @@ const Pagination = ({
       {currentPage < totalPages - Math.floor(maxVisiblePages / 2) && totalPages > maxVisiblePages && (
         <>
           {currentPage < totalPages - Math.floor(maxVisiblePages / 2) - 1 && (
-            <span className="pagination-item disabled">...</span>
+            <span className="px-3 py-2 text-gray-500">...</span>
           )}
           <button
-            className="pagination-item"
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             onClick={() => onPageChange(totalPages)}
           >
             {totalPages}
@@ -78,7 +82,7 @@ const Pagination = ({
       )}
 
       <button
-        className="pagination-item pagination-next"
+        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
@@ -86,7 +90,7 @@ const Pagination = ({
       </button>
 
       {showInfo && totalItems > 0 && (
-        <div className="pagination-info">
+        <div className="w-full text-center text-sm text-gray-600 mt-2">
           Showing {startItem} to {endItem} of {totalItems} items
         </div>
       )}

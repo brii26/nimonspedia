@@ -35,21 +35,27 @@ const Dropdown = ({
   }, [isOpen]);
 
   const alignClasses = {
-    left: '',
-    right: 'dropdown-menu-right',
+    left: 'left-0',
+    right: 'right-0',
   };
 
   return (
-    <div className={`dropdown ${className}`} ref={dropdownRef} {...props}>
+    <div className={`relative inline-block ${className}`} ref={dropdownRef} {...props}>
       <div 
-        className="dropdown-toggle"
+        className="cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         role="button"
       >
         {trigger}
       </div>
-      <div className={`dropdown-menu ${alignClasses[align]} ${isOpen ? 'show' : ''}`}>
+      <div 
+        className={`absolute ${alignClasses[align]} mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[10rem] py-1 z-50 transition-all duration-200 origin-top ${
+          isOpen 
+            ? 'opacity-100 scale-100 visible' 
+            : 'opacity-0 scale-95 invisible'
+        }`}
+      >
         {children}
       </div>
     </div>
@@ -60,7 +66,9 @@ export const DropdownItem = ({ children, onClick, active = false, className = ''
   return (
     <button
       type="button"
-      className={`dropdown-item ${active ? 'active' : ''} ${className}`}
+      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+        active ? 'bg-gray-50 text-[#667eea] font-medium' : 'text-gray-700'
+      } ${className}`}
       onClick={onClick}
       {...props}
     >
@@ -70,7 +78,7 @@ export const DropdownItem = ({ children, onClick, active = false, className = ''
 };
 
 export const DropdownDivider = () => {
-  return <div className="dropdown-divider" />;
+  return <div className="border-t border-gray-200 my-1" />;
 };
 
 export default Dropdown;

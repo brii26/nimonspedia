@@ -8,24 +8,24 @@ const Badge = ({
   ...props 
 }) => {
   const variantClasses = {
-    primary: 'badge-primary',
-    success: 'badge-success',
-    warning: 'badge-warning',
-    danger: 'badge-danger',
-    info: 'badge-info',
-    gray: 'badge-gray',
+    primary: 'bg-[#e3e8fc] text-[#3e53a0]',
+    success: 'bg-[#d4edda] text-[#155724]',
+    warning: 'bg-[#fff3cd] text-[#856404]',
+    danger: 'bg-[#f8d7da] text-[#721c24]',
+    info: 'bg-[#d1ecf1] text-[#0c5460]',
+    gray: 'bg-[#e9ecef] text-[#495057]',
   };
 
   const sizeClasses = {
-    sm: 'badge-sm',
-    md: '',
-    lg: 'badge-lg',
+    sm: 'px-2 py-0.5 text-[0.625rem]',
+    md: 'px-3 py-1 text-xs',
+    lg: 'px-4 py-2 text-sm',
   };
 
   const classes = [
-    'badge',
+    'inline-flex items-center rounded-xl font-semibold leading-none uppercase tracking-wide',
     variantClasses[variant] || variantClasses.primary,
-    sizeClasses[size] || '',
+    sizeClasses[size] || sizeClasses.md,
     className
   ].filter(Boolean).join(' ');
 

@@ -34,22 +34,23 @@ const Modal = ({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'modal-sm',
-    md: '',
-    lg: 'modal-lg',
-    xl: 'modal-xl',
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-200"
+      onClick={onClose}
+    >
       <div 
-        className={`modal-dialog ${sizeClasses[size]} ${className}`}
+        className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} transform transition-all duration-200 ${className}`}
         onClick={(e) => e.stopPropagation()}
         {...props}
       >
-        <div className="modal-content">
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   );
@@ -57,12 +58,12 @@ const Modal = ({
 
 export const ModalHeader = ({ children, onClose, className = '', ...props }) => {
   return (
-    <div className={`modal-header ${className}`} {...props}>
-      <h3 className="modal-title">{children}</h3>
+    <div className={`flex items-center justify-between px-6 py-4 border-b border-gray-200 ${className}`} {...props}>
+      <h3 className="text-xl font-semibold text-gray-900">{children}</h3>
       {onClose && (
         <button 
           type="button" 
-          className="modal-close" 
+          className="text-gray-400 hover:text-gray-600 text-2xl font-light leading-none transition-colors" 
           onClick={onClose}
           aria-label="Close"
         >
@@ -75,7 +76,7 @@ export const ModalHeader = ({ children, onClose, className = '', ...props }) => 
 
 export const ModalBody = ({ children, className = '', ...props }) => {
   return (
-    <div className={`modal-body ${className}`} {...props}>
+    <div className={`px-6 py-4 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -83,7 +84,7 @@ export const ModalBody = ({ children, className = '', ...props }) => {
 
 export const ModalFooter = ({ children, className = '', ...props }) => {
   return (
-    <div className={`modal-footer ${className}`} {...props}>
+    <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 ${className}`} {...props}>
       {children}
     </div>
   );

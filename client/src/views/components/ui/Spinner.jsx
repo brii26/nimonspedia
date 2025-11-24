@@ -6,21 +6,21 @@ const Spinner = ({
   className = '',
   ...props 
 }) => {
-  const sizeClasses = {
-    sm: 'spinner-sm',
-    md: 'spinner-md',
-    lg: 'spinner-lg',
+  const sizeMap = {
+    sm: 'w-4 h-4 border-2',
+    md: 'w-8 h-8 border-2',
+    lg: 'w-12 h-12 border-4',
   };
 
-  const variantClasses = {
-    primary: 'spinner-primary',
-    secondary: 'spinner-secondary',
-    white: 'spinner-white',
+  const variantMap = {
+    primary: 'border-[#667eea] border-t-transparent',
+    secondary: 'border-gray-600 border-t-transparent',
+    white: 'border-white border-t-transparent',
   };
 
   return (
     <div 
-      className={`spinner ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+      className={`inline-block rounded-full animate-spin ${sizeMap[size]} ${variantMap[variant]} ${className}`}
       role="status"
       {...props}
     >
@@ -33,11 +33,13 @@ export const LoadingOverlay = ({ isLoading, children, text = 'Loading...' }) => 
   if (!isLoading) return children;
 
   return (
-    <div className="loading-overlay">
-      <div className="loading-overlay-backdrop" />
-      <div className="loading-overlay-content">
-        <Spinner size="lg" />
-        {text && <p className="loading-text">{text}</p>}
+    <div className="relative">
+      {children}
+      <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner size="lg" />
+          {text && <p className="text-sm font-medium text-gray-700">{text}</p>}
+        </div>
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ const Countdown = ({
   };
 
   return (
-    <div className={`countdown ${className}`} {...props}>
+    <div className={`text-xl font-bold text-gray-900 ${className}`} {...props}>
       {formatTime()}
     </div>
   );
