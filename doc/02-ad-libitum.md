@@ -38,7 +38,7 @@
 - Menangani CRUD Produk, Toko, dan Cart (logika yang sudah ada dari M1).
 - Merender halaman HTML tradisional (Server-Side Rendering) untuk fitur-fitur M1.
 
-### Node.js + Express (Real-time Core)
+### Node.js + Fastify (Real-time Core)
 
 **Peran**: Pengelola fitur interaktif, admin, dan komunikasi real-time.
 

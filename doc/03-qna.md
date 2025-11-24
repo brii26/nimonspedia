@@ -14,7 +14,7 @@ Berikut adalah tabel rincian perubahan yang harus dilakukan:
 |------------------|----------------------|----------------------|------------|
 | Arsitektur Utama | Monolithic (PHP MVC) | Hybrid (PHP + Node.js + React) | Nginx bertindak sebagai Reverse Proxy untuk membagi trafik. |
 | Frontend | HTML/CSS/JS Murni (Server-Side Rendering) | PHP Views (Legacy) + React SPA (Fitur Baru) | Halaman Chat, Lelang, dan Admin Dashboard wajib menggunakan React. |
-| Backend Server | PHP 8.3 FPM | PHP 8.3 FPM + Node.js (Express) | Node.js menangani fitur Real-time, Admin API, dan Background Jobs. |
+| Backend Server | PHP 8.3 FPM | PHP 8.3 FPM + Node.js (Fastify) | Node.js menangani fitur Real-time, Admin API, dan Background Jobs. |
 | Database Schema | Tabel User, Product, Store, Order | Schema M1 + Tabel Baru | Tambahan tabel: auctions, bids, chats, notifications, admin_flags. |
 | Session Storage | File System (/var/lib/php/sessions) | Redis / Database Shared Session | Wajib diubah agar Node.js bisa membaca session login dari PHP. |
 | Autentikasi User | PHP Session | PHP Session (Shared) | User login di PHP, tapi dikenali saat connect WebSocket ke Node.js. |
@@ -65,7 +65,7 @@ Di M1 (PHP), Anda mungkin menggunakan pendekatan prosedural seperti memanggil fu
 
 Middleware adalah "penjaga pintu" yang berdiri di antara request masuk dan logic utama.
 
-### A. Middleware di Node.js (Express.js) - WAJIB
+### A. Middleware di Node.js (Fastify.js) - WAJIB
 
 Node.js akan menangani request dari dua jenis pengguna yang berbeda dengan metode autentikasi berbeda. Tanpa middleware, kode akan sangat berantakan (banyak if-else).
 

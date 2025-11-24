@@ -29,7 +29,7 @@ Digunakan untuk menangani WebSocket, Admin Auth, dan Background Job.
 | Komponen       | Teknologi       | Alasan Pemilihan |
 |----------------|-----------------|------------------|
 | Runtime        | Node.js (LTS)   | Wajib di spek. Menangani concurrency tinggi untuk fitur real-time. |
-| Framework      | Express.js      | Paling mudah dipelajari untuk pemula (minimalist), dokumentasi melimpah, setup sangat cepat. |
+| Framework      | Fastify.js      | Blazing fast buat node. |
 | WebSocket      | Socket.io       | Menangani room, broadcasting, dan auto-reconnect jauh lebih mudah daripada WebSocket murni (ws). |
 | Database Driver| pg (node-postgres)| Driver standar untuk koneksi Node.js ke PostgreSQL. Ringan dan straightforward. |
 | Authentication | JSON Web Token (JWT)| Standar wajib untuk login Admin (Stateless). |
