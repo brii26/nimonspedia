@@ -65,7 +65,7 @@ services:
       - nimonspedia-network
   
   nginx:
-    image: nginx:alpine
+    image: nimonspedia-nginx:latest
     container_name: nimonspedia-nginx
     build:
       context: .
@@ -75,7 +75,7 @@ services:
     ports:
       - "${NGINX_PORT}:80"
     volumes:
-      - ./public/index.php:/var/www/html/public/index.php
+      - ./public:/var/www/html/public/
       - ./src:/var/www/html/src
       - ./storage:/var/www/html/storage
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
@@ -84,6 +84,10 @@ services:
       - node-server
     networks:
       - nimonspedia-network
+    command: >
+      sh -c "cp -ru /tmp/react-build/* /var/www/html/public/ && 
+        chmod -R 755 /var/www/html/public && rm -rf /tmp/react-build/* &&
+        nginx -g 'daemon off;'"
 
 volumes:
   postgres_data:

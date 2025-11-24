@@ -16,13 +16,10 @@ RUN npm run build
 # --- Serve with Nginx ---
 FROM nginx:alpine
 
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /tmp/react-build
+COPY --from=builder /app/dist .
 
 WORKDIR /var/www/html
-
-COPY --from=builder /app/dist /var/www/html/public
-
-RUN chmod -R 755 /var/www/html/public
 
 EXPOSE 80
 
