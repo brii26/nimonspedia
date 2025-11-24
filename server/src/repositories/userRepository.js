@@ -19,7 +19,7 @@ class UserRepository {
     let query = `
       SELECT 
         u.user_id, u.name, u.email, u.role, u.created_at,
-        s.store_name,
+        s.store_name, u.balance,
         (
           SELECT json_agg(json_build_object(
             'feature_name', ufa.feature_name, 
