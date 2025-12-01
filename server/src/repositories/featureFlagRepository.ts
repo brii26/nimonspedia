@@ -59,14 +59,14 @@ class FeatureFlagRepository {
 
   async getAllGlobalFlags() {
     const result = await pool.query(
-      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL'
+      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL ORDER BY feature_name ASC'
     );
     return result.rows; 
   }
 
   async getAllUserFlags(userId: string | number) {
     const result = await pool.query(
-      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id = $1',
+      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id = $1 ORDER BY feature_name ASC',
       [userId]
     );
     return result.rows;
