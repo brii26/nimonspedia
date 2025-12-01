@@ -4,27 +4,18 @@ import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import cors from '@fastify/cors';
 import socketio from 'fastify-socket.io';
 import { Server as SocketIOServer } from 'socket.io';
-import { Socket } from 'socket.io';
 
 import adminRoutes from './src/routes/adminRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
+import { AuthenticatedSocket } from './src/types/socket.js';
 
 // Extend Fastify instance to include socket.io
 declare module 'fastify' {
   interface FastifyInstance {
     io: SocketIOServer;
   }
-}
-
-// Extended Socket interface with user property
-interface AuthenticatedSocket extends Socket {
-  user?: {
-    user_id: string;
-    role: string;
-    name: string;
-  };
 }
 
 // 1. Init Fastify (Logger on buat debugging)
@@ -62,10 +53,11 @@ const start = async (): Promise<void> => {
 
     fastify.io.use(socketAuth); 
 
-    fastify.io.on('connection', (socket: AuthenticatedSocket) => {
-      fastify.log.info(`User Connected: ${socket.user?.name} (${socket.user?.user_id})`);
-      registerAuctionHandlers(fastify.io, socket);
-      registerChatHandlers(fastify.io, socket);
+    fastify.io.on('connection', (socket) => {
+      const authSocket = socket as AuthenticatedSocket;
+      fastify.log.info(`User Connected: ${authSocket.user?.name} (${authSocket.user?.user_id})`);
+      registerAuctionHandlers(fastify.io, authSocket);
+      registerChatHandlers(fastify.io, authSocket);
       
       socket.on('disconnect', () => {
         fastify.log.info(`User Disconnected ${socket.id}`);

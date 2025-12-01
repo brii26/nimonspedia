@@ -1,13 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { Socket } from 'socket.io';
-
-interface AuthenticatedSocket extends Socket {
-  user?: {
-    user_id: string;
-    role: string;
-    name: string;
-  };
-}
+import { AuthenticatedSocket } from '../types/socket.js';
 
 // Auction Socket Handlers
 export default function registerAuctionHandlers(io: SocketIOServer, socket: AuthenticatedSocket): void {
