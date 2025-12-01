@@ -7,7 +7,7 @@ until node -e "const { Pool } = require('pg'); const pool = new Pool({ host: pro
 done
 
 echo "PostgreSQL is up - seeding admin user..."
-node src/scripts/seedAdmin.js
+node dist/src/scripts/seedAdmin.js
 
 echo "Starting Node.js server..."
-exec node index.js
+exec node dist/index.js
