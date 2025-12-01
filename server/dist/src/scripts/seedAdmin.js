@@ -1,5 +1,4 @@
-"use strict";
-const userRepository = require('../repositories/userRepository');
+import userRepository from '../repositories/userRepository.js';
 async function seedAdmin() {
     try {
         console.log('Starting admin user seeding...\n');

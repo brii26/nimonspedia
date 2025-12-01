@@ -1,3 +1,2 @@
-declare const userRepository: any;
-declare function seedAdmin(): Promise<void>;
+export {};
 //# sourceMappingURL=seedAdmin.d.ts.map

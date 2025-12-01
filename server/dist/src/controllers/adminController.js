@@ -36,20 +36,20 @@ export const getUsers = async (request, reply) => {
         const pageInt = parseInt(page) || 1;
         const limitInt = parseInt(limit) || 10;
         const offset = (pageInt - 1) * limitInt;
-        const users = await userRepository.findAll({
+        const result = await userRepository.findAll({
             limit: limitInt,
             offset,
             search: String(search),
             role
         });
-        const totalUsers = await userRepository.countTotal();
+        const { users, total } = result;
         return reply.send({
             success: true,
             data: users,
             pagination: {
                 current_page: pageInt,
-                total_pages: Math.ceil(totalUsers / limitInt),
-                total_items: totalUsers
+                total_pages: Math.ceil(total / limitInt),
+                total_items: total
             }
         });
     }
