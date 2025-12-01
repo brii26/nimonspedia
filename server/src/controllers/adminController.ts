@@ -1,11 +1,53 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const userRepository = require('../repositories/userRepository');
-const featureFlagRepository = require('../repositories/featureFlagRepository');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { FastifyRequest, FastifyReply } from 'fastify';
+import userRepository from '../repositories/userRepository.js';
+import featureFlagRepository from '../repositories/featureFlagRepository.js';
+
+// Type definitions
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
+interface AdminUser {
+  user_id: string;
+  role: string;
+  name: string;
+}
+
+interface UserFlagBody {
+  user_id: string;
+  feature_name: string;
+  is_enabled: boolean;
+  reason: string;
+}
+
+interface GlobalFlagBody {
+  feature_name: string;
+  is_enabled: boolean;
+  reason: string;
+}
+
+interface QueryParams {
+  page?: string;
+  limit?: string;
+  search?: string;
+  role?: string;
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    user?: AdminUser;
+  }
+}
 
 // --- AUTH ---
 
-exports.login = async (request, reply) => {
+export const login = async (
+  request: FastifyRequest<{ Body: LoginBody }>, 
+  reply: FastifyReply
+) => {
   const { email, password } = request.body;
 
   if (typeof email !== 'string' || typeof password !== 'string') {
@@ -38,17 +80,20 @@ exports.login = async (request, reply) => {
     });
 
   } catch (error) {
-    request.log.error('Admin Login Error:', error);
+    request.log.error({ error }, 'Admin Login Error');
     return reply.status(500).send({ success: false, message: 'Server error' });
   }
 };
 
-exports.getUsers = async (request, reply) => {
+export const getUsers = async (
+  request: FastifyRequest<{ Querystring: QueryParams }>, 
+  reply: FastifyReply
+) => {
   try {
-    let { page = 1, limit = 10, search = '', role = '' } = request.query;
+    let { page = '1', limit = '10', search = '', role = '' } = request.query;
     
-    const pageInt = parseInt(page) || 1;
-    const limitInt = parseInt(limit) || 10;
+    const pageInt = parseInt(page as string) || 1;
+    const limitInt = parseInt(limit as string) || 10;
     const offset = (pageInt - 1) * limitInt;
 
     const users = await userRepository.findAll({ 
@@ -71,14 +116,17 @@ exports.getUsers = async (request, reply) => {
     });
 
   } catch (error) {
-    request.log.error('Get Users Error:', error);
+    request.log.error({ error }, 'Get Users Error');
     return reply.status(500).send({ success: false, message: 'Failed to fetch users' });
   }
 };
 
 // --- FEATURE FLAGS ---
 
-exports.updateUserFlag = async (request, reply) => {
+export const updateUserFlag = async (
+  request: FastifyRequest<{ Body: UserFlagBody }>, 
+  reply: FastifyReply
+) => {
   const { user_id, feature_name, is_enabled, reason } = request.body;
   const enabledBool = Boolean(is_enabled);
 
@@ -86,12 +134,15 @@ exports.updateUserFlag = async (request, reply) => {
     await featureFlagRepository.upsertUserFlag(user_id, feature_name, enabledBool, reason);
     return reply.send({ success: true, message: `Feature updated for user ${user_id}` });
   } catch (error) {
-    request.log.error('Update User Flag Error:', error);
+    request.log.error({ error }, 'Update User Flag Error');
     return reply.status(500).send({ success: false, message: 'Database error' });
   }
 };
 
-exports.updateGlobalFlag = async (request, reply) => {
+export const updateGlobalFlag = async (
+  request: FastifyRequest<{ Body: GlobalFlagBody }>, 
+  reply: FastifyReply
+) => {
   const { feature_name, is_enabled, reason } = request.body;
   const enabledBool = Boolean(is_enabled);
 
@@ -99,22 +150,28 @@ exports.updateGlobalFlag = async (request, reply) => {
     await featureFlagRepository.upsertGlobalFlag(feature_name, enabledBool, reason);
     return reply.send({ success: true, message: `Global feature updated` });
   } catch (error) {
-    request.log.error('Update Global Flag Error:', error);
+    request.log.error({ error }, 'Update Global Flag Error');
     return reply.status(500).send({ success: false, message: 'Database error' });
   }
 };
 
-exports.getGlobalFlags = async (request, reply) => {
+export const getGlobalFlags = async (
+  request: FastifyRequest, 
+  reply: FastifyReply
+) => {
   try {
     const flags = await featureFlagRepository.getGlobalFlags();
     return reply.send({ success: true, data: flags });
   } catch (error) {
-    request.log.error('Get Global Flags Error:', error);
+    request.log.error({ error }, 'Get Global Flags Error');
     return reply.status(500).send({ success: false, message: 'Database error' });
   }
 };
 
-exports.getStats = async (request, reply) => {
+export const getStats = async (
+  request: FastifyRequest, 
+  reply: FastifyReply
+) => {
   try {
     const stats = await userRepository.getDashboardStats();
 
@@ -129,7 +186,16 @@ exports.getStats = async (request, reply) => {
     });
 
   } catch (error) {
-    request.log.error('Get Dashboard Stats Error:', error);
+    request.log.error({ error }, 'Get Dashboard Stats Error');
     return reply.status(500).send({ success: false, message: 'Failed to fetch statistics' });
   }
+};
+
+export default {
+  login,
+  getUsers,
+  updateUserFlag,
+  updateGlobalFlag,
+  getGlobalFlags,
+  getStats
 };

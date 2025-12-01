@@ -1,8 +1,27 @@
-const pool = require('../config/database');
+import pool from '../config/database.js';
+import { QueryResult } from 'pg';
+
+// Type definitions
+interface FeatureFlag {
+  feature_name: string;
+  is_enabled: boolean;
+  reason?: string;
+}
+
+interface GlobalFeatureFlag extends FeatureFlag {
+  id: number;
+  created_at: Date;
+  updated_at: Date;
+}
 
 class FeatureFlagRepository {
 
-  async upsertUserFlag(userId, featureName, isEnabled, reason) {
+  async upsertUserFlag(
+    userId: string, 
+    featureName: string, 
+    isEnabled: boolean, 
+    reason: string
+  ): Promise<QueryResult> {
     const check = await pool.query(
       'SELECT * FROM user_feature_access WHERE user_id = $1 AND feature_name = $2',
       [userId, featureName]
@@ -21,7 +40,11 @@ class FeatureFlagRepository {
     }
   }
 
-  async upsertGlobalFlag(featureName, isEnabled, reason) {
+  async upsertGlobalFlag(
+    featureName: string, 
+    isEnabled: boolean, 
+    reason: string
+  ): Promise<QueryResult> {
     const check = await pool.query(
       'SELECT * FROM user_feature_access WHERE user_id IS NULL AND feature_name = $1',
       [featureName]
@@ -48,4 +71,4 @@ class FeatureFlagRepository {
   }
 }
 
-module.exports = new FeatureFlagRepository();
+export default new FeatureFlagRepository();

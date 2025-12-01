@@ -1,11 +1,31 @@
-// server/index.js
-require('dotenv').config();
-const Fastify = require('fastify');
-const cors = require('@fastify/cors');
-const socketio = require('fastify-socket.io');
+// server/index.ts
+import 'dotenv/config';
+import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import cors from '@fastify/cors';
+import socketio from 'fastify-socket.io';
+import { Server as SocketIOServer } from 'socket.io';
+import { Socket } from 'socket.io';
 
-const adminRoutes = require('./src/routes/adminRoutes');
-const { socketAuth } = require('./src/middleware/authMiddleware');
+import adminRoutes from './src/routes/adminRoutes.js';
+import { socketAuth } from './src/middleware/authMiddleware.js';
+import registerAuctionHandlers from './src/sockets/auctionSocket.js';
+import registerChatHandlers from './src/sockets/chatSocket.js';
+
+// Extend Fastify instance to include socket.io
+declare module 'fastify' {
+  interface FastifyInstance {
+    io: SocketIOServer;
+  }
+}
+
+// Extended Socket interface with user property
+interface AuthenticatedSocket extends Socket {
+  user?: {
+    user_id: string;
+    role: string;
+    name: string;
+  };
+}
 
 // 1. Init Fastify (Logger on buat debugging)
 const fastify = Fastify({ logger: true });
@@ -31,21 +51,18 @@ fastify.register(socketio, {
 fastify.register(adminRoutes, { prefix: '/admin' });
 
 // 4. Root Route
-fastify.get('/', async (request, reply) => {
+fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
   return { status: 'ok', message: 'Nimonspedia Node.js Server is Running...' };
 });
 
 // 5. Start Server
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     await fastify.ready();
 
     fastify.io.use(socketAuth); 
 
-    const registerAuctionHandlers = require('./src/sockets/auctionSocket');
-    const registerChatHandlers = require('./src/sockets/chatSocket');
-
-    fastify.io.on('connection', (socket) => {
+    fastify.io.on('connection', (socket: AuthenticatedSocket) => {
       fastify.log.info(`User Connected: ${socket.user?.name} (${socket.user?.user_id})`);
       registerAuctionHandlers(fastify.io, socket);
       registerChatHandlers(fastify.io, socket);
@@ -55,11 +72,11 @@ const start = async () => {
       });
     });
 
-    const PORT = process.env.PORT || 3000;
+    const PORT = parseInt(process.env.PORT || '3000');
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     console.log(`SERVER RUNNING ON PORT ${PORT}`);
 
-  } catch (err) {
+  } catch (err: unknown) {
     fastify.log.error(err);
     process.exit(1);
   }

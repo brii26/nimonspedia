@@ -1,7 +1,11 @@
-const adminController = require('../controllers/adminController');
-const { verifyAdminToken } = require('../middleware/authMiddleware');
+import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import adminController from '../controllers/adminController.js';
+import { verifyAdminToken } from '../middleware/authMiddleware.js';
 
-async function adminRoutes(fastify, options) {
+export default async function adminRoutes(
+  fastify: FastifyInstance, 
+  options: FastifyPluginOptions
+): Promise<void> {
   // --- Public Routes ---
   fastify.post('/login', adminController.login);
 
@@ -10,18 +14,18 @@ async function adminRoutes(fastify, options) {
   // GET /admin/users?page=1&search=budi
   fastify.get('/users', { 
     preHandler: verifyAdminToken 
-  }, adminController.getUsers);
+  }, adminController.getUsers as any);
 
   // Feature Flags Management
   // POST /admin/flags/user -> Body: { user_id, feature_name, is_enabled, reason }
   fastify.post('/flags/user', { 
     preHandler: verifyAdminToken 
-  }, adminController.updateUserFlag);
+  }, adminController.updateUserFlag as any);
 
   // POST /admin/flags/global -> Body: { feature_name, is_enabled, reason }
   fastify.post('/flags/global', { 
     preHandler: verifyAdminToken 
-  }, adminController.updateGlobalFlag);
+  }, adminController.updateGlobalFlag as any);
 
   // GET /admin/flags/global -> buat liat status maintenance
   fastify.get('/flags/global', { 
@@ -32,5 +36,3 @@ async function adminRoutes(fastify, options) {
     preHandler: verifyAdminToken 
   }, adminController.getStats);
 }
-
-module.exports = adminRoutes;

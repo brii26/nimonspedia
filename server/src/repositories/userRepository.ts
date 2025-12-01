@@ -1,21 +1,52 @@
-const pool = require('../config/database');
-const bcrypt = require('bcryptjs');
+import pool from '../config/database.js';
+import bcrypt from 'bcryptjs';
+import { QueryResult } from 'pg';
+
+// Type definitions
+interface User {
+  user_id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: 'ADMIN' | 'USER' | 'SELLER';
+  created_at: Date;
+  balance?: number;
+}
+
+interface FindAllParams {
+  limit: number;
+  offset: number;
+  search: string;
+  role: string;
+}
+
+interface UserWithStore extends User {
+  store_name?: string;
+  feature_flags?: Array<{
+    feature_name: string;
+    is_enabled: boolean;
+    reason?: string;
+  }>;
+}
 
 class UserRepository {
   
-  async findByEmail(email) {
+  async findByEmail(email: string): Promise<User | undefined> {
     const query = 'SELECT * FROM users WHERE email = $1';
-    const result = await pool.query(query, [email]);
+    const result: QueryResult<User> = await pool.query(query, [email]);
     return result.rows[0];
   }
 
-  async findByEmailAndRole(email, role) {
+  async findByEmailAndRole(email: string, role: string): Promise<User | undefined> {
     const query = 'SELECT * FROM users WHERE email = $1 AND role = $2';
-    const result = await pool.query(query, [email, role]);
+    const result: QueryResult<User> = await pool.query(query, [email, role]);
     return result.rows[0];
   }
 
-  async findAll({ limit, offset, search, role }) {
+  async findAll({ limit, offset, search, role }: FindAllParams): Promise<{
+    users: UserWithStore[];
+    total: number;
+  }> {
     let query = `
       SELECT 
         u.user_id, u.name, u.email, u.role, u.created_at,
@@ -53,7 +84,12 @@ class UserRepository {
     params.push(limit, offset);
 
     const result = await pool.query(query, params);
-    return result.rows;
+    const totalResult = await pool.query('SELECT COUNT(*) FROM users');
+    
+    return {
+      users: result.rows as UserWithStore[],
+      total: parseInt(totalResult.rows[0].count)
+    };
   }
 
   async countTotal() {
@@ -100,7 +136,7 @@ class UserRepository {
     return result.rows[0];
   }
 
-  async deleteUserById(userId) {
+  async deleteUserById(userId: string): Promise<boolean> {
     const query = 'DELETE FROM users WHERE user_id = $1 RETURNING *';
     const result = await pool.query(query, [userId]);
     return result.rows[0];
@@ -127,4 +163,4 @@ class UserRepository {
   }
 }
 
-module.exports = new UserRepository();
+export default new UserRepository();
