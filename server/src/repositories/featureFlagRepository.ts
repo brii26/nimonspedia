@@ -8,16 +8,10 @@ interface FeatureFlag {
   reason?: string;
 }
 
-interface GlobalFeatureFlag extends FeatureFlag {
-  id: number;
-  created_at: Date;
-  updated_at: Date;
-}
-
 class FeatureFlagRepository {
 
   async upsertUserFlag(
-    userId: string, 
+    userId: string | number, 
     featureName: string, 
     isEnabled: boolean, 
     reason: string
@@ -63,11 +57,35 @@ class FeatureFlagRepository {
     }
   }
 
-  async getGlobalFlags() {
+  async getAllGlobalFlags() {
     const result = await pool.query(
-      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL'
+      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id IS NULL ORDER BY feature_name ASC'
     );
     return result.rows; 
+  }
+
+  async getAllUserFlags(userId: string | number) {
+    const result = await pool.query(
+      'SELECT access_id, feature_name, is_enabled, reason, updated_at FROM user_feature_access WHERE user_id = $1 ORDER BY feature_name ASC',
+      [userId]
+    );
+    return result.rows;
+  }
+
+  async getGlobalFlag(featureName: string): Promise<FeatureFlag | null> {
+    const result = await pool.query(
+      'SELECT feature_name, is_enabled, reason FROM user_feature_access WHERE user_id IS NULL AND feature_name = $1',
+      [featureName]
+    );
+    return result.rows[0] || null;
+  }
+
+  async getUserFlag(userId: string | number, featureName: string): Promise<FeatureFlag | null> {
+    const result = await pool.query(
+      'SELECT feature_name, is_enabled, reason FROM user_feature_access WHERE user_id = $1 AND feature_name = $2',
+      [userId, featureName]
+    );
+    return result.rows[0] || null;
   }
 }
 

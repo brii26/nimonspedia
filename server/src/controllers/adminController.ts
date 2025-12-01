@@ -160,7 +160,7 @@ export const getGlobalFlags = async (
   reply: FastifyReply
 ) => {
   try {
-    const flags = await featureFlagRepository.getGlobalFlags();
+    const flags = await featureFlagRepository.getAllGlobalFlags();
     return reply.send({ success: true, data: flags });
   } catch (error) {
     request.log.error({ error }, 'Get Global Flags Error');

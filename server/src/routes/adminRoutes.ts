@@ -1,6 +1,16 @@
-import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply} from 'fastify';
 import adminController from '../controllers/adminController.js';
 import { verifyAdminToken } from '../middleware/authMiddleware.js';
+
+interface AdminUser {
+  user_id: number;
+  name: string;
+  role: string;
+}
+
+type FastifyRequestWithUser = Omit<FastifyRequest, 'user'> & {
+  user: AdminUser;
+}
 
 export default async function adminRoutes(
   fastify: FastifyInstance, 
@@ -8,6 +18,20 @@ export default async function adminRoutes(
 ): Promise<void> {
   // --- Public Routes ---
   fastify.post('/login', adminController.login);
+
+  fastify.get('/me', {
+    preHandler: verifyAdminToken
+  }, async (req: FastifyRequest, rep: FastifyReply) => {
+    const user = ((req as unknown) as FastifyRequestWithUser).user;
+    return { 
+      status: 'success', 
+      data: {
+        user_id: user.user_id,
+        name: user.name,
+        role: 'admin'
+      }
+    };
+  });
 
   // --- Protected Routes (Butuh Header Authorization: Bearer <token>) ---
   // User Management

@@ -11,11 +11,30 @@ class CartController extends BaseController {
         $this->cartService = new CartService($productRepo, $cartItemRepo);
     }
 
+    private function checkCartFeature() {
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess(Auth::user()['user_id'];, 'checkout_enabled');
+        
+        if (!$access['allowed']) {
+            $this->error('Fitur Keranjang Dimatikan: ' . $access['reason'], 503);
+            exit;
+        }
+    }
+
     /**
      * Show cart page
      */
     public function index() {
         $this->requireRole('BUYER');
+
+        $user = Auth::user();
+        $userId = $user ? $user['user_id'] : null;
+
+        $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
+
+        if (!$checkoutAccess['allowed']) {
+            $this->redirect('/');
+        }
 
         try {
             $cartData = $this->cartService->getCart();
@@ -58,6 +77,7 @@ class CartController extends BaseController {
      * Add product to cart (POST)
      */
     public function add() {
+        $this->checkCartFeature();
         try {
             $this->verifyCsrf();
             $productId = (int)$this->getPost('product_id');
@@ -121,6 +141,7 @@ class CartController extends BaseController {
      * Update quantity (POST)
      */
     public function update() {
+        $this->checkCartFeature();
         try {
             $this->verifyCsrf();
             $productId = (int)$this->getPost('product_id');
@@ -168,6 +189,7 @@ class CartController extends BaseController {
      * Return cart counts for navbar (JSON)
      */
     public function count() {
+        $this->checkCartFeature();
         try {
             $unique = 0;
             

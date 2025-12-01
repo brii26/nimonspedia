@@ -154,7 +154,10 @@ const Dashboard: React.FC = () => {
         setTotalPages(usersData.pagination.total_pages || 1);
       }
 
-      setFeatures(featuresData.data || []);
+      const sortedFeatures = (featuresData.data || []).sort((a: GlobalFeature, b: GlobalFeature) => 
+        a.feature_name.localeCompare(b.feature_name)
+      );
+      setFeatures(sortedFeatures);
 
     } catch (err) {
       console.error("Dashboard Error:", err); // Log error biar gampang debug

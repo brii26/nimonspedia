@@ -919,3 +919,44 @@
         transform: translateX(-50%);
     }
 }
+
+.alert-box {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+    border-radius: 8px; /* Biar agak rounded modern dikit */
+    font-family: inherit;
+}
+
+/* Style khusus Error/Restriction (Merah) */
+.alert-box.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-title {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.alert-list {
+    margin-left: 20px; /* Indentasi bullet point */
+    list-style-type: disc;
+}
+
+.alert-list li {
+    margin-bottom: 0.25rem;
+}
+
+.feature-name {
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.feature-reason {
+    font-size: 0.9em;
+    font-style: italic;
+}
