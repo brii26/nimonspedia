@@ -190,7 +190,7 @@ class BuyerOrdersController extends BaseController {
      */
     public function checkout() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $access = FeatureFlagService::checkAccess(Auth::id(), 'CHECKOUT');
+            $access = FeatureFlagService::checkAccess(Auth::id(), 'checkout_enabled');
 
             if (!$access['allowed']) {
                 http_response_code(503);

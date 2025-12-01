@@ -13,7 +13,7 @@ class CartController extends BaseController {
 
     private function checkCartFeature() {
         require_once __DIR__ . '/../services/FeatureFlagService.php';
-        $access = FeatureFlagService::checkAccess(Auth::user()['user_id'];, 'checkout_enabled');
+        $access = FeatureFlagService::checkAccess(Auth::user()['user_id'], 'checkout_enabled');
         
         if (!$access['allowed']) {
             $this->error('Fitur Keranjang Dimatikan: ' . $access['reason'], 503);
