@@ -32,16 +32,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  console.log('AuthProvider initialized'); // Debug log
-
   useEffect(() => {
-    console.log('AuthProvider useEffect running'); // Debug log
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      // TODO: Validasi token ke server
-      setAdmin({ token }); 
-    }
-    setLoading(false);
+    const initAuth = async() => {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get('/admin/me');      
+          if (response.data.status === 'success') {
+            setAdmin({ 
+              token, 
+              ...response.data.data
+            });
+          } 
+      } catch (error) {
+        console.error("Token tidak valid atau expired:", error);
+        localStorage.removeItem('admin_token');
+        setAdmin(null);
+      } finally {
+          setLoading(false);
+      }
+    };
+    
+    initAuth();
   }, []);
 
   const loginAdmin = async (email: string, password: string): Promise<LoginResponse> => {
