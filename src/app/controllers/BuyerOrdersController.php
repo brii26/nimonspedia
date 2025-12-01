@@ -189,6 +189,19 @@ class BuyerOrdersController extends BaseController {
      * Create new order from cart (checkout)
      */
     public function checkout() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $access = FeatureFlagService::checkAccess(Auth::id(), 'CHECKOUT');
+
+            if (!$access['allowed']) {
+                http_response_code(503);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Checkout gagal: ' . $access['reason']
+                ]);
+                exit;
+            }
+        }
+        
         $this->requireRole('BUYER');
         $this->verifyCsrf();
         
