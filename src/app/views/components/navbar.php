@@ -4,6 +4,8 @@ $currentUser = Auth::user();
 $isLoggedIn = Auth::check();
 $userRole = $currentUser ? $currentUser['role'] : null;
 $storeBalance = $storeBalance ?? 0;
+$userId = $user ? $user['user_id'] : null;
+$checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 
 // Get cart count for buyers
 $productRepo = new ProductRepository();
@@ -61,16 +63,18 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🏠</span>
                             <span class="nav-text">Home</span>
                         </a>
-                        <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
-                            <span class="nav-icon">🛒
-                                <span class="cart-badge" 
-                                    id="navbar-cart-badge" 
-                                    style="<?= ($cartCount == 0) ? 'display: none;' : '' ?>">
-                                    <?= $cartCount ?>
+                        <?php if ($checkoutAccess['allowed']): ?>
+                            <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
+                                <span class="nav-icon">🛒
+                                    <span class="cart-badge" 
+                                        id="navbar-cart-badge" 
+                                        style="<?= ($cartCount == 0) ? 'display: none;' : '' ?>">
+                                        <?= $cartCount ?>
+                                    </span>
                                 </span>
-                            </span>
-                            <span class="nav-text">Cart</span>
-                        </a>
+                                <span class="nav-text">Cart</span>
+                            </a>
+                        <?php endif; ?>
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
                         <!-- Seller Navigation -->

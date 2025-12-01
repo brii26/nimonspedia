@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../../services/FeatureFlagService.php';
+
 // Ambil data produk
 $productName = View::escape($product['product_name']);
 $productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.svg');
@@ -9,6 +11,11 @@ $storeDescription = SanitizerService::sanitizeRichText($product['store_descripti
 $productPrice = $product['price'];
 $stock = (int)$product['stock'];
 $isOutOfStock = $stock <= 0;
+
+$user = Auth::user();
+$userId = $user ? $user['user_id'] : null;
+
+$checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 ?>
 
 <div class="product-detail-container">
@@ -77,7 +84,11 @@ $isOutOfStock = $stock <= 0;
                     
                     <hr class="card-divider">
 
-                    <?php if (Auth::check()):?>
+                    <?php if (!$checkoutAccess['allowed']):?>
+                        <p style="text-align: center; color: #555; margin-bottom: 1rem;">
+                            Checkout dinonaktifkan: <?=$checkoutAccess['reason']?>
+                        </p>
+                    <?php elseif (Auth::check()):?>
                         <form id="addToCartForm" class="add-to-cart-form">
                             <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">

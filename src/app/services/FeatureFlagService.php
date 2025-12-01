@@ -6,7 +6,23 @@ class FeatureFlagService {
     private $db;
 
     public function __construct() {
-        $this->db = new Database();
+        $this->db = Database::getInstance();
+    }
+
+    /**
+     * Helper untuk mengambil instance dan koneksi DB
+     */
+    private static function getInstance() {
+        return new self();
+    }
+
+    private static function mapFlag($flagName) {
+        $map = [
+            'checkout_enabled' =>'Checkout',
+            'chat_enabled' =>'Chat',
+            'auction_enabled' =>'Auction'
+        ];
+        return $map[$flagName];
     }
 
     /**
@@ -16,19 +32,16 @@ class FeatureFlagService {
      * 3. Default -> True
      */
     public static function checkAccess($userId, $featureName) {
-        $instance = new self();
+        $service = self::getInstance();
         
         // 1. Cek Global Flag
-        // Query: Cari flag dengan feature_name tersebut yang user_id-nya NULL
         $queryGlobal = "SELECT is_enabled FROM user_feature_access WHERE feature_name = :name AND user_id IS NULL LIMIT 1";
-        $instance->db->query($queryGlobal);
-        $instance->db->bind(':name', $featureName);
-        $global = $instance->db->single();
+        $global = $service->db->selectOne($queryGlobal, [
+            ':name' => $featureName
+        ]);
 
-        // Postgres mengembalikan boolean 't'/'f' atau 1/0
         $isGlobalEnabled = ($global && ($global['is_enabled'] === true || $global['is_enabled'] === 't' || $global['is_enabled'] === 1));
 
-        // Jika Global Flag ada di DB dan statusnya FALSE, maka blokir akses (Maintenance Mode)
         if ($global && !$isGlobalEnabled) {
             return [
                 'allowed' => false, 
@@ -36,12 +49,13 @@ class FeatureFlagService {
             ];
         }
 
+        // 2. Cek User Flag (Jika ada user yang login)
         if ($userId) {
             $queryUser = "SELECT is_enabled, reason FROM user_feature_access WHERE feature_name = :name AND user_id = :uid LIMIT 1";
-            $instance->db->query($queryUser);
-            $instance->db->bind(':name', $featureName);
-            $instance->db->bind(':uid', $userId);
-            $userFlag = $instance->db->single();
+            $userFlag = $service->db->selectOne($queryUser, [
+                ':name' => $featureName,
+                ':uid' => $userId
+            ]);
 
             $isUserEnabled = ($userFlag && ($userFlag['is_enabled'] === true || $userFlag['is_enabled'] === 't' || $userFlag['is_enabled'] === 1));
 
@@ -55,5 +69,30 @@ class FeatureFlagService {
         }
 
         return ['allowed' => true];
+    }
+
+    /**
+     * Mengambil daftar fitur yang dinonaktifkan untuk user ini (atau global)
+     */
+    public static function getDisabledFeatures($userId) {
+        $service = self::getInstance();
+        
+        $features = $service->db->select("SELECT DISTINCT feature_name FROM user_feature_access");
+        
+        $disabledList = [];
+        
+        foreach ($features as $f) {
+            $name = $f['feature_name'];
+            $access = self::checkAccess($userId, $name);
+            
+            if (!$access['allowed']) {
+                $disabledList[] = [
+                    'feature' => self::mapFlag($name),
+                    'reason' => $access['reason']
+                ];
+            }
+        }
+        
+        return $disabledList;
     }
 }

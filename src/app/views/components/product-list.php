@@ -1,5 +1,11 @@
 <?php
+require_once __DIR__ . '/../../services/FeatureFlagService.php';
 $products = $productsData['data'] ?? [];
+
+$user = Auth::user();
+$userId = $user ? $user['user_id'] : null;
+
+$checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 ?>
 
 <?php if (empty($products)): ?>
@@ -32,7 +38,7 @@ $products = $productsData['data'] ?? [];
                         <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
                         <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                         <input type="hidden" name="quantity" value="1">
-                        <?php if (Auth::check()):?>
+                        <?php if (Auth::check() && $checkoutAccess['allowed']):?>
                             <button type="submit" class= "btn <?= (($product['stock'] > 0) ? " btn-primary" : "") ?>"  
                             style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
                                 <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
