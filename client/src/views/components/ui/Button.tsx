@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,7 +14,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button: React.FC<ButtonProps> = ({ 
   children, 
   variant = 'primary', 
-  size = 'md',
+  size = 'md', 
   className = '', 
   disabled = false,
   type = 'button',
@@ -29,6 +29,7 @@ const Button: React.FC<ButtonProps> = ({
     success: 'bg-[#28a745] text-white hover:bg-[#218838]',
     warning: 'bg-[#ffc107] text-[#212529] hover:bg-[#e0a800]',
     danger: 'bg-[#dc3545] text-white hover:bg-[#c82333]',
+    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 shadow-none',
   };
 
   const sizeClasses: Record<ButtonSize, string> = {

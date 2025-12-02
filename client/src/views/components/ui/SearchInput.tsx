@@ -22,8 +22,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   ...props 
 }) => {
   const [localValue, setLocalValue] = useState(value || '');
-  const timeoutRef = useRef<number | null>(null);
-
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setLocalValue(value || '');
   }, [value]);
