@@ -7,7 +7,15 @@ interface Admin {
   token: string;
   id?: string;
   email?: string;
+  role: 'ADMIN';
   [key: string]: any;
+}
+
+interface User {
+  id: string | number;
+  name: string;
+  role: 'BUYER' | 'SELLER';
+  email?: string;
 }
 
 interface LoginResponse {
@@ -16,10 +24,12 @@ interface LoginResponse {
 }
 
 interface AuthContextType {
-  admin: Admin | null;
+  admin: Admin | null; // Khusus state Admin
+  user: User | null;   // Khusus state Buyer/Seller
+  isAuthenticated: boolean;
   loading: boolean;
   loginAdmin: (email: string, password: string) => Promise<LoginResponse>;
-  logoutAdmin: () => void;
+  logout: () => void;
 }
 
 interface AuthProviderProps {
@@ -30,33 +40,49 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const initAuth = async() => {
+    const initAuth = async () => {
+      setLoading(true);
+      
+      // 1. CEK ADMIN (JWT)
       const token = localStorage.getItem('admin_token');
-      if (!token) {
-        setLoading(false);
-        return;
+      if (token) {
+        try {
+          const response = await api.get('/admin/me');
+          if (response.data.status === 'success') {
+            setAdmin({
+              token,
+              ...response.data.data,
+              role: 'ADMIN' 
+            });
+            setLoading(false);
+            return; // Jika admin login, stop di sini (asumsi admin tidak perlu load user session)
+          }
+        } catch (error) {
+          console.error("Token admin tidak valid:", error);
+          localStorage.removeItem('admin_token');
+          setAdmin(null);
+        }
       }
 
+      // 2. CEK USER BUYER/SELLER (PHP SESSION)
       try {
-        const response = await api.get('/admin/me');      
-          if (response.data.status === 'success') {
-            setAdmin({ 
-              token, 
-              ...response.data.data
-            });
-          } 
+        const response = await api.get('/auth/user'); 
+        
+        if (response.data.success && response.data.user) {
+          setUser(response.data.user);
+        }
       } catch (error) {
-        console.error("Token tidak valid atau expired:", error);
-        localStorage.removeItem('admin_token');
-        setAdmin(null);
+        console.log("Tidak ada sesi user PHP yang aktif.");
+        setUser(null);
       } finally {
-          setLoading(false);
+        setLoading(false);
       }
     };
-    
+
     initAuth();
   }, []);
 
@@ -66,7 +92,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const { token, user } = response.data;
       
       localStorage.setItem('admin_token', token);
-      setAdmin({ ...user, token });
+      setAdmin({ ...user, token, role: 'ADMIN' });
       return { success: true };
     } catch (error) {
       const errorMessage = error instanceof Error 
@@ -80,14 +106,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const logoutAdmin = () => {
-    localStorage.removeItem('admin_token');
-    setAdmin(null);
-    window.location.href = '/admin/login';
+  const logout = () => {
+    // Logout Admin
+    if (admin) {
+      localStorage.removeItem('admin_token');
+      setAdmin(null);
+      window.location.href = '/admin/login';
+      return;
+    }
+
+    // Logout User (Redirect ke logout PHP)
+    if (user) {
+      setUser(null);
+      // Ganti URL ini sesuai route logout PHP kamu
+      window.location.href = '/logout.php'; 
+    }
+  };
+
+  const value = {
+    admin,
+    user,
+    isAuthenticated: !!admin || !!user,
+    loading,
+    loginAdmin,
+    logout
   };
 
   return (
-    <AuthContext.Provider value={{ admin, loginAdmin, logoutAdmin, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
