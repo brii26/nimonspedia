@@ -220,8 +220,9 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
 }
 
 // Helper function: Start auction countdown timer
-function startAuctionTimer(io: SocketIOServer, auctionId: number, endTime: number): void {
+const startAuctionTimer = (io: SocketIOServer, auctionId: number, endTime: number): void => {
   const auctionRoom = `auction_${auctionId}`;
+  let lastSyncTime = Date.now();
   
   const timer = setInterval(async () => {
     const now = Date.now();
@@ -236,7 +237,7 @@ function startAuctionTimer(io: SocketIOServer, auctionId: number, endTime: numbe
     io.to(auctionRoom).emit('timer_update', timerUpdate);
 
     // Auto-sync dengan server setiap 30 detik untuk koreksi drift
-    if (timeLeft % 30 === 0 && timeLeft > 0) {
+    if (now - lastSyncTime >= 30000 && timeLeft > 0) {
       try {
         const auction = await auctionRepository.getAuctionById(auctionId);
         if (auction && auction.end_time) {
@@ -278,7 +279,7 @@ function startAuctionTimer(io: SocketIOServer, auctionId: number, endTime: numbe
 }
 
 // Helper function: End auction
-async function endAuction(io: SocketIOServer, auctionId: number): Promise<void> {
+const endAuction = async (io: SocketIOServer, auctionId: number): Promise<void> => {
   try {
     console.log(`Ending auction ${auctionId}`);
     
