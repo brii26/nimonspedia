@@ -4,6 +4,8 @@ import { QueryResult } from 'pg';
 interface Auction {
   auction_id: number;
   product_id: number;
+  store_id: number;
+  owner_id: number;
   starting_price: number;
   current_price: number;
   min_increment: number;
@@ -39,10 +41,13 @@ class AuctionRepository {
       SELECT 
         a.*,
         u.name as winner_name,
-        p.product_name
+        p.product_name,
+        p.store_id,
+        s.user_id AS owner_id
       FROM auctions a
       LEFT JOIN users u ON a.winner_id = u.user_id
       LEFT JOIN products p ON a.product_id = p.product_id
+      LEFT JOIN stores s ON p.store_id = s.store_id
       WHERE a.auction_id = $1
     `, [auctionId]);
     

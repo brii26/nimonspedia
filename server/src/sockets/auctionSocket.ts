@@ -105,6 +105,11 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
         return;
       }
 
+      if (auction.owner_id === user.user_id) {
+        socket.emit('bid_error', { message: 'Anda tidak dapat menawar barang Anda sendiri (Shill Bidding)' });
+        return;
+      }
+
       // Check if auction is still active
       const now = new Date();
       if (auction.end_time) {
