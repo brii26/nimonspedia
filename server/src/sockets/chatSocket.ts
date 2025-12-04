@@ -42,8 +42,16 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       
       // Ensure chat room exists in database
       await chatRepository.ensureChatRoom(storeId, buyerId);
+
+      const messages = await chatRepository.getChatHistory(storeId, buyerId, 50);
       
-      socket.emit('chat_joined', { storeId, buyerId, room: chatRoom });
+      socket.emit('chat_joined', { 
+        storeId, 
+        buyerId, 
+        room: chatRoom,
+        messages: messages || []
+      });
+
       console.log(`User ${user.name} joined chat room: ${chatRoom}`);
 
     } catch (error) {
