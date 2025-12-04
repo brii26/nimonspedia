@@ -1,4 +1,5 @@
 import pool from '../config/database.js';
+import orderRepository from './orderRepository.js';
 import { QueryResult } from 'pg';
 
 interface Auction {
@@ -148,7 +149,7 @@ class AuctionRepository {
     try {
       await client.query('BEGIN');
 
-      // Get the highest bidder
+      // 1. Cari pemenang (Highest Bidder)
       const highestBidResult = await client.query(`
         SELECT bidder_id, bid_amount
         FROM auction_bids 
@@ -157,62 +158,74 @@ class AuctionRepository {
         LIMIT 1
       `, [auctionId]);
 
-      let winnerId = null;
+      let winnerId: number | null = null;
+      let finalPrice = 0;
+
       if (highestBidResult.rows.length > 0) {
         winnerId = highestBidResult.rows[0].bidder_id;
+        finalPrice = Number(highestBidResult.rows[0].bid_amount);
       }
 
-      // Update auction status and set winner
+      // 2. Update status Auction menjadi 'ended'
       const result = await client.query(`
         UPDATE auctions 
         SET status = 'ended', 
             end_time = NOW(),
-            winner_id = $1
-        WHERE auction_id = $2
-      `, [winnerId, auctionId]);
+            winner_id = $1,
+            current_price = $2
+        WHERE auction_id = $3
+      `, [winnerId, finalPrice, auctionId]);
+
+      // 3. LOGIKA ORDER OTOMATIS
+      if (winnerId) {
+        const infoQuery = await client.query(`
+            SELECT 
+                p.product_id, 
+                p.store_id, 
+                u.address as shipping_address,
+                a.quantity
+            FROM auctions a
+            JOIN products p ON a.product_id = p.product_id
+            JOIN users u ON u.user_id = $1
+            WHERE a.auction_id = $2
+        `, [winnerId, auctionId]);
+
+        if (infoQuery.rows.length > 0) {
+          const info = infoQuery.rows[0];
+
+          // A. Susun Data Order (Header)
+          const orderData = {
+            buyer_id: winnerId,
+            store_id: info.store_id,
+            total_price: finalPrice,
+            shipping_address: info.shipping_address || '-'
+          };
+
+          // B. Susun Data Item (Detail)
+          const orderItems = [{
+            product_id: info.product_id,
+            quantity: info.quantity,
+            price: info.quantity > 0 ? Math.floor(finalPrice / info.quantity) : finalPrice,
+            subtotal: finalPrice
+          }];
+
+          // C. Panggil OrderRepository dengan Client Transaksi
+          await orderRepository.createOrder(orderData, orderItems, client);
+          
+          console.log(`Order created successfully for Auction #${auctionId}`);
+        }
+      }
 
       await client.query('COMMIT');
       return result;
 
     } catch (error) {
       await client.query('ROLLBACK');
+      console.error("End Auction Error:", error);
       throw error;
     } finally {
       client.release();
     }
-  }
-
-  async getActiveBids(auctionId: number, limit: number = 10): Promise<Bid[]> {
-    const result = await pool.query(`
-      SELECT 
-        b.*,
-        u.name as bidder_name
-      FROM auction_bids b
-      JOIN users u ON b.bidder_id = u.user_id
-      WHERE b.auction_id = $1
-      ORDER BY b.bid_amount DESC, b.bid_time DESC
-      LIMIT $2
-    `, [auctionId, limit]);
-    
-    return result.rows;
-  }
-
-  async getActiveAuctions(): Promise<Auction[]> {
-    const result = await pool.query(`
-      SELECT 
-        a.*,
-        u.name as winner_name,
-        p.product_name
-      FROM auctions a
-      LEFT JOIN users u ON a.winner_id = u.user_id
-      LEFT JOIN products p ON a.product_id = p.product_id
-      WHERE a.status = 'active' 
-      AND a.start_time <= NOW()
-      AND (a.end_time IS NULL OR a.end_time > NOW())
-      ORDER BY a.end_time ASC NULLS LAST
-    `);
-    
-    return result.rows;
   }
 }
 
