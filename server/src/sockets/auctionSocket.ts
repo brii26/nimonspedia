@@ -310,3 +310,40 @@ const endAuction = async (io: SocketIOServer, auctionId: number): Promise<void> 
     console.error(`Error ending auction ${auctionId}:`, error);
   }
 }
+
+export async function recoverActiveAuctions(io: SocketIOServer): Promise<void> {
+  console.log('System recovering: Checking active auctions...');
+  
+  try {
+    const activeAuctions = await auctionRepository.findAllActiveAuctions();
+    let recoveredCount = 0;
+    let endedCount = 0;
+
+    for (const auction of activeAuctions) {
+      // Skip jika tidak punya end_time (belum mulai countdown)
+      if (!auction.end_time) continue;
+
+      const now = Date.now();
+      const endTime = new Date(auction.end_time).getTime();
+
+      if (endTime <= now) {
+        // Kasus A: Lelang harusnya sudah berakhir saat server mati
+        console.log(`Auction ${auction.auction_id} expired while server was down. Ending now...`);
+        await endAuction(io, auction.auction_id);
+        endedCount++;
+      } else {
+        // Kasus B: Lelang masih berjalan, nyalakan ulang timer
+        // Cek apakah timer sudah jalan (untuk safety)
+        if (!auctionTimers.has(auction.auction_id)) {
+          startAuctionTimer(io, auction.auction_id, endTime);
+          recoveredCount++;
+        }
+      }
+    }
+
+    console.log(`Recovery complete: ${recoveredCount} timers restarted, ${endedCount} expired auctions closed.`);
+    
+  } catch (error) {
+    console.error('Failed to recover auctions:', error);
+  }
+}

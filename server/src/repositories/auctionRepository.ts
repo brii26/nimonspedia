@@ -227,6 +227,14 @@ class AuctionRepository {
       client.release();
     }
   }
+
+  async findAllActiveAuctions(): Promise<Auction[]> {
+    const result = await pool.query(`
+      SELECT * FROM auctions 
+      WHERE status = 'active'
+    `);
+    return result.rows;
+  }
 }
 
 export default new AuctionRepository();

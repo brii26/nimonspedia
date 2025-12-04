@@ -7,7 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 
 import adminRoutes from './src/routes/adminRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
-import registerAuctionHandlers from './src/sockets/auctionSocket.js';
+import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
 import { AuthenticatedSocket } from './src/types/socket.js';
 
@@ -64,6 +64,8 @@ const start = async (): Promise<void> => {
       });
     });
 
+    recoverActiveAuctions(fastify.io);
+    
     const PORT = parseInt(process.env.PORT || '3000');
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     console.log(`SERVER RUNNING ON PORT ${PORT}`);
