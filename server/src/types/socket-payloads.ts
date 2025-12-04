@@ -10,9 +10,12 @@ export interface ErrorPayload {
 
 // Client -> Server: Kirim pesan
 export interface SendMessagePayload {
-  receiverId: number; // Store ID (for buyer) or Buyer ID (for seller)
+  receiverId: number; // Bisa storeId (jika user=buyer) atau buyerId (jika user=seller)
   message: string;
+  type?: 'text' | 'image' | 'item_preview'; 
+  productId?: number; // Wajib diisi jika type = 'item_preview'
 }
+
 
 // Client -> Server: Notifikasi sedang mengetik
 export interface TypingPayload {
@@ -35,14 +38,17 @@ export interface GetChatHistoryPayload {
 // Server -> Client: Struktur pesan chat lengkap (sesuai database)
 export interface ChatMessage {
   message_id: number;
-  store_id: number;
-  buyer_id: number;
   sender_id: number;
-  message_type: 'text' | 'image' | 'item_preview';
   content: string;
-  product_id?: number;
-  is_read: boolean;
+  message_type: 'text' | 'image' | 'item_preview';
+  product_id?: number | null;
   created_at: string;
+  is_read: boolean;
+
+  // field tambahan untuk preview product (optional, join dari DB)
+  product_name?: string;
+  product_image?: string;
+  product_price?: number;
 }
 
 // Server -> Client: Chat room joined

@@ -97,11 +97,38 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         return;
       }
 
+      const msgType = payload.type || 'text';
+      let msgContent = payload.message;
+      let productId = payload.productId || null;
+
+      if (msgType === 'text' && (!msgContent || !msgContent.trim())) {
+        return;
+      }
+
+      if (msgType === 'image') {
+        // Asumsi: Content berisi URL gambar (hasil upload API)
+        if (!msgContent) {
+          socket.emit('error_message', { message: 'URL Gambar tidak boleh kosong' });
+          return;
+        }
+      }
+
+      if (msgType === 'item_preview') {
+        if (!productId) {
+          socket.emit('error_message', { message: 'Product ID diperlukan untuk item preview' });
+          return;
+        }
+        // Content bisa optional untuk preview, atau berisi pesan pengantar
+        if (!msgContent) msgContent = ''; 
+      }
+
       const savedMessage = await chatRepository.saveMessage(
         storeId,
         buyerId, 
         user.user_id,
-        payload.message
+        msgContent,
+        msgType, 
+        productId
       );
 
       // --- BROADCAST: Kirim ke room chat ini ---

@@ -1,5 +1,4 @@
-import pool from '../config/database.js'; 
-import { ChatMessage } from '../types/socket-payloads.js';
+import pool from '../config/database.js';
 
 interface ChatMessageDB {
   message_id: number;
@@ -8,17 +7,13 @@ interface ChatMessageDB {
   sender_id: number;
   message_type: 'text' | 'image' | 'item_preview';
   content: string;
-  product_id?: number;
+  product_id?: number | null;
   is_read: boolean;
   created_at: string;
-}
-
-interface ChatRoom {
-  store_id: number;
-  buyer_id: number;
-  last_message_at: string;
-  created_at: string;
-  updated_at: string;
+  // Field tambahan dari join produk (opsional)
+  product_name?: string;
+  product_price?: number;
+  product_image?: string;
 }
 
 class ChatRepository {
@@ -33,7 +28,15 @@ class ChatRepository {
     await pool.query(query, [storeId, buyerId]);
   }
 
-  async saveMessage(storeId: number, buyerId: number, senderId: number, message: string): Promise<ChatMessageDB> {
+  // Updated saveMessage to handle message types and product preview
+  async saveMessage(
+    storeId: number, 
+    buyerId: number, 
+    senderId: number, 
+    content: string,
+    messageType: 'text' | 'image' | 'item_preview' = 'text',
+    productId: number | null = null
+  ): Promise<ChatMessageDB> {
     const client = await pool.connect();
     
     try {
@@ -46,13 +49,14 @@ class ChatRepository {
         ON CONFLICT (store_id, buyer_id) DO NOTHING
       `, [storeId, buyerId]);
 
-      // Insert message
+      // Insert message with type and product_id
       const messageQuery = `
-        INSERT INTO chat_messages (store_id, buyer_id, sender_id, message_type, content, created_at)
-        VALUES ($1, $2, $3, 'text', $4, NOW())
+        INSERT INTO chat_messages (store_id, buyer_id, sender_id, message_type, content, product_id, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
         RETURNING *
       `;
-      const messageRes = await client.query(messageQuery, [storeId, buyerId, senderId, message]);
+      const messageRes = await client.query(messageQuery, [storeId, buyerId, senderId, messageType, content, productId]);
+      const savedMsg = messageRes.rows[0];
 
       // Update last_message_at in chat room
       await client.query(`
@@ -62,7 +66,25 @@ class ChatRepository {
       `, [storeId, buyerId]);
 
       await client.query('COMMIT');
-      return messageRes.rows[0];
+
+      // If it's an item preview, fetch product details to return rich data immediately
+      if (messageType === 'item_preview' && productId) {
+        const productRes = await pool.query(
+          'SELECT product_name, price, main_image_path FROM products WHERE product_id = $1',
+          [productId]
+        );
+        if (productRes.rows.length > 0) {
+          const product = productRes.rows[0];
+          return {
+            ...savedMsg,
+            product_name: product.product_name,
+            product_price: Number(product.price),
+            product_image: product.main_image_path
+          };
+        }
+      }
+
+      return savedMsg;
 
     } catch (error) {
       await client.query('ROLLBACK');
@@ -73,11 +95,18 @@ class ChatRepository {
   }
 
   // Get chat history between store and buyer
+  // Updated to include product details for item previews
   async getChatHistory(storeId: number, buyerId: number, limit: number = 50): Promise<ChatMessageDB[]> {
     const query = `
-      SELECT * FROM chat_messages 
-      WHERE store_id = $1 AND buyer_id = $2
-      ORDER BY created_at DESC
+      SELECT 
+        cm.*,
+        p.product_name,
+        p.price as product_price,
+        p.main_image_path as product_image
+      FROM chat_messages cm
+      LEFT JOIN products p ON cm.product_id = p.product_id
+      WHERE cm.store_id = $1 AND cm.buyer_id = $2
+      ORDER BY cm.created_at DESC
       LIMIT $3
     `;
     const res = await pool.query(query, [storeId, buyerId, limit]);
@@ -93,12 +122,13 @@ class ChatRepository {
         s.store_logo_path,
         u.name as buyer_name,
         cm.content as last_message,
+        cm.message_type as last_message_type,
         cm.created_at as last_message_time
       FROM chat_rooms cr
       JOIN stores s ON cr.store_id = s.store_id
       JOIN users u ON cr.buyer_id = u.user_id
       LEFT JOIN LATERAL (
-        SELECT content, created_at
+        SELECT content, message_type, created_at
         FROM chat_messages 
         WHERE store_id = cr.store_id AND buyer_id = cr.buyer_id
         ORDER BY created_at DESC
