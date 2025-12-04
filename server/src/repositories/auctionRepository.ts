@@ -65,7 +65,7 @@ class AuctionRepository {
       const auctionResult = await client.query(`
         SELECT * FROM auctions 
         WHERE auction_id = $1 AND status = 'active' AND start_time <= NOW()
-        AND (end_time IS NULL OR end_time > NOW())
+        AND (end_time IS NULL OR end_time > NOW()) FOR UPDATE
       `, [auctionId]);
 
       if (auctionResult.rows.length === 0) {
@@ -174,6 +174,7 @@ class AuctionRepository {
             winner_id = $1,
             current_price = $2
         WHERE auction_id = $3
+        AND status = 'active'
       `, [winnerId, finalPrice, auctionId]);
 
       // 3. LOGIKA ORDER OTOMATIS
