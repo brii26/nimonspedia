@@ -46,7 +46,7 @@ interface User {
   user_id: string;
   name: string;
   email: string;
-  role: 'buyer' | 'seller' | 'admin';
+  role: 'BUYER' | 'SELLER' | 'ADMIN';
   balance?: number;
   created_at: string;
   feature_flags?: FeatureFlag[];
@@ -281,9 +281,9 @@ const Dashboard: React.FC = () => {
 
   const getUserRoleBadge = (role: string) => {
     const variants: Record<string, string> = {
-      buyer: 'info',
-      seller: 'success',
-      admin: 'danger'
+      BUYER: 'info',
+      SELLER: 'success',
+      ADMIN: 'danger'
     };
     return <Badge variant={variants[role] || 'gray'}>{role}</Badge>;
   };

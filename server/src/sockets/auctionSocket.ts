@@ -239,7 +239,7 @@ function startAuctionTimer(io: SocketIOServer, auctionId: number, endTime: numbe
     if (timeLeft % 30 === 0 && timeLeft > 0) {
       try {
         const auction = await auctionRepository.getAuctionById(auctionId);
-        if (auction) {
+        if (auction && auction.end_time) {
           const serverEndTime = new Date(auction.end_time).getTime();
           const serverTimeLeft = Math.max(0, Math.floor((serverEndTime - now) / 1000));
           
