@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 
 import adminRoutes from './src/routes/adminRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
+import chatRoutes from './src/routes/chatRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
@@ -42,6 +43,7 @@ fastify.register(socketio, {
 // 3. Register Routes (Prefixing lebih gampang di Fastify)
 fastify.register(adminRoutes, { prefix: '/admin' });
 fastify.register(authRoutes, { prefix: '/auth' });
+fastify.register(chatRoutes, { prefix: '/chat' });
 
 // 4. Root Route
 fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {

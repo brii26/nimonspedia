@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api/axios.js';
 import { useChatSocket } from '../../../hooks/useChatSocket.js'; 
@@ -45,12 +46,15 @@ interface ChatRoom {
 
 const ChatPage = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   // State UI
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null);
   const [inputMessage, setInputMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
+  const [autoSelectRoomId, setAutoSelectRoomId] = useState<string | null>(null);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -104,21 +108,81 @@ const ChatPage = () => {
     }
   }, [socket, user, isConnected]);
 
+  // --- 2.5 HANDLE INIT_STORE_ID PARAMETER ---
+  useEffect(() => {
+    if (!user) return; // Wait for user to load
+    
+    const params = new URLSearchParams(location.search);
+    const initStoreId = params.get('init_store_id');
+    
+    if (initStoreId && user.role === 'BUYER') {
+      console.log("[ChatPage] Init store ID detected:", initStoreId);
+      
+      // Call initiate endpoint to create/get room
+      (async () => {
+        try {
+          console.log("[ChatPage] Calling /chat/initiate with storeId:", initStoreId);
+          const res = await api.post('/chat/initiate', { storeId: Number(initStoreId) });
+          console.log("[ChatPage] Initiate response:", res.data);
+          
+          if (res.data.success) {
+            const roomData = res.data.data;
+            const roomId = roomData.room_id || `chat_${roomData.store_id}_${roomData.buyer_id}`;
+            
+            console.log("[ChatPage] Setting auto-select for room:", roomId);
+            // Set auto-select flag and room ID
+            setAutoSelectRoomId(roomId);
+            setShouldAutoSelect(true);
+            
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/chat');
+          }
+        } catch (err) {
+          console.error("[ChatPage] Gagal inisialisasi chat:", err);
+        }
+      })();
+    }
+  }, [location.search, user]);
+
   // --- 3. FETCH ROOM LIST (REST API) ---
   useEffect(() => {
     if (!user) return;
     const fetchRooms = async () => {
       try {
+        console.log("[ChatPage] Fetching rooms for user:", user.id);
         const res = await api.get('/chat/rooms');
+        console.log("[ChatPage] Rooms response:", res.data);
+        
         if (res.data.success) {
-          setRooms(res.data.data);
+          // Generate room_id for each room in format: chat_{store_id}_{buyer_id}
+          const roomsWithIds = res.data.data.map((room: any) => ({
+            ...room,
+            room_id: room.room_id || `chat_${room.store_id}_${room.buyer_id}`
+          }));
+          console.log("[ChatPage] Rooms with IDs:", roomsWithIds);
+          setRooms(roomsWithIds);
+          
+          // Auto-select room if needed
+          if (shouldAutoSelect && autoSelectRoomId) {
+            console.log("[ChatPage] Looking for room:", autoSelectRoomId);
+            const targetRoom = roomsWithIds.find((r: any) => r.room_id === autoSelectRoomId);
+            console.log("[ChatPage] Found room:", targetRoom);
+            
+            if (targetRoom) {
+              console.log("[ChatPage] Auto-selecting room");
+              handleSelectRoom(targetRoom);
+              setShouldAutoSelect(false); // Reset flag
+            } else {
+              console.warn("[ChatPage] Target room not found in list");
+            }
+          }
         }
       } catch (err) {
-        console.error("Gagal memuat daftar chat:", err);
+        console.error("[ChatPage] Gagal memuat daftar chat:", err);
       }
     };
     fetchRooms();
-  }, [user]);
+  }, [user, shouldAutoSelect, autoSelectRoomId]);
 
   // --- 4. SCROLL TO BOTTOM ---
   const scrollToBottom = () => {
