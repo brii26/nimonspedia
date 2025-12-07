@@ -22,8 +22,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // kalo token expired atau invalid, hapus terus redirect
-      if (window.location.pathname.startsWith('/admin')) {
+      const currentPath = window.location.pathname;
+
+      if (currentPath.startsWith('/admin') && !currentPath.includes('/login')) {
         localStorage.removeItem('admin_token');
         window.location.href = '/admin/login';
       }
