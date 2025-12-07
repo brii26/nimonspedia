@@ -44,4 +44,57 @@ class AuctionController extends BaseController {
             $this->redirect('/seller/products?error=' . urlencode($e->getMessage()));
         }
     }
+
+    public function list() {
+        header('Content-Type: application/json');
+        try {
+            $productId = (int)$this->getQuery('product_id');
+            
+            if (!$productId) {
+                throw new Exception("Product ID is missing.");
+            }
+            // Fetch Data
+            $auctions = $this->auctionService->getAuctionsByProduct($productId);
+            echo json_encode([
+                'success' => true, 
+                'data' => $auctions
+            ]);
+            exit;
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false, 
+                'message' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
+
+    public function cancel() {
+        header('Content-Type: application/json');
+        try {
+            $rawInput = file_get_contents('php://input');
+            $jsonData = json_decode($rawInput, true);
+            $auctionId = $jsonData['auction_id'] ?? $_POST['auction_id'] ?? null;
+
+            // Validasi Store
+            $storeService = new StoreService();
+            $storeId = $storeService->getSellerStoreId();
+            if (!$storeId) throw new Exception("Store not found.");
+
+            // Cancel 
+            $this->auctionService->cancelAuction($auctionId, $storeId);
+            echo json_encode(['success' => true]);
+            exit;
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false, 
+                'message' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
 }

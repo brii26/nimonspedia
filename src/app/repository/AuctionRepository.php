@@ -33,6 +33,57 @@ class AuctionRepository extends BaseRepository {
         $result = $this->db->selectOne($sql, [$newEndTime, $newStartTime]);
         return $result ? $result['product_name'] : null;
     }
+
+    public function findAllByProductId($productId) {
+        $sql = "SELECT 
+                    a.auction_id, 
+                    a.start_time, 
+                    a.end_time, 
+                    a.quantity, 
+                    a.status,
+                    (SELECT COUNT(*) FROM auction_bids ab WHERE ab.auction_id = a.auction_id) as bid_count
+                FROM {$this->table} a
+                WHERE a.product_id = ?
+                ORDER BY a.start_time ASC";
+        
+        return $this->db->select($sql, [$productId]);
+    }
+
+    public function cancelAuction($auctionId, $storeId) {
+        $sql = "SELECT a.* FROM auctions a 
+                JOIN products p ON a.product_id = p.product_id 
+                WHERE a.auction_id = ? AND p.store_id = ?";
+        
+        $auction = $this->db->selectOne($sql, [$auctionId, $storeId]);
+
+        if (!$auction) {
+            throw new Exception("Auction not found or you do not own this product.");
+        }
+
+        $bidCountSql = "SELECT COUNT(*) as count FROM auction_bids WHERE auction_id = ?";
+        $bids = $this->db->selectOne($bidCountSql, [$auctionId]);
+        
+        if ($bids['count'] > 0) {
+            throw new Exception("Cannot cancel: This auction already has bids.");
+        }
+
+        $this->db->beginTransaction();
+        try {
+            // Restore stock to product
+            $restoreStock = "UPDATE products SET stock = stock + ? WHERE product_id = ?";
+            $this->db->execute($restoreStock, [$auction['quantity'], $auction['product_id']]);
+
+            // Hard Delete
+            $deleteSql = "DELETE FROM auctions WHERE auction_id = ?";
+            $this->db->execute($deleteSql, [$auctionId]);
+            
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
     
     public function beginTransaction() {
         $this->db->beginTransaction();
