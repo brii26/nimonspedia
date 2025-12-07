@@ -2,20 +2,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageContainer = document.querySelector('.seller-product-page');
     if (!pageContainer) return;
 
+    // Ambil get request
     const qp = new URLSearchParams(window.location.search);
     const status = qp.get('status');
+    const error = qp.get('error');
+
+    // Show notif dari get req
     if (status === 'product_created') App.showAlert('Product created successfully!', 'success');
     else if (status === 'product_updated') App.showAlert('Product updated successfully!', 'success');
     else if (status === 'product_deleted') App.showAlert('Product deleted successfully!', 'success');
-    if (status) {
-        qp.delete('status');
+    else if (status === 'auction_created') App.showAlert('Auction scheduled successfully!', 'success');
+    if (error) App.showAlert(error, 'danger');
+
+    // clear get req
+    if (status || error) {
+        if (status) qp.delete('status');
+        if (error) qp.delete('error');
+        
         history.replaceState(
             null,
             '',
             window.location.pathname + (qp.toString() ? '?' + qp.toString() : '')
         );
     }
-
     const fetchAndSwap = (url) => {
         const contentTarget = pageContainer.querySelector('.product-grid-container');
         if (!contentTarget) {

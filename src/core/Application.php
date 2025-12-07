@@ -118,7 +118,7 @@ class Application {
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
 
         // Auction routes
-		$this->router->post('/seller/auctions/create', 'AuctionController@createAuction'); // blom 
+		$this->router->post('/seller/auctions/create', 'AuctionController@create'); 
         
     }
     

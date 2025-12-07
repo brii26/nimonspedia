@@ -128,32 +128,35 @@
             </div>
 
             <div class="app-modal-body">
-                <form id="auction-form" action="/seller/auctions/create" method="POST">
-                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                    <input type="hidden" name="product_id" id="auction-product-id">
-                    
-                    <div class="auction-form-group">
-                        <label>Start Time</label>
-                        <input type="datetime-local" name="start_time" step="1" class="form-control auction-input" required>
-                    </div>
+              <form id="auction-form" action="/seller/auctions/create" method="POST">
+                  <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                  <input type="hidden" name="product_id" id="auction-product-id">
+                  
+                  <div class="auction-form-group">
+                      <label>Start Time</label>
+                      <input type="datetime-local" name="start_time" class="form-control auction-input" required>
+                  </div>
 
-                    <div class="auction-form-group">
-                        <label>Quantity to Auction <small id="stock-hint"></small></label>
-                        <input type="number" name="quantity" id="auction-quantity" min="1" class="form-control auction-input" required>
-                    </div>
+                  <div class="auction-form-group">
+                      <label>End Time</label>
+                      <input type="datetime-local" name="end_time" class="form-control auction-input" required>
+                  </div>
 
-                    <div class="auction-form-group">
-                        <label>Starting Price (IDR)</label>
-                        <input type="number" name="start_price" id="auction-start-price" class="form-control auction-input" required>
-                    </div>
+                  <div class="auction-form-group">
+                      <label>Quantity to Auction <small id="stock-hint"></small></label>
+                      <input type="number" name="quantity" id="auction-quantity" min="1" class="form-control auction-input" required>
+                  </div>
 
-                    <div class="auction-form-group">
-                        <label>Minimum Bid Increment (IDR)</label>
-                        <input type="number" name="min_increment" placeholder="e.g., 10000" class="form-control auction-input" required>
-                    </div>
-                </form>
-            </div>
+                  <div class="auction-form-group">
+                      <label>Starting Price</label>
+                      <input type="number" name="start_price" id="auction-start-price" class="form-control auction-input" required>
+                  </div>
 
+                  <div class="auction-form-group">
+                      <label>Minimum Bid Increment</label>
+                      <input type="number" name="min_increment" placeholder="e.g., 10000" class="form-control auction-input" required>
+                  </div>
+              </form>
             <div class="app-modal-footer">
                 <button type="button" class="btn btn-secondary" id="auction-cancel-btn">Cancel</button>
                 <button type="submit" form="auction-form" class="btn btn-primary">Create Auction</button>
