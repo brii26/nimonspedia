@@ -78,7 +78,7 @@
 .app-modal-footer {
     display: flex;
     gap: 0.75rem;
-    justify-content: flex-end;
+    justify-content: center;
     padding: 1rem 1.5rem;
     border-top: 1px solid #e9ecef;
     background: #f8f9fa;
@@ -201,7 +201,7 @@
 .app-confirm-footer {
     display: flex;
     gap: 0.5rem;
-    justify-content: flex-end;
+    justify-content: center;
 }
 .app-confirm-footer .btn {
     padding: 0.75rem 1.5rem;

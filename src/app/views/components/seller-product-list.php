@@ -61,27 +61,21 @@
 
           </div>
 
-          <div class="card-actions">
-              <a href="/seller/products/edit?id=<?= $product['product_id'] ?>" class="btn btn-warning">Edit</a>
-              <form action="/seller/products/delete" method="POST">
-                  <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
-                  <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                  <button type="submit" class="btn btn-danger" id="delete-button">Delete</button>
+            <div class="card-actions">
+              <a href="/seller/products/edit?id=<?= View::escape($product['product_id']) ?>" class="btn btn-secondary">Edit</a>
+              
+              <button type="button" 
+                      class="btn btn-primary btn-auction-options" 
+                      data-id="<?= View::escape($product['product_id']) ?>"
+                      data-name="<?= View::escape($product['product_name']) ?>">
+                  Auction
+              </button>
+
+              <form action="/seller/products/delete" method="POST" class="delete-form" style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="<?= Auth::csrfToken() ?>">
+                  <input type="hidden" name="id" value="<?= View::escape($product['product_id']) ?>">
+                  <button type="submit" class="btn btn-danger">Delete</button>
               </form>
-              <?php 
-                  $auctionId = $product['auction_id'] ?? null; 
-              ?>
-              <?php if ($auctionId): ?>
-                  <a href="/auction/<?= $auctionId ?>" class="btn btn-info">View Auction</a>
-              <?php else: ?>
-                  <button type="button" 
-                          class="btn btn-primary btn-start-auction"
-                          data-product-id="<?= $product['product_id'] ?>"
-                          data-product-name="<?= View::escape($product['product_name']) ?>"
-                          data-product-stock="<?= $product['stock'] ?>">
-                      Begin Auction
-                  </button>
-              <?php endif; ?>
           </div>
         </div>
       <?php endforeach; ?>
@@ -114,54 +108,131 @@
 
 </main>
 
-<!-- Auction Modal -->
-<div id="auction-modal" class="app-modal" aria-hidden="true">
-    
-    <div class="app-modal-backdrop" id="auction-backdrop"></div>
-    
+<!-- Auction Options Modal -->
+<div class="app-modal" id="auction-options-modal" role="dialog" aria-hidden="true" style="display:none;" hidden>
+    <div class="app-modal-backdrop"></div>
     <div class="app-modal-wrapper">
         <div class="app-modal-card">
-            
-            <div class="app-modal-header">
-                <h2>Start Auction: <span id="auction-product-name-display" class="highlight-text"></span></h2>
-                <button type="button" class="app-modal-close" id="auction-close-x">&times;</button>
-            </div>
-
+            <header class="app-modal-header">
+                <h2 id="auction-options-title">Manage Auctions</h2>
+                <button type="button" class="app-modal-close" aria-label="Close">×</button>
+            </header>
             <div class="app-modal-body">
-              <form id="auction-form" action="/seller/auctions/create" method="POST">
-                  <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                  <input type="hidden" name="product_id" id="auction-product-id">
-                  
-                  <div class="auction-form-group">
-                      <label>Start Time</label>
-                      <input type="datetime-local" name="start_time" step="1" class="form-control auction-input" required>
-                  </div>
+                <p class="mb-4 text-center">Select an action for <strong id="auction-options-product-name">Product</strong>:</p>
+                
+                <div class="auction-options-grid">
+                    <div class="auction-option-card" id="opt-create-auction">
+                        <div class="auction-img-placeholder">
+                            <img src="/assets/icons/auction.svg" alt="Create" > 
+                        </div>
+                        <span class="auction-option-title">New Auction</span>
+                    </div>
 
-                  <div class="auction-form-group">
-                      <label>End Time</label>
-                      <input type="datetime-local" name="end_time" step="1" class="form-control auction-input" required>
-                  </div>
-
-                  <div class="auction-form-group">
-                      <label>Quantity to Auction <small id="stock-hint"></small></label>
-                      <input type="number" name="quantity" id="auction-quantity" min="1" class="form-control auction-input" required>
-                  </div>
-
-                  <div class="auction-form-group">
-                      <label>Starting Price</label>
-                      <input type="number" name="start_price" id="auction-start-price" class="form-control auction-input" required>
-                  </div>
-
-                  <div class="auction-form-group">
-                      <label>Minimum Bid Increment</label>
-                      <input type="number" name="min_increment" placeholder="e.g., 10000" class="form-control auction-input" required>
-                  </div>
-              </form>
-            <div class="app-modal-footer">
-                <button type="button" class="btn btn-secondary" id="auction-cancel-btn">Cancel</button>
-                <button type="submit" form="auction-form" class="btn btn-primary">Create Auction</button>
+                    <div class="auction-option-card" id="opt-monitor-auction">
+                        <div class="auction-img-placeholder">
+                            <img src="/assets/icons/add.svg" alt="Monitor" >
+                        </div>
+                        <span class="auction-option-title">Monitor Auctions</span>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
 
+<!-- Create Auction Modal -->
+<div class="app-modal" id="create-auction-modal" role="dialog" aria-hidden="true" style="display:none;" hidden>
+    <div class="app-modal-backdrop"></div>
+    <div class="app-modal-wrapper">
+        <div class="app-modal-card" style="max-width: 800px; width: 100%;">
+            <header class="app-modal-header">
+                <h2>Schedule Auction</h2>
+                <button type="button" class="app-modal-close" aria-label="Close">×</button>
+            </header>
+            
+            <form action="/seller/auctions/create" method="POST" id="create-auction-form">
+                <div class="app-modal-body">
+                    <input type="hidden" name="csrf_token" value="<?= Auth::csrfToken() ?>">
+                    <input type="hidden" name="product_id" id="create-auction-product-id">
+
+                    <div class="auction-modal-grid">
+                        
+                        <div class="auction-section">
+                            <h4 class="auction-section-header">
+                                Time
+                            </h4>
+                            <div class="auction-form-group">
+                                <label>Start Date & Time</label>
+                                <input type="datetime-local" name="start_time" required>
+                            </div>
+                            <div class="auction-form-group">
+                                <label>End Date & Time</label>
+                                <input type="datetime-local" name="end_time" required>
+                            </div>
+                        </div>
+
+                        <div class="auction-section">
+                            <h4 class="auction-section-header">
+                                Price & Stock
+                            </h4>
+                            <div class="auction-form-group">
+                                <label>Quantity</label>
+                                <input type="number" name="quantity" min="1" required>
+                            </div>
+                            <div class="auction-form-group">
+                                <label>Starting Price</label>
+                                <input type="number" name="start_price" min="1000" required>
+                            </div>
+                            <div class="auction-form-group">
+                                <label>Min Bid Increment</label>
+                                <input type="number" name="min_increment" min="100" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="app-modal-footer">
+                    <button type="button" class="btn btn-secondary app-modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Auction</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Auction Monitor Modal -->
+<div class="app-modal" id="monitor-auction-modal" role="dialog" aria-hidden="true" style="display:none;" hidden>
+    <div class="app-modal-backdrop"></div>
+    <div class="app-modal-wrapper">
+        <div class="app-modal-card" style="max-width: 700px;">
+            <header class="app-modal-header">
+                <h2>Scheduled Auctions</h2>
+                <button type="button" class="app-modal-close" aria-label="Close">×</button>
+            </header>
+            <div class="app-modal-body">
+                <p>Auctions for <strong id="monitor-product-name">...</strong></p>
+                
+                <div class="monitor-list-container">
+                    <table class="monitor-table" style="width:100%; text-align: left;">
+                        <thead>
+                            <tr>
+                                <th>Start Time</th>
+                                <th>Qty</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monitor-list-body"></tbody>
+                    </table>
+                    <div id="monitor-loading" style="display:none; text-align:center; padding:1rem;">Loading...</div>
+                    <div id="monitor-empty" class="monitor-empty-state" style="display:none; padding:1rem; text-align:center;">
+                        No scheduled auctions found.
+                    </div>
+                </div>
+            </div>
+             <footer class="app-modal-footer">
+                <button type="button" class="btn btn-secondary app-modal-close-btn">Close</button>
+            </footer>
         </div>
     </div>
 </div>

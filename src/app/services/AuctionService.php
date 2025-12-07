@@ -12,6 +12,7 @@ class AuctionService {
     }
 
     public function createAuction($data) {
+        
         // Validasi Store & User
         $storeId = $this->storeService->getSellerStoreId();
         if (!$storeId) {
@@ -74,5 +75,13 @@ class AuctionService {
             $this->auctionRepo->rollBack();
             throw $e;
         }
+    }
+
+    public function getAuctionsByProduct($productId) {
+        return $this->auctionRepo->findAllByProductId($productId);
+    }
+
+    public function cancelAuction($auctionId, $storeId) {
+        return $this->auctionRepo->cancelAuction($auctionId, $storeId);
     }
 }

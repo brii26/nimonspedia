@@ -1,0 +1,186 @@
+.auction-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+.auction-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--surface);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.auction-option-card:hover {
+    border-color: var(--primary-600);
+    background: #f8fafc;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.auction-img-placeholder {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auction-img-placeholder img {
+    width: 60%; 
+    height: 60%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.auction-option-card:hover .auction-img-placeholder img {
+    transform: scale(1.1); 
+}
+
+.auction-option-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.auction-option-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Create Auction Modal */
+.auction-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.auction-section {
+    background-color: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    height: 100%;
+}
+
+.auction-section-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auction-form-group {
+    margin-bottom: 1rem;
+}
+
+.auction-form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.auction-form-group input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .auction-modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Monitor List */
+#monitor-auction-modal .app-modal-card {
+    max-width: 1000px; 
+    width: 95%;
+}
+
+.monitor-list-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
+    padding-right: 50px; 
+    background: #fff; 
+}
+
+.monitor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.monitor-table th {
+    position: sticky;
+    top: 0;
+    background: #f1f5f9;
+    padding: 1rem;
+    text-align: center; 
+    white-space: nowrap; 
+    font-weight: 700;
+    border-bottom: 2px solid var(--border);
+    z-index: 10;
+    color: var(--text);
+}
+
+.monitor-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    text-align: center; 
+}
+
+.monitor-table td:first-child {
+    white-space: nowrap; 
+    font-variant-numeric: tabular-nums; 
+}
+
+.monitor-action-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.monitor-empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    background: #f9fafb;
+}
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
