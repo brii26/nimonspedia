@@ -4,6 +4,7 @@ abstract class BaseController {
     protected $db;
     
     public function __construct() {
+        date_default_timezone_set('Asia/Jakarta');
         $this->db = Database::getInstance();
     }
     

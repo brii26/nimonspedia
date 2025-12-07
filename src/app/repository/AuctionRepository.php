@@ -20,4 +20,29 @@ class AuctionRepository extends BaseRepository {
                 LIMIT 1";
         return $this->db->selectOne($sql, [$productId]);
     }
+
+    public function getOverlappingProduct($newStartTime, $newEndTime) {
+        $sql = "SELECT p.product_name 
+                FROM {$this->table} a
+                JOIN products p ON a.product_id = p.product_id
+                WHERE a.status IN ('scheduled', 'active')
+                AND a.start_time < ?::timestamp 
+                AND a.end_time > ?::timestamp
+                LIMIT 1"; 
+        
+        $result = $this->db->selectOne($sql, [$newEndTime, $newStartTime]);
+        return $result ? $result['product_name'] : null;
+    }
+    
+    public function beginTransaction() {
+        $this->db->beginTransaction();
+    }
+
+    public function commit() {
+        $this->db->commit();
+    }
+
+    public function rollBack() {
+        $this->db->rollBack();
+    }
 }
