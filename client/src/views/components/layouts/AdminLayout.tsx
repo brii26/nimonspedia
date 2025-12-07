@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.js';
 
 const AdminLayout = () => {
-  const { logoutAdmin } = useAuth();
+  const { logout } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -25,7 +25,7 @@ const AdminLayout = () => {
         </nav>
         <div className="p-4 border-t">
           <button 
-            onClick={logoutAdmin}
+            onClick={logout}
             className="w-full text-left p-3 text-red-600 hover:bg-red-50 rounded"
           >
             Logout
