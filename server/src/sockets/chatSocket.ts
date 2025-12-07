@@ -150,59 +150,53 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   });
 
   // 3. Handle Typing Indicator
-  socket.on('typing', async (payload: TypingPayload) => {
+  // 3. Handle Typing Indicator
+  socket.on('typing', async (payload: { storeId: number; buyerId?: number }) => {
     try {
-      // Determine chat room based on role
-      let storeId: number;
-      let buyerId: number;
-      
+      let { storeId, buyerId } = payload;
+
+      // Logic penentuan room (Sama seperti send_message)
       if (user.role === 'BUYER') {
-        storeId = payload.receiverId; // receiverId adalah storeId
         buyerId = user.user_id;
       } else if (user.role === 'SELLER') {
         const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
         if (storeResult.rows.length === 0) return;
         storeId = storeResult.rows[0].store_id;
-        buyerId = payload.receiverId; // receiverId adalah buyerId
-      } else {
-        return;
       }
 
-      const chatRoom = `chat_${storeId}_${buyerId}`;
-      socket.to(chatRoom).emit('partner_typing', {
-        senderId: user.user_id,
-        senderName: user.name,
-        isTyping: true
-      });
+      if (storeId && buyerId) {
+        const chatRoom = `chat_${storeId}_${buyerId}`;
+        socket.to(chatRoom).emit('partner_typing', {
+          senderId: user.user_id,
+          senderName: user.name,
+          isTyping: true
+        });
+      }
     } catch (error) {
       console.error('Typing Error:', error);
     }
   });
 
-  socket.on('stop_typing', async (payload: TypingPayload) => {
+  socket.on('stop_typing', async (payload: { storeId: number; buyerId?: number }) => {
     try {
-      // Same logic as typing
-      let storeId: number;
-      let buyerId: number;
-      
+      let { storeId, buyerId } = payload;
+
       if (user.role === 'BUYER') {
-        storeId = payload.receiverId;
         buyerId = user.user_id;
       } else if (user.role === 'SELLER') {
         const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
         if (storeResult.rows.length === 0) return;
         storeId = storeResult.rows[0].store_id;
-        buyerId = payload.receiverId;
-      } else {
-        return;
       }
 
-      const chatRoom = `chat_${storeId}_${buyerId}`;
-      socket.to(chatRoom).emit('partner_typing', {
-        senderId: user.user_id,
-        senderName: user.name,
-        isTyping: false
-      });
+      if (storeId && buyerId) {
+        const chatRoom = `chat_${storeId}_${buyerId}`;
+        socket.to(chatRoom).emit('partner_typing', {
+          senderId: user.user_id,
+          senderName: user.name,
+          isTyping: false
+        });
+      }
     } catch (error) {
       console.error('Stop Typing Error:', error);
     }

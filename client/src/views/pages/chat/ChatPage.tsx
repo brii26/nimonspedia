@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext.js';
-import { io, Socket } from 'socket.io-client';
 import api from '../../../services/api/axios.js';
+import { useChatSocket } from '../../../hooks/useChatSocket.js'; 
 
 // --- UI Components ---
 import Card from '../../components/ui/Card.js';
@@ -11,10 +11,9 @@ import Avatar from '../../components/ui/Avatar.js';
 import TypingIndicator from '../../components/ui/TypingIndicator.js';
 import { Send, Search, Image as ImageIcon, MoreVertical, ArrowLeft } from 'lucide-react';
 
-// --- Helper Function: Format Waktu (Pengganti date-fns) ---
+// --- Helper Function: Format Waktu ---
 const formatTimeAgo = (dateString: string) => {
   if (!dateString) return '';
-  
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -23,26 +22,14 @@ const formatTimeAgo = (dateString: string) => {
   if (diffInSeconds < 60) return `${diffInSeconds} detik lalu`;
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit lalu`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam lalu`;
-  if (diffInSeconds < 172800) return 'Kemarin'; // < 48 jam (kasar)
+  if (diffInSeconds < 172800) return 'Kemarin';
 
-  // Lebih dari kemarin, tampilkan tanggal: "3 Des 2025"
   return new Intl.DateTimeFormat('id-ID', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
+    day: 'numeric', month: 'short', year: 'numeric' 
   }).format(date);
 };
 
 // --- Interfaces ---
-interface Message {
-  message_id: number;
-  sender_id: number;
-  message_text: string;
-  created_at: string;
-  is_read: boolean;
-  type: 'text' | 'image' | 'item_preview';
-}
-
 interface ChatRoom {
   room_id: string; 
   store_id: number;
@@ -56,32 +43,70 @@ interface ChatRoom {
   unread_count: number;
 }
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
-
 const ChatPage = () => {
   const { user, loading } = useAuth();
-  const [socket, setSocket] = useState<Socket | null>(null);
   
-  // State Data
+  // State UI
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  
-  // UI State
   const [inputMessage, setInputMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 1. Init Socket & Load Room List
+  // --- 1. SETUP HOOK & CALLBACKS ---
+
+  // Callback: Update list sidebar ketika ada pesan baru dari Hook
+  const handleNewMessage = useCallback((msg: any) => {
+    setRooms((prevRooms: ChatRoom[]) => {
+      // Konstruksi Room ID (Server logic: chat_{store}_{buyer})
+      const targetRoomId = `chat_${msg.store_id}_${msg.buyer_id}`;
+      
+      const targetRoom = prevRooms.find((r: ChatRoom) => r.room_id === targetRoomId);
+      const otherRooms = prevRooms.filter((r: ChatRoom) => r.room_id !== targetRoomId);
+      
+      if (targetRoom) {
+        // Pindahkan room ke paling atas, update last message & count
+        return [{
+          ...targetRoom,
+          last_message: msg.content,
+          last_message_time: msg.created_at,
+          unread_count: (activeRoom?.room_id === targetRoomId) ? 0 : targetRoom.unread_count + 1
+        }, ...otherRooms];
+      }
+      return prevRooms; // Jika room belum ada di list (kasus chat baru), logic fetch reload bisa ditambahkan
+    });
+  }, [activeRoom]);
+
+  // Init Hook
+  // Kita pass ID dari activeRoom. Jika null, hook tetap connect tapi tidak join room spesifik.
+  const { 
+    messages, 
+    sendMessage, 
+    sendTyping,
+    otherUserTyping,
+    isLoading, // Menggantikan isLoadingHistory
+    socket,
+    isConnected
+  } = useChatSocket(
+    activeRoom ? activeRoom.store_id : null, 
+    activeRoom ? activeRoom.buyer_id : null,
+    handleNewMessage
+  );
+
+  // --- 2. GLOBAL EVENT LISTENER ---
+  // Agar user menerima notifikasi/update sidebar walaupun sedang tidak membuka room tersebut
+  useEffect(() => {
+    if (socket && user && isConnected) {
+      socket.emit('join_user_channel', { user_id: user.id });
+    }
+  }, [socket, user, isConnected]);
+
+  // --- 3. FETCH ROOM LIST (REST API) ---
   useEffect(() => {
     if (!user) return;
-
-    // Load initial Rooms via REST API
     const fetchRooms = async () => {
       try {
         const res = await api.get('/chat/rooms');
@@ -92,147 +117,55 @@ const ChatPage = () => {
         console.error("Gagal memuat daftar chat:", err);
       }
     };
-
     fetchRooms();
+  }, [user]);
 
-    // Connect Socket
-    const newSocket = io(SOCKET_URL, {
-      withCredentials: true, 
-      transports: ['websocket']
-    });
-
-    newSocket.on('connect', () => {
-      console.log('Socket Connected:', newSocket.id);
-      newSocket.emit('join_user_channel', { user_id: user.id });
-    });
-
-    // Listener: Pesan Baru Masuk
-    newSocket.on('new_message', (payload: any) => {
-      // Jika pesan untuk room yang sedang dibuka
-      if (activeRoom && payload.room_id === activeRoom.room_id) {
-        setMessages((prev) => [...prev, {
-          message_id: Date.now(), 
-          sender_id: payload.sender_id,
-          message_text: payload.message,
-          created_at: new Date().toISOString(),
-          is_read: false,
-          type: payload.type || 'text'
-        }]);
-        scrollToBottom();
-      } 
-      
-      // Update List Sidebar 
-      setRooms((prevRooms) => {
-        const otherRooms = prevRooms.filter(r => r.room_id !== payload.room_id);
-        const targetRoom = prevRooms.find(r => r.room_id === payload.room_id);
-        
-        if (targetRoom) {
-          return [{
-            ...targetRoom,
-            last_message: payload.message,
-            last_message_time: new Date().toISOString(),
-            unread_count: (activeRoom?.room_id === payload.room_id) ? 0 : targetRoom.unread_count + 1
-          }, ...otherRooms];
-        }
-        return prevRooms; 
-      });
-    });
-
-    // Listener: Typing Indicator
-    newSocket.on('typing_status', (payload: any) => {
-      if (activeRoom && payload.room_id === activeRoom.room_id && payload.user_id !== user.id) {
-        setIsTyping(payload.is_typing);
-      }
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [user, activeRoom]); 
-
-  // 2. Scroll ke bawah otomatis
+  // --- 4. SCROLL TO BOTTOM ---
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, otherUserTyping]);
 
-  // 3. Handle Select Room
-  const handleSelectRoom = async (room: ChatRoom) => {
+  // --- 5. HANDLERS ---
+
+  const handleSelectRoom = (room: ChatRoom) => {
     setActiveRoom(room);
-    setIsLoadingHistory(true);
-    
-    setRooms(prev => prev.map(r => r.room_id === room.room_id ? {...r, unread_count: 0} : r));
-
-    try {
-      const res = await api.get(`/chat/messages/${room.room_id}`);
-      if (res.data.success) {
-        setMessages(res.data.data);
-      }
-    } catch (err) {
-      console.error("Gagal load history:", err);
-    } finally {
-      setIsLoadingHistory(false);
-      scrollToBottom();
-    }
+    // Reset unread count lokal
+    setRooms((prev: ChatRoom[]) => prev.map((r: ChatRoom) => r.room_id === room.room_id ? {...r, unread_count: 0} : r));
+    // Note: Fetch messages history ditangani otomatis oleh hook via useEffect([storeId, buyerId])
   };
 
-  // 4. Handle Send Message
   const handleSendMessage = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!inputMessage.trim() || !socket || !activeRoom || !user) return;
+    if (!inputMessage.trim() || !activeRoom) return;
 
-    const payload = {
-      room_id: activeRoom.room_id,
-      message: inputMessage,
-      type: 'text',
-      sender_id: user.id 
-    };
-
-    socket.emit('send_message', payload);
-
-    setMessages(prev => [...prev, {
-      message_id: Date.now(),
-      sender_id: Number(user.id),
-      message_text: inputMessage,
-      created_at: new Date().toISOString(),
-      is_read: false,
-      type: 'text'
-    }]);
-
-    setRooms(prev => {
-        const other = prev.filter(r => r.room_id !== activeRoom.room_id);
-        const current = prev.find(r => r.room_id === activeRoom.room_id);
-        if(current) {
-            return [{
-                ...current,
-                last_message: inputMessage,
-                last_message_time: new Date().toISOString()
-            }, ...other];
-        }
-        return prev;
-    });
-
+    // Panggil method hook (Hook sudah pegang storeId & buyerId)
+    sendMessage(inputMessage);
+    
+    // Update UI input langsung
     setInputMessage('');
-    setIsTyping(false);
+    
+    // Stop typing status immediately
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    sendTyping(false); 
   };
 
-  // 5. Handle Typing Logic
   const handleTypingInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputMessage(e.target.value);
+    const val = e.target.value;
+    setInputMessage(val);
     
-    if (!socket || !activeRoom) return;
+    if (!activeRoom) return;
 
-    socket.emit('typing', { room_id: activeRoom.room_id, is_typing: true });
+    // Trigger typing event via hook
+    sendTyping(true);
 
+    // Debounce stop typing
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('typing', { room_id: activeRoom.room_id, is_typing: false });
+      sendTyping(false);
     }, 2000);
   };
 
@@ -245,12 +178,12 @@ const ChatPage = () => {
     return { name: room.buyer_name, image: room.buyer_image };
   };
 
-  // --- Render ---
+  // --- RENDER ---
 
   if (loading) return <div className="flex h-screen items-center justify-center">Loading Chat...</div>;
   if (!user) return <div className="p-10 text-center">Silakan login terlebih dahulu.</div>;
 
-  const filteredRooms = rooms.filter(room => {
+  const filteredRooms = rooms.filter((room: ChatRoom) => {
     const info = getOpponentInfo(room);
     return info.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -278,7 +211,7 @@ const ChatPage = () => {
             {filteredRooms.length === 0 ? (
               <div className="p-8 text-center text-gray-500">Tidak ada pesan</div>
             ) : (
-              filteredRooms.map(room => {
+              filteredRooms.map((room: ChatRoom) => {
                 const { name, image } = getOpponentInfo(room);
                 return (
                   <div 
@@ -293,12 +226,12 @@ const ChatPage = () => {
                       <div className="flex justify-between items-baseline mb-1">
                         <h3 className="font-semibold text-gray-800 truncate">{name}</h3>
                         <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                          {/* MENGGUNAKAN HELPER BARU */}
                           {formatTimeAgo(room.last_message_time)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-500 truncate mr-2">
+                          {/* Tampilkan 'Typing...' jika sedang ngetik di room ini di sidebar (optional) */}
                           {room.last_message || <span className="italic text-gray-400">Belum ada pesan</span>}
                         </p>
                         {room.unread_count > 0 && (
@@ -336,8 +269,8 @@ const ChatPage = () => {
                   <div className="ml-3">
                     <h3 className="font-bold text-gray-800">{getOpponentInfo(activeRoom).name}</h3>
                     <div className="flex items-center">
-                        <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                        <span className="text-xs text-gray-500">Online</span>
+                        <span className={`w-2 h-2 rounded-full mr-1 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        <span className="text-xs text-gray-500">{isConnected ? 'Online' : 'Offline'}</span>
                     </div>
                   </div>
                 </div>
@@ -348,11 +281,12 @@ const ChatPage = () => {
 
               {/* Messages List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                {isLoadingHistory ? (
-                   <div className="flex justify-center py-10"><span className="loader">Loading history...</span></div>
+                {isLoading ? (
+                   <div className="flex justify-center py-10"><span className="loader">Loading chat...</span></div>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isMe = msg.sender_id === Number(user.id);
+                    // Hook menormalisasi sender_id. User ID harus number agar match.
+                    const isMe = Number(msg.sender_id) === Number(user.id);
                     return (
                       <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div 
@@ -362,9 +296,8 @@ const ChatPage = () => {
                               : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{msg.message_text}</p>
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                           <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                             {/* MENGGUNAKAN HELPER BARU */}
                              {formatTimeAgo(msg.created_at)}
                           </div>
                         </div>
@@ -373,7 +306,8 @@ const ChatPage = () => {
                   })
                 )}
                 
-                {isTyping && (
+                {/* Typing Indicator dari Hook */}
+                {otherUserTyping && (
                   <div className="flex justify-start">
                      <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm">
                         <TypingIndicator />
