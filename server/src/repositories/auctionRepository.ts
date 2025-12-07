@@ -85,7 +85,7 @@ class AuctionRepository {
         };
       }
 
-      // Check user balance (assuming there's a balance check)
+      // Check user balance
       const userResult = await client.query(
         'SELECT balance FROM users WHERE user_id = $1',
         [userId]
@@ -149,7 +149,7 @@ class AuctionRepository {
     try {
       await client.query('BEGIN');
 
-      // 1. Cari pemenang (Highest Bidder)
+      // Cari pemenang (Highest Bidder)
       const highestBidResult = await client.query(`
         SELECT bidder_id, bid_amount
         FROM auction_bids 
@@ -166,7 +166,7 @@ class AuctionRepository {
         finalPrice = Number(highestBidResult.rows[0].bid_amount);
       }
 
-      // 2. Update status Auction menjadi 'ended'
+      // Update status Auction menjadi 'ended'
       const result = await client.query(`
         UPDATE auctions 
         SET status = 'ended', 
@@ -177,7 +177,7 @@ class AuctionRepository {
         AND status = 'active'
       `, [winnerId, finalPrice, auctionId]);
 
-      // 3. LOGIKA ORDER OTOMATIS
+      // Logika order otomatis
       if (winnerId) {
         const infoQuery = await client.query(`
             SELECT 
@@ -194,7 +194,7 @@ class AuctionRepository {
         if (infoQuery.rows.length > 0) {
           const info = infoQuery.rows[0];
 
-          // A. Susun Data Order (Header)
+          // Susun Data Order (Header)
           const orderData = {
             buyer_id: winnerId,
             store_id: info.store_id,
@@ -202,7 +202,7 @@ class AuctionRepository {
             shipping_address: info.shipping_address || '-'
           };
 
-          // B. Susun Data Item (Detail)
+          // Susun Data Item (Detail)
           const orderItems = [{
             product_id: info.product_id,
             quantity: info.quantity,
@@ -210,7 +210,7 @@ class AuctionRepository {
             subtotal: finalPrice
           }];
 
-          // C. Panggil OrderRepository dengan Client Transaksi
+          // Panggil OrderRepository dengan Client Transaksi
           await orderRepository.createOrder(orderData, orderItems, client);
           
           console.log(`Order created successfully for Auction #${auctionId}`);

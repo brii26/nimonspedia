@@ -116,6 +116,8 @@ class Application {
 		$this->router->post('/seller/store/update', 'SellerController@updateStore');
 
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
+
+        // Auction routes
         
     }
     
