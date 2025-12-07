@@ -134,12 +134,12 @@
                   
                   <div class="auction-form-group">
                       <label>Start Time</label>
-                      <input type="datetime-local" name="start_time" class="form-control auction-input" required>
+                      <input type="datetime-local" name="start_time" step="1" class="form-control auction-input" required>
                   </div>
 
                   <div class="auction-form-group">
                       <label>End Time</label>
-                      <input type="datetime-local" name="end_time" class="form-control auction-input" required>
+                      <input type="datetime-local" name="end_time" step="1" class="form-control auction-input" required>
                   </div>
 
                   <div class="auction-form-group">
