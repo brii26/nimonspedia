@@ -249,7 +249,10 @@ const Dashboard: React.FC = () => {
     return <Badge variant={variants[role] || 'gray'}>{role}</Badge>;
   };
 
-  if (loading && users.length === 0) {
+  // Only show full-page spinner on initial load (no previous data)
+  const isInitialLoading = loading && users.length === 0 && searchTerm === '';
+  
+  if (isInitialLoading) {
     return <div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>;
   }
 
@@ -284,11 +287,9 @@ const Dashboard: React.FC = () => {
             <TabPanels activeTab={activeTab}>
               <TabPanel eventKey={'0'} activeTab={activeTab}>
                 <div className="mb-6">
-                  {/* REVISI: Debounce 300ms sesuai requirement */}
                   <SearchInput
                     placeholder="Search users by name or email..."
                     value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                     onSearch={setSearchTerm}
                     debounce={300} 
                     icon="🔍"

@@ -23,9 +23,13 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   const [localValue, setLocalValue] = useState(value || '');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isControlled = value !== undefined;
+  
   useEffect(() => {
-    setLocalValue(value || '');
-  }, [value]);
+    if (isControlled && value !== localValue) {
+      setLocalValue(value || '');
+    }
+  }, [value, isControlled]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
