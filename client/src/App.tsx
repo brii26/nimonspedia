@@ -10,10 +10,11 @@ import ProtectedRoute from './services/routes/ProtectedRoute.js';
 // Pages
 import AdminLogin from './views/pages/admin/Login.js';
 import AdminDashboard from './views/pages/admin/Dashboard.js';
+import ChatPage from './views/pages/chat/ChatPage.js'; // Impor ChatPage yang benar
+
 import { 
   AuctionList, 
-  AuctionDetail, 
-  ChatPage, 
+  AuctionDetail,
   NotFound 
 } from './views/pages/Placeholders.js'; 
 

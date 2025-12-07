@@ -31,14 +31,18 @@ export interface AuctionRoom {
 
 // Chat interfaces
 export interface ChatMessage {
-  id: number;
-  chat_room_id: number;
+  message_id: number;
+  store_id: number;
+  buyer_id: number;
   sender_id: number;
-  message: string;
+  message_type: 'text' | 'image' | 'item_preview';
+  content: string;
+  product_id?: number;
+  is_read: boolean;
   created_at: string;
-  sender_name?: string;
-  sender_role?: 'buyer' | 'seller';
 }
+
+
 
 export interface ChatRoom {
   id: number;

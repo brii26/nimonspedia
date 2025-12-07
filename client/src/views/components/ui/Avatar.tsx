@@ -5,11 +5,11 @@ type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 type AvatarShape = 'circle' | 'square' | 'rounded';
 
 interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
-  src?: string;
+  src?: string | null | undefined;
   alt?: string;
   size?: AvatarSize;
   shape?: AvatarShape;
-  fallback?: string;
+  fallback?: string | null | undefined;
   className?: string;
 }
 
