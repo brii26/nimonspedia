@@ -24,8 +24,8 @@ class AuctionController extends BaseController {
                 'min_increment' => ['required', 'numeric', 'numeric_min:100']
             ]);
 
-            $startTime = date('Y-m-d H:i:s', strtotime($data['start_time']));
-            $endTime   = date('Y-m-d H:i:s', strtotime($data['end_time']));
+            $start = strtotime($post['start_time']);
+            $end = strtotime($post['end_time']);
             $now = time();
 
             if ($start <= $now) {
