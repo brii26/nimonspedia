@@ -62,12 +62,26 @@
           </div>
 
           <div class="card-actions">
-            <a href="/seller/products/edit?id=<?= $product['product_id'] ?>" class="btn btn-warning">Edit</a>
-            <form action="/seller/products/delete" method="POST">
-              <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
-              <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-              <button type="submit" class="btn btn-danger" id="delete-button">Delete</button>
-            </form>
+              <a href="/seller/products/edit?id=<?= $product['product_id'] ?>" class="btn btn-warning">Edit</a>
+              <form action="/seller/products/delete" method="POST">
+                  <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
+                  <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                  <button type="submit" class="btn btn-danger" id="delete-button">Delete</button>
+              </form>
+              <?php 
+                  $auctionId = $product['auction_id'] ?? null; 
+              ?>
+              <?php if ($auctionId): ?>
+                  <a href="/auction/<?= $auctionId ?>" class="btn btn-info">View Auction</a>
+              <?php else: ?>
+                  <button type="button" 
+                          class="btn btn-primary btn-start-auction"
+                          data-product-id="<?= $product['product_id'] ?>"
+                          data-product-name="<?= View::escape($product['product_name']) ?>"
+                          data-product-stock="<?= $product['stock'] ?>">
+                      Begin Auction
+                  </button>
+              <?php endif; ?>
           </div>
         </div>
       <?php endforeach; ?>
@@ -99,3 +113,52 @@
   <?php endif; ?>
 
 </main>
+
+<!-- Auction Modal -->
+<div id="auction-modal" class="app-modal" aria-hidden="true">
+    
+    <div class="app-modal-backdrop" id="auction-backdrop"></div>
+    
+    <div class="app-modal-wrapper">
+        <div class="app-modal-card">
+            
+            <div class="app-modal-header">
+                <h2>Start Auction: <span id="auction-product-name-display" class="highlight-text"></span></h2>
+                <button type="button" class="app-modal-close" id="auction-close-x">&times;</button>
+            </div>
+
+            <div class="app-modal-body">
+                <form id="auction-form" action="/seller/auctions/create" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
+                    <input type="hidden" name="product_id" id="auction-product-id">
+                    
+                    <div class="auction-form-group">
+                        <label>Start Time</label>
+                        <input type="datetime-local" name="start_time" step="1" class="form-control auction-input" required>
+                    </div>
+
+                    <div class="auction-form-group">
+                        <label>Quantity to Auction <small id="stock-hint"></small></label>
+                        <input type="number" name="quantity" id="auction-quantity" min="1" class="form-control auction-input" required>
+                    </div>
+
+                    <div class="auction-form-group">
+                        <label>Starting Price (IDR)</label>
+                        <input type="number" name="start_price" id="auction-start-price" class="form-control auction-input" required>
+                    </div>
+
+                    <div class="auction-form-group">
+                        <label>Minimum Bid Increment (IDR)</label>
+                        <input type="number" name="min_increment" placeholder="e.g., 10000" class="form-control auction-input" required>
+                    </div>
+                </form>
+            </div>
+
+            <div class="app-modal-footer">
+                <button type="button" class="btn btn-secondary" id="auction-cancel-btn">Cancel</button>
+                <button type="submit" form="auction-form" class="btn btn-primary">Create Auction</button>
+            </div>
+
+        </div>
+    </div>
+</div>

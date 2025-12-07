@@ -183,12 +183,18 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+
 .card-actions form {
     display: contents;
 }
+
 .card-actions .btn {
     width: 100%;
     box-shadow: none;
+}
+
+.card-actions > :last-child {
+    grid-column: span 2;
 }
 
 .btn {
@@ -233,11 +239,8 @@
     background: var(--danger-700);
 }
 .btn-primary {
-    background: var(--primary);
-    color: #fff;
-}
-.btn-primary:hover {
     background: var(--primary-600);
+    color: #fff;
 }
 .btn-outline-secondary {
     background: var(--primary);
@@ -344,6 +347,37 @@
 #reset-filter-btn {
 	background: var(--primary-600)
 }
+
+
+/* Auction modal */
+.auction-form-group {
+    margin-bottom: 1rem;
+}
+
+.auction-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.auction-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.highlight-text {
+    color: #667eea; 
+    font-size: 0.9em;
+}
+
+#stock-hint {
+    color: #666;
+    font-weight: normal;
+}
+
 
 @media (max-width: 900px) {
     .seller-product-page {

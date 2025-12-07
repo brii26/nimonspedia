@@ -124,7 +124,8 @@ class SellerController extends BaseController {
 			],
 			'jsFiles' => [
 				'/js/utils/fetchXhr.js',
-				'/js/pages/seller/products/index.js'
+				'/js/pages/seller/products/index.js',
+				'/js/components/auction-modal.js'
 			]
 		]);
 	}
