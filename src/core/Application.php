@@ -87,6 +87,10 @@ class Application {
         $this->router->post('/cart/remove', 'CartController@remove');
         $this->router->get('/api/cart/count', 'CartController@count');
         
+        // Chat API routes
+        $this->router->post('/api/chat/initiate', 'ChatController@initiate');
+        $this->router->get('/api/chat/rooms', 'ChatController@getRooms');
+        
         // Order routes
         $this->router->get('/orders', 'BuyerOrdersController@index');
         $this->router->get('/checkout', 'BuyerOrdersController@showCheckoutPage'); 

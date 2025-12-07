@@ -16,7 +16,7 @@ RUN apk update && apk add --no-cache \
     libpq \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_pgsql \
-    && pecl install redis \
+    && pecl install redis-6.0.2 \
     && docker-php-ext-enable redis \
     && apk del --no-cache \
         pcre-dev \
