@@ -61,10 +61,16 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   });
 
   // 2. Handle Event Kirim Pesan
-  socket.on('send_message', async (payload: SendMessagePayload) => {
+  socket.on('send_message', async (payload: { 
+      storeId: number; 
+      buyerId?: number; 
+      message: string; 
+      type?: 'text' | 'image' | 'item_preview';
+      productId?: number;
+  }) => {
     try {
+      // 1. Cek Feature Flag (Tetap dipertahankan)
       const flagAccess = await featureFlagRepository.getUserFlag(user.user_id, 'chat_enabled');
-      // Logic: Jika flag ada DAN is_enabled false, maka tolak.
       if (flagAccess && flagAccess.is_enabled === false) {
         socket.emit('error_message', { 
           message: `Fitur Chat nonaktif: ${flagAccess.reason || 'Maintenance'}` 
@@ -72,70 +78,69 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         return;
       }
 
-      if (!payload.message || !payload.message.trim()) return;
+      // 2. Validasi & Penentuan Context
+      let storeId = payload.storeId;
+      let buyerId = payload.buyerId;
 
-      // Determine storeId and buyerId based on user role
-      let storeId: number;
-      let buyerId: number;
-      
       if (user.role === 'BUYER') {
-        // Buyer mengirim pesan ke store
-        storeId = payload.receiverId; // receiverId adalah storeId
+        // Jika pengirim adalah Buyer:
+        // - buyerId otomatis adalah dirinya sendiri (security)
+        // - storeId diambil dari payload (siapa yang diajak chat)
         buyerId = user.user_id;
+        
+        if (!storeId) {
+             socket.emit('error_message', { message: 'Target Store ID diperlukan' });
+             return;
+        }
+
       } else if (user.role === 'SELLER') {
-        // Seller mengirim pesan ke buyer
-        // Perlu query untuk mendapat storeId dari userId
+        // Jika pengirim adalah Seller:
+        // - storeId divalidasi dari DB (apakah dia pemilik toko?)
+        // - buyerId diambil dari payload (siapa customer yang dibalas)
         const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
         if (storeResult.rows.length === 0) {
-          socket.emit('error_message', { message: 'Store tidak ditemukan' });
+          socket.emit('error_message', { message: 'Anda tidak memiliki toko' });
           return;
         }
+        
+        // Override storeId payload dengan storeId asli milik user (security)
         storeId = storeResult.rows[0].store_id;
-        buyerId = payload.receiverId; // receiverId adalah buyerId
+
+        if (!buyerId) {
+            socket.emit('error_message', { message: 'Target Buyer ID diperlukan' });
+            return;
+        }
       } else {
-        socket.emit('error_message', { message: 'Role tidak valid untuk chat' });
+        socket.emit('error_message', { message: 'Role tidak valid' });
         return;
       }
 
+      // 3. Validasi Konten (Sama seperti sebelumnya)
       const msgType = payload.type || 'text';
       let msgContent = payload.message;
       let productId = payload.productId || null;
 
-      if (msgType === 'text' && (!msgContent || !msgContent.trim())) {
-        return;
-      }
+      if (msgType === 'text' && (!msgContent || !msgContent.trim())) return;
 
-      if (msgType === 'image') {
-        // Asumsi: Content berisi URL gambar (hasil upload API)
-        if (!msgContent) {
-          socket.emit('error_message', { message: 'URL Gambar tidak boleh kosong' });
-          return;
-        }
-      }
-
-      if (msgType === 'item_preview') {
-        if (!productId) {
-          socket.emit('error_message', { message: 'Product ID diperlukan untuk item preview' });
-          return;
-        }
-        // Content bisa optional untuk preview, atau berisi pesan pengantar
-        if (!msgContent) msgContent = ''; 
-      }
-
+      // 4. Simpan ke Database
       const savedMessage = await chatRepository.saveMessage(
         storeId,
         buyerId, 
-        user.user_id,
+        user.user_id, // Sender ID
         msgContent,
         msgType, 
         productId
       );
 
-      // --- BROADCAST: Kirim ke room chat ini ---
+      // 5. Broadcast (Standardized Event Name: 'new_message')
       const chatRoom = `chat_${storeId}_${buyerId}`;
-      io.to(chatRoom).emit('incoming_message', savedMessage);
+      
+      io.to(chatRoom).emit('new_message', {
+        ...savedMessage,
+        room_id: chatRoom // Tambahkan ini agar Client validasi mudah
+      });
 
-      // --- FEEDBACK: Konfirmasi ke sender ---
+      // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
 
     } catch (error) {
