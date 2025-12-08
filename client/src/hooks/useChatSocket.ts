@@ -50,6 +50,7 @@ export const useChatSocket = (
       });
 
       socketInstance.on('new_message', (payload: any) => {
+        // 1. Normalisasi data pesan
         const newMessage: ChatMessage = {
            message_id: payload.message_id || Date.now(),
            store_id: payload.store_id,
@@ -66,10 +67,31 @@ export const useChatSocket = (
              (currentStoreId.current === newMessage.store_id && currentBuyerId.current === newMessage.buyer_id);
 
         if (isCurrentRoom) {
-             setMessages(prev => [...prev, newMessage]);
+             setMessages(prev => {
+                // A. Cek Duplikat ID Asli (Safety Check)
+                // Jika pesan dengan ID database ini sudah ada, abaikan.
+                if (prev.some(m => m.message_id === newMessage.message_id)) {
+                    return prev;
+                }
+
+                // B. Cek Pesan Optimistic
+                // Cari pesan 'pending' (sender_id 0) yang kontennya sama
+                const optimisticIndex = [...prev].reverse().findIndex(m => 
+                    m.sender_id === 0 && m.content === newMessage.content
+                );
+
+                if (optimisticIndex !== -1) {
+                    const originalIndex = prev.length - 1 - optimisticIndex;
+                    const newState = [...prev];
+                    newState[originalIndex] = newMessage;
+                    return newState;
+                }
+
+                // C. Pesan Baru Murni (Dari Lawan Bicara)
+                return [...prev, newMessage];
+             });
         }
 
-        // Panggil Ref yang sudah di-update
         if (onNewMessageRef.current) {
             onNewMessageRef.current(newMessage);
         }

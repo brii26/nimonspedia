@@ -208,7 +208,6 @@ const ChatPage = () => {
     if (!inputMessage.trim() || !activeRoom) return;
 
     console.log("[ChatPage] handleSendMessage called with:", inputMessage);
-    console.log("[ChatPage2] handleSendMessage called with:", inputMessage);
     console.log("[ChatPage] activeRoom:", activeRoom);
     
     sendMessage(inputMessage);
