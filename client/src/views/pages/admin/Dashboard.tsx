@@ -8,7 +8,34 @@ import {
 } from '../../components/ui/index.js';
 import type { SelectOption } from '../../components/ui/index.js';
 
-// ... (Interfaces DashboardStats, FeatureFlag, User, UserFlags tetap sama)
+interface DashboardStats {
+  totalUsers: number;
+  totalBuyers: number;
+  totalSellers: number;
+  activeAuctions: number;
+}
+
+interface FeatureFlag {
+  feature_name: string;
+  is_enabled: boolean;
+}
+
+interface User {
+  user_id: string;
+  name: string;
+  email: string;
+  role: 'BUYER' | 'SELLER' | 'ADMIN';
+  balance?: number;
+  created_at: string;
+  feature_flags?: FeatureFlag[];
+}
+
+interface UserFlags {
+  checkout: boolean;
+  chat: boolean;
+  auction: boolean;
+  [key: string]: boolean;
+}
 
 // Update Interface GlobalFeature untuk handling state lokal UI
 interface GlobalFeature {
@@ -34,8 +61,10 @@ interface FlagErrors {
 
 const Dashboard: React.FC = () => {
   // ... (State stats, users, loading, dll tetap sama)
+  const enabled_msg = 'Enabled via Dashboard';
+
   const [stats, setStats] = useState<DashboardStats>({
-      totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0
+    totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0
   });
   const [users, setUsers] = useState<User[]>([]);
   const [features, setFeatures] = useState<GlobalFeature[]>([]);
@@ -173,7 +202,7 @@ const Dashboard: React.FC = () => {
     try {
       const flagNameMap = { checkout: 'checkout_enabled', chat: 'chat_enabled', auction: 'auction_enabled' };
       const flagUpdates = Object.keys(userFlags).map(async (flagName) => {
-        const reason = userFlags[flagName] ? 'Enabled via Dashboard' : flagReasons[flagName];
+        const reason = userFlags[flagName] ? enabled_msg : flagReasons[flagName];
         return fetch('/api/node/admin/flags/user', {
           method: 'POST',
           headers: {
@@ -242,7 +271,7 @@ const Dashboard: React.FC = () => {
             body: JSON.stringify({ 
                 feature_name: pendingGlobalFeature.feature_name,
                 is_enabled: pendingGlobalFeature.pending_enabled,
-                reason: pendingGlobalFeature.pending_enabled ? 'Enabled via Dashboard' : pendingGlobalFeature.pending_reason
+                reason: pendingGlobalFeature.pending_enabled ? enabled_msg : pendingGlobalFeature.pending_reason
             })
         });
 
@@ -427,8 +456,7 @@ const Dashboard: React.FC = () => {
                 <div className="space-y-6">
                   {features.map(feature => {
                     const isToggleChanged = feature.is_enabled !== feature.pending_enabled;
-                    const isReasonChanged = (feature.reason || '') !== (feature.pending_reason || '');
-
+                    const isReasonChanged = (feature.reason || enabled_msg) !== (feature.pending_reason || enabled_msg);
                     const isChanged = isToggleChanged || isReasonChanged;
                     return (
                         <Card key={feature.access_id} className={`transition-shadow border-l-4 ${feature.is_enabled ? 'border-green-500' : 'border-red-500'}`}>
