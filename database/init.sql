@@ -289,11 +289,14 @@ CREATE TABLE reviews (
     user_id INTEGER REFERENCES users(user_id),
     product_id INTEGER REFERENCES products(product_id),
     rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
     is_hidden BOOLEAN DEFAULT FALSE,
     hidden_reason TEXT,
-    hidden_by INTEGER REFERENCES users(user_id).
-    hidden_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    hidden_by INTEGER REFERENCES users(user_id),
+    hidden_at TIMESTAMP NULL,
+    UNIQUE(order_id, product_id)
 );
 
 CREATE TABLE review_images (
@@ -326,6 +329,10 @@ CREATE INDEX idx_push_subscriptions_user ON push_subscriptions(user_id);
 CREATE INDEX idx_reviews_product_id ON reviews(product_id);
 CREATE INDEX idx_reviews_is_hidden ON reviews(is_hidden);
 CREATE INDEX idx_review_images_review_id ON review_images(review_id);
+CREATE INDEX idx_reviews_order_id ON reviews(order_id);
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_reviews_deleted_at ON reviews(deleted_at);
+CREATE INDEX idx_review_responses_review_id ON review_responses(review_id);
 
 INSERT INTO user_feature_access (user_id, feature_name, is_enabled, reason) VALUES 
 (NULL, 'auction_enabled', TRUE, NULL),
