@@ -2,11 +2,13 @@
 class ProductController extends BaseController {
     private $productService;
     private $categoryService;
+    private $reviewService;
 
     public function __construct() {
         parent::__construct();
         $this->productService = new ProductService();
         $this->categoryService = new CategoryService();
+        $this->reviewService = new ReviewService();
     }
 
     public function index() {
@@ -58,16 +60,27 @@ class ProductController extends BaseController {
             $recommendations = $productRepo->getRecommendations($firstCategoryId, $productId, 4);
         }
 
+        // Get review stats
+        $reviewStats = $this->reviewService->getProductStats($productId);
+        
+        // Get initial reviews (first page)
+        $initialReviews = $this->reviewService->getProductReviews($productId, 1, 5);
+
         $this->render('pages/products/show', [
             'product' => $product,
             'recommendations' => $recommendations,
+            'reviewStats' => $reviewStats,
+            'initialReviews' => $initialReviews['data'],
+            'reviewsPagination' => $initialReviews,
             'pageTitle' => View::escape($product['product_name']),
             'jsFiles' => [
                 '/js/utils/fetchXhr.js', 
+                '/js/components/product-reviews.js',
                 '/js/pages/products/show.js'
             ],
             'cssFiles' => [
                 '/css/pages/product-detail.css',
+                '/css/components/reviews.css'
             ]
         ]);
     }
