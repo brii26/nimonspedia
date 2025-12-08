@@ -60,6 +60,8 @@ const ChatPage = () => {
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null);
   const [inputMessage, setInputMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
+  const [autoSelectRoomId, setAutoSelectRoomId] = useState<string | null>(null);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,19 @@ const ChatPage = () => {
     });
   }, [activeRoom]);
 
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    
+    // Trigger load more ketika scroll position dekat top (dalam 100px)
+    if (element.scrollTop < 100 && hasMore && !isLoadingMore && messages.length > 0) {
+      const oldestMessage = messages[0];
+      if (oldestMessage) {
+        console.log('[ChatPage] Loading more messages, oldest ID:', oldestMessage.message_id);
+        loadMoreMessages(oldestMessage.message_id);
+      }
+    }
+  };
+
   // --- Init Hook ---
   const { 
     messages, 
@@ -91,6 +106,9 @@ const ChatPage = () => {
     sendTyping,
     otherUserTyping,
     isLoading, 
+    loadMoreMessages,
+    hasMore,          
+    isLoadingMore,
     socket,
     isConnected,
     error: socketError
@@ -315,8 +333,8 @@ const ChatPage = () => {
                 </Button>
               </div>
 
-              {/* Messages List (AREA PERBAIKAN UTAMA) */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50" onScroll={handleScroll}>
+                {isLoadingMore && <div className="text-center text-xs text-gray-400 py-2">Memuat pesan lama...</div>}
                 {isLoading ? (
                    <div className="flex justify-center py-10"><span className="loader">Loading chat...</span></div>
                 ) : (

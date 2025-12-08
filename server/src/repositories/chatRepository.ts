@@ -96,8 +96,8 @@ class ChatRepository {
 
   // Get chat history between store and buyer
   // Updated to include product details for item previews
-  async getChatHistory(storeId: number, buyerId: number, limit: number = 50): Promise<ChatMessageDB[]> {
-    const query = `
+  async getChatHistory(storeId: number, buyerId: number, limit: number = 50, beforeId?: number): Promise<ChatMessageDB[]> {
+    let query = `
       SELECT 
         cm.*,
         p.product_name,
@@ -106,10 +106,22 @@ class ChatRepository {
       FROM chat_messages cm
       LEFT JOIN products p ON cm.product_id = p.product_id
       WHERE cm.store_id = $1 AND cm.buyer_id = $2
-      ORDER BY cm.created_at DESC
-      LIMIT $3
     `;
-    const res = await pool.query(query, [storeId, buyerId, limit]);
+
+    const params: any[] = [storeId, buyerId];
+
+    if (beforeId) {
+      query += ` AND cm.message_id < $3`;
+      params.push(beforeId);
+    }
+
+    query += ` ORDER BY cm.created_at DESC`;
+    
+    const paramIndex = beforeId ? 4 : 3;
+    query += ` LIMIT $${paramIndex}`;
+    params.push(limit);
+
+    const res = await pool.query(query, params);
     return res.rows.reverse(); // Return in chronological order
   }
 

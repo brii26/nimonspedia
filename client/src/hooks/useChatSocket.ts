@@ -16,6 +16,8 @@ export const useChatSocket = (
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const currentStoreId = useRef(storeId);
   const currentBuyerId = useRef(buyerId);
@@ -216,11 +218,53 @@ export const useChatSocket = (
     }
   }, [storeId, buyerId, isConnected, socket]);
 
+  const loadMoreMessages = useCallback((beforeId: number) => {
+    if (!socket || !isConnected || !currentStoreId.current || isLoadingMore) return;
+    
+    setIsLoadingMore(true);
+    socket.emit('load_more_messages', {
+      storeId: currentStoreId.current,
+      buyerId: currentBuyerId.current,
+      beforeId,
+      limit: 50
+    });
+  }, [socket, isConnected, isLoadingMore]);
+
+  // Listener balasan server
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('more_messages_loaded', (data: { messages: any[], hasMore: boolean }) => {
+      const formattedOldMessages = data.messages.map(msg => ({
+         message_id: msg.message_id,
+         store_id: currentStoreId.current || 0,
+         buyer_id: currentBuyerId.current || 0,
+         sender_id: msg.sender_id,
+         content: msg.content,
+         message_type: msg.message_type || 'text',
+         created_at: msg.created_at,
+         is_read: msg.is_read
+      }));
+
+      // Prepend (tambah di depan) pesan lama
+      setMessages(prev => [...formattedOldMessages, ...prev]);
+      setHasMore(data.hasMore);
+      setIsLoadingMore(false);
+    });
+
+    return () => {
+      socket.off('more_messages_loaded');
+    };
+  }, [socket]);
+
   return {
     messages,
     isConnected,
     isJoined,
     isLoading,
+    loadMoreMessages,
+    hasMore,
+    isLoadingMore,
     error,
     otherUserTyping,
     sendMessage,
