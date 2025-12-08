@@ -17,9 +17,9 @@ class SocketClient {
     }
 
     const token = getToken();
-    if (!token || !isTokenValid(token)) {
-      throw new Error('No valid authentication token found');
-    }
+    // if (!token || !isTokenValid(token)) {
+    //   throw new Error('No valid authentication token found');
+    // }
 
     this.isConnecting = true;
 

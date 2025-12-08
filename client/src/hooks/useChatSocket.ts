@@ -3,7 +3,6 @@ import { Socket } from 'socket.io-client';
 import socketClient from '../services/socketClient.js';
 import type { ChatMessage, SocketErrorResponse } from '../types/socket.js';
 
-// Tambahkan param onNewMessage agar Page bisa update Sidebar
 export const useChatSocket = (
   storeId: number | null, 
   buyerId: number | null,
@@ -22,7 +21,13 @@ export const useChatSocket = (
   const currentBuyerId = useRef(buyerId);
   const typingTimer = useRef<number | null>(null);
 
-  // Update ref saat props berubah
+  const onNewMessageRef = useRef(onNewMessage);
+  
+  useEffect(() => {
+    onNewMessageRef.current = onNewMessage;
+  }, [onNewMessage]);
+
+  // Update ref saat props ID berubah
   useEffect(() => {
     currentStoreId.current = storeId;
     currentBuyerId.current = buyerId;
@@ -30,7 +35,6 @@ export const useChatSocket = (
 
   const connectSocket = useCallback(() => {
     try {
-      // Pastikan socketClient.connect() mengembalikan instance singleton
       const socketInstance = socketClient.connect(); 
       setSocket(socketInstance);
       setIsConnected(socketInstance.connected);
@@ -45,47 +49,40 @@ export const useChatSocket = (
         setIsJoined(false);
       });
 
-      // --- FIX 1: Event Listener Standard (new_message) ---
-      // Listener ini menangani pesan masuk untuk Room yang aktif
       socketInstance.on('new_message', (payload: any) => {
-        // Normalisasi data (Server mungkin kirim snake_case, kita butuh camelCase/consistent structure)
         const newMessage: ChatMessage = {
            message_id: payload.message_id || Date.now(),
            store_id: payload.store_id,
            buyer_id: payload.buyer_id,
            sender_id: payload.sender_id,
-           content: payload.content || payload.message_text || payload.message, // Handle variasi naming
+           content: payload.content || payload.message_text || payload.message,
            message_type: payload.type || payload.message_type || 'text',
            product_id: payload.product_id,
            is_read: false,
            created_at: payload.created_at || new Date().toISOString()
         };
 
-        // 1. Update State Pesan Lokal (Hanya jika pesan ini milik room yang sedang dibuka)
-        // Cek apakah room yang aktif sesuai dengan pesan yang masuk
         const isCurrentRoom = 
-            (currentStoreId.current === newMessage.store_id && currentBuyerId.current === newMessage.buyer_id);
+             (currentStoreId.current === newMessage.store_id && currentBuyerId.current === newMessage.buyer_id);
 
         if (isCurrentRoom) {
              setMessages(prev => [...prev, newMessage]);
         }
 
-        // 2. Callback ke Parent (ChatPage) untuk update Sidebar/Notifikasi
-        if (onNewMessage) {
-            onNewMessage(newMessage);
+        // Panggil Ref yang sudah di-update
+        if (onNewMessageRef.current) {
+            onNewMessageRef.current(newMessage);
         }
       });
 
-      // --- FIX 2: Event Listener Typing ---
-      socketInstance.on('partner_typing', (data: any) => { // Server emit 'partner_typing'
+      socketInstance.on('partner_typing', (data: any) => {
         setOtherUserTyping(data.isTyping);
       });
 
       socketInstance.on('chat_joined', (data: { messages: any[] }) => {
-        // Mapping message history dari server ke format Client
         const formattedMessages = (data.messages || []).map(msg => ({
             message_id: msg.message_id,
-            store_id: storeId || 0, // Fallback
+            store_id: storeId || 0,
             buyer_id: buyerId || 0,
             sender_id: msg.sender_id,
             content: msg.content || msg.message_text,
@@ -96,6 +93,34 @@ export const useChatSocket = (
         setMessages(formattedMessages);
         setIsJoined(true);
         setIsLoading(false);
+      });
+
+      // Listener message_sent untuk konfirmasi pengiriman (update ID asli dari server)
+      socketInstance.on('message_sent', (payload: any) => {
+        const isCurrentRoom =
+          currentStoreId.current === payload.store_id &&
+          currentBuyerId.current === payload.buyer_id;
+        if (!isCurrentRoom) return;
+
+        // Cek jika pesan ini adalah update dari optimistic UI (biasanya pakai ID temp)
+        // Di sini kita simplifikasi: append jika belum ada, atau replace jika logic ID mendukung
+        const msg: ChatMessage = {
+          message_id: payload.message_id,
+          store_id: payload.store_id,
+          buyer_id: payload.buyer_id,
+          sender_id: payload.sender_id,
+          content: payload.content,
+          message_type: payload.message_type || 'text',
+          product_id: payload.product_id,
+          is_read: payload.is_read ?? false,
+          created_at: payload.created_at || new Date().toISOString(),
+        };
+
+        setMessages(prev => {
+            // Hindari duplikat jika backend kirim balik pesan yang sama
+            if (prev.some(m => m.message_id === msg.message_id)) return prev;
+            return [...prev, msg];
+        });
       });
 
       socketInstance.on('chat_error', (errorData: any) => {
@@ -110,22 +135,18 @@ export const useChatSocket = (
       setIsLoading(false);
       return null;
     }
-  }, [onNewMessage]); // Dependency onNewMessage penting
+  }, []); // Dependency Kosong = Stabil
 
-  const joinChat = useCallback((sId: number, bId: number) => {
-    if (!socket) return;
-    setIsLoading(true);
-    // FIX 3: Payload Naming (CamelCase sesuai request server di chatSocket.ts)
-    socket.emit('join_chat', { storeId: sId, buyerId: bId });
-  }, [socket]);
+  // sendMessage, sendTyping, dll sama seperti kode Anda...
 
   const sendMessage = useCallback((message: string) => {
-    if (!socket || !isConnected) return;
-
-    if (!currentStoreId.current) { 
-      console.error("Store ID hilang, tidak bisa kirim pesan");
-      return; 
+    // ... (Kode sendMessage Anda sudah benar)
+    if (!socket || !isConnected) {
+         console.warn("[useChatSocket] Cannot send: Socket not connected");
+         return;
     }
+    if (!currentStoreId.current) return;
+
     const payload = {
       storeId: currentStoreId.current,
       buyerId: currentBuyerId.current,
@@ -135,19 +156,25 @@ export const useChatSocket = (
 
     socket.emit('send_message', payload);
     
-  }, [socket, isConnected]);
-
-  const sendMessagePayload = useCallback((payload: any) => {
-    if(!socket) return;
-    socket.emit('send_message', payload);
+    // Optimistic Update
+    const optimisticMessage: ChatMessage = {
+      message_id: Date.now(), // ID sementara
+      store_id: currentStoreId.current,
+      buyer_id: currentBuyerId.current || 0,
+      sender_id: 0, 
+      content: message,
+      message_type: 'text',
+      product_id: null as any,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+    
+    setMessages((prev: ChatMessage[]) => [...prev, optimisticMessage]);
   }, [socket, isConnected]);
 
   const sendTyping = useCallback((typing: boolean) => {
-     if (!socket || !isConnected) return;
-     if (!currentStoreId.current) return;
-
+     if (!socket || !isConnected || !currentStoreId.current) return;
      const event = typing ? 'typing' : 'stop_typing';
-     
      socket.emit(event, { 
         storeId: currentStoreId.current,
         buyerId: currentBuyerId.current
@@ -157,18 +184,15 @@ export const useChatSocket = (
   // Auto connect
   useEffect(() => {
      const sock = connectSocket();
-     return () => {
-        // Cleanup listener if needed
-        // socket.disconnect() is handled by socketClient usually
-     };
+     return () => {};
   }, [connectSocket]);
 
-  // Auto join logic (Jika storeId & buyerId berubah)
+  // Auto join logic
   useEffect(() => {
-    if (storeId && buyerId && isConnected) {
-       joinChat(storeId, buyerId);
+    if (storeId && buyerId && isConnected && socket) {
+       socket.emit('join_chat', { storeId, buyerId });
     }
-  }, [storeId, buyerId, isConnected, joinChat]);
+  }, [storeId, buyerId, isConnected, socket]);
 
   return {
     messages,
@@ -176,9 +200,8 @@ export const useChatSocket = (
     isJoined,
     isLoading,
     error,
-    otherUserTyping, // Info partner ngetik
-    sendMessage,     // Legacy string
-    sendMessagePayload,
+    otherUserTyping,
+    sendMessage,
     sendTyping,
     socket
   };

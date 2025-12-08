@@ -93,7 +93,8 @@ const ChatPage = () => {
     otherUserTyping,
     isLoading, // Menggantikan isLoadingHistory
     socket,
-    isConnected
+    isConnected,
+    error
   } = useChatSocket(
     activeRoom ? activeRoom.store_id : null, 
     activeRoom ? activeRoom.buyer_id : null,
@@ -206,15 +207,16 @@ const ChatPage = () => {
     e?.preventDefault();
     if (!inputMessage.trim() || !activeRoom) return;
 
-    // Panggil method hook (Hook sudah pegang storeId & buyerId)
-    sendMessage(inputMessage);
+    console.log("[ChatPage] handleSendMessage called with:", inputMessage);
+    console.log("[ChatPage2] handleSendMessage called with:", inputMessage);
+    console.log("[ChatPage] activeRoom:", activeRoom);
     
-    // Update UI input langsung
+    sendMessage(inputMessage);
     setInputMessage('');
     
-    // Stop typing status immediately
+    // Stop typing status
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    sendTyping(false); 
+    sendTyping(false);
   };
 
   const handleTypingInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,6 +386,11 @@ const ChatPage = () => {
 
               {/* Input Area */}
               <div className="p-4 bg-white border-t border-gray-200">
+                {!isConnected && (
+                  <div className="text-xs text-red-500 mb-2 px-2">
+                    Status: Terputus ({error || 'Menghubungkan...'})
+                  </div>
+                )}
                 <form onSubmit={handleSendMessage} className="flex items-end gap-2">
                    <Button type="button" variant="ghost" className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
                       <ImageIcon className="w-6 h-6" />
@@ -399,7 +406,7 @@ const ChatPage = () => {
                    <Button 
                       type="submit" 
                       className="rounded-full bg-blue-600 hover:bg-blue-700 text-white p-2 px-4"
-                      disabled={!inputMessage.trim()}
+                      disabled={!inputMessage.trim() || !isConnected}
                    >
                       <Send className="w-5 h-5" />
                    </Button>

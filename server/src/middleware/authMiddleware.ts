@@ -1,3 +1,4 @@
+// server/src/middleware/authMiddleware.ts
 import redisClient from '../config/redis.js';
 import { unserializeSession } from 'php-unserialize';
 import cookie from 'cookie';
@@ -5,17 +6,11 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Socket } from 'socket.io';
 
-// Type definitions
+// --- Interface Definitions (Tetap Sama) ---
 interface UserSession {
   user_id: string;
   role: string;
   name: string;
-}
-
-interface SessionData {
-  user_id?: string;
-  role?: string;
-  name?: string;
 }
 
 interface AuthTokenPayload extends JwtPayload {
@@ -28,13 +23,13 @@ interface AuthenticatedSocket extends Socket {
   user?: UserSession;
 }
 
-// Declare module augmentation for Fastify
 declare module 'fastify' {
   interface FastifyRequest {
     user?: UserSession;
   }
 }
 
+// Helper untuk ambil user dari PHP Redis
 const getPHPUser = async (cookieString?: string): Promise<UserSession | null> => {
     if (!cookieString) return null;
 
@@ -49,64 +44,93 @@ const getPHPUser = async (cookieString?: string): Promise<UserSession | null> =>
     if (!rawSession) return null;
 
     try {
-        const sessionData = unserializeSession(rawSession);
+        const sessionData = unserializeSession(rawSession) as any;
         
         if (!sessionData.user_id) return null;
 
         return {
-            user_id: sessionData.user_id,
-            role: sessionData.role,
+            user_id: String(sessionData.user_id),
+            role: sessionData.role || 'BUYER',
             name: sessionData.name || 'User'
         };
     } catch (err) {
+        console.error("Error parsing PHP session:", err);
         return null;
     }
 }
 
 /**
- * Middleware untuk Fastify (HTTP Routes)
- * Dipakai untuk route API yang butuh login
- */
-const requireAuth = async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-        const user = await getPHPUser(request.headers.cookie);
-        
-        if (!user) {
-            return reply.status(401).send({ 
-                success: false, 
-                message: 'Unauthorized: Login in PHP first' 
-            });
-        }
-
-        request.user = user;
-    } catch (err) {
-        return reply.status(500).send({ message: 'Server Error during Auth' });
-    }
-};
-
-/**
- * Middleware untuk Socket.io (WebSocket)
- * Dipakai agar user yang connect ke socket wajib login
+ * Middleware Socket.io (Hybrid: Token OR Session)
  */
 const socketAuth = async (socket: AuthenticatedSocket, next: (err?: Error) => void) => {
     try {
+        // CARA 1: Cek JWT Token (Untuk Admin)
+        const token = socket.handshake.auth.token;
+        if (token) {
+            try {
+                const secret = process.env.JWT_SECRET || 'rahasia_negara_nimons';
+                const decoded = jwt.verify(token, secret) as AuthTokenPayload;
+                
+                socket.user = {
+                    user_id: decoded.user_id,
+                    role: decoded.role,
+                    name: decoded.name
+                };
+                return next(); // Sukses via Token
+            } catch (err) {
+                // Token invalid/expired? Jangan error dulu, coba cek session PHP siapa tau dia user biasa
+                console.log("Token invalid, falling back to PHP Session check...");
+            }
+        }
+
+        // CARA 2: Cek PHP Session Cookie (Untuk User Biasa)
         const cookieString = socket.handshake.headers.cookie;
         const user = await getPHPUser(cookieString);
 
-        if (!user) {
-            return next(new Error("Unauthorized: Invalid Session"));
+        if (user) {
+            socket.user = user;
+            return next(); // Sukses via Session
         }
 
-        socket.user = user;
-        next();
+        // Gagal keduanya
+        return next(new Error("Unauthorized: No valid Token or Session found"));
+
     } catch (err) {
+        console.error("Socket Auth Exception:", err);
         next(new Error("Authentication Error"));
     }
 };
 
+/**
+ * Middleware HTTP (Hybrid)
+ */
+const requireAuth = async (request: FastifyRequest, reply: FastifyReply) => {
+    // Cek Header Auth (JWT)
+    const authHeader = request.headers['authorization'];
+    if (authHeader) {
+        try {
+            const token = authHeader.split(' ')[1];
+            const secret = process.env.JWT_SECRET || 'rahasia_negara_nimons';
+            const decoded = jwt.verify(token, secret) as AuthTokenPayload;
+            request.user = decoded;
+            return;
+        } catch(e) {}
+    }
+
+    // Cek Cookie (PHP Session)
+    const user = await getPHPUser(request.headers.cookie);
+    if (!user) {
+        return reply.status(401).send({ 
+            success: false, 
+            message: 'Unauthorized: Please login first' 
+        });
+    }
+    request.user = user;
+};
+
 const verifyAdminToken = async (request: FastifyRequest, reply: FastifyReply) => {
     const authHeader = request.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Format: Bearer <token>
+    const token = authHeader && authHeader.split(' ')[1]; 
   
     if (!token) {
       return reply.status(401).send({ success: false, message: 'Access denied. No token provided.' });
