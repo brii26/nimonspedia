@@ -409,9 +409,13 @@ class ReviewController extends BaseController
                 'reviews' => $result['data'],
                 'pagination' => $result,
                 'pageTitle' => 'My Reviews',
-                'cssFiles' => ['/css/pages/reviews.css'],
+                'cssFiles' => [
+                    '/css/components/notification.css',
+                    '/css/pages/reviews.css'
+                ],
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
+                    '/js/utils/notification.js',
                     '/js/pages/reviews/my-reviews.js'
                 ]
             ]);
