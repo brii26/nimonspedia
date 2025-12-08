@@ -23,7 +23,8 @@
     "php-unserialize": "0.0.1",
     "redis": "^4.6.10",
     "pg": "^8.11.3",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -32,6 +33,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.10.0",
     "@types/pg": "^8.10.9",
+    "@types/web-push": "^3.6.3",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "nodemon": "^3.0.1",
