@@ -479,9 +479,13 @@ class ReviewController extends BaseController
                 'product' => $product,
                 'order' => $order,
                 'pageTitle' => 'Write a Review',
-                'cssFiles' => ['/css/pages/reviews.css'],
+                'cssFiles' => [
+                    '/css/pages/reviews.css',
+                    '/css/components/notification.css'
+                ],
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
+                    '/js/utils/notification.js',
                     '/js/components/star-rating.js',
                     '/js/pages/reviews/create.js'
                 ]
@@ -532,9 +536,13 @@ class ReviewController extends BaseController
                 'review' => $review,
                 'images' => $images,
                 'pageTitle' => 'Edit Review',
-                'cssFiles' => ['/css/pages/reviews.css'],
+                'cssFiles' => [
+                    '/css/pages/reviews.css',
+                    '/css/components/notification.css'
+                ],
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
+                    '/js/utils/notification.js',
                     '/js/components/star-rating.js',
                     '/js/pages/reviews/edit.js'
                 ]

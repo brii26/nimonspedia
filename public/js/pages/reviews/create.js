@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (result.success) {
                     // Show success message
-                    showSuccessMessage('Review submitted successfully!');
+                    Notification.success('Review submitted successfully!');
                     
                     // Redirect after delay
                     setTimeout(() => {
@@ -188,13 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 1500);
                 } else {
                     // Show error
-                    showErrorMessage(result.message || 'Failed to submit review');
+                    Notification.error(result.message || 'Failed to submit review');
                     setSubmitting(false);
                 }
 
             } catch (error) {
                 console.error('Error submitting review:', error);
-                showErrorMessage('An error occurred. Please try again.');
+                Notification.error('An error occurred. Please try again.');
                 setSubmitting(false);
             }
         });
@@ -242,103 +242,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showSuccessMessage(message) {
-        // Create success notification
-        const notification = document.createElement('div');
-        notification.className = 'notification success';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-
-        // Add styles
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 9999;
-            animation: slideIn 0.3s ease-out;
-        `;
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-
-    function showErrorMessage(message) {
-        const notification = document.createElement('div');
-        notification.className = 'notification error';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                </svg>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #dc2626;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 9999;
-            animation: slideIn 0.3s ease-out;
-        `;
-
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-        }, 5000);
-    }
-
-    // Add animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-
-        .notification-content {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-    `;
-    document.head.appendChild(style);
 });
