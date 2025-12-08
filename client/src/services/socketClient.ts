@@ -16,22 +16,21 @@ class SocketClient {
       throw new Error('Connection already in progress');
     }
 
-    const token = getToken();
-    if (!token || !isTokenValid(token)) {
-      throw new Error('No valid authentication token found');
-    }
+    const rawToken = getToken();
+    const validToken = (rawToken && isTokenValid(rawToken)) ? rawToken : null;
 
     this.isConnecting = true;
 
-    // Get socket URL from environment or default  
     const socketUrl = (import.meta as any).env?.VITE_SOCKET_URL || 
                      (window as any).VITE_SOCKET_URL || 
                      'http://localhost:3000';
 
     this.socket = io(socketUrl, {
       auth: {
-        token: token
+        token: validToken
       },
+
+      withCredentials: true, 
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -73,13 +72,6 @@ class SocketClient {
     // Auth errors
     this.socket.on('auth_error', (error) => {
       console.error('Socket auth error:', error);
-      this.disconnect();
-      // Clear invalid token
-      localStorage.removeItem('admin_token');
-      // Redirect to login
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
     });
   }
 

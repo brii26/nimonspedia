@@ -19,7 +19,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
 
   console.log(`Auction socket handlers registered for: ${user.name} (${user.user_id})`);
 
-  // 1. Join Auction Room
+  // Join Auction Room
   socket.on('join_auction', async (payload: JoinAuctionPayload) => {
     try {
       // Check feature flag
@@ -73,14 +73,14 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
     }
   });
 
-  // 2. Leave Auction Room
+  // Leave Auction Room
   socket.on('leave_auction', (payload: JoinAuctionPayload) => {
     const auctionRoom = `auction_${payload.auctionId}`;
     socket.leave(auctionRoom);
     console.log(`User ${user.name} left auction room: ${auctionRoom}`);
   });
 
-  // 3. Place Bid
+  // Place Bid
   socket.on('place_bid', async (payload: PlaceBidPayload) => {
     try {
       // Check feature flag
@@ -121,7 +121,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       }
 
       // Check minimum bid
-      const minimumBid = auction.current_price + auction.min_increment;
+      const minimumBid = Number(auction.current_price) + Number(auction.min_increment);
       if (payload.amount < minimumBid) {
         socket.emit('bid_error', { 
           message: `Bid minimum Rp ${minimumBid.toLocaleString('id-ID')}` 
@@ -180,17 +180,17 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
     }
   });
 
-  // 4. Handle disconnect
+  // Handle disconnect
   socket.on('disconnect', () => {
     console.log(`User ${user.name} disconnected from auction socket`);
   });
 
-  // 5. Heartbeat/Ping-Pong untuk keep-alive
+  // Heartbeat/Ping-Pong untuk keep-alive
   socket.on('ping', () => {
     socket.emit('pong');
   });
 
-  // 6. Request current auction status
+  // Request current auction status
   socket.on('get_auction_status', async (payload: JoinAuctionPayload) => {
     try {
       const auction = await auctionRepository.getAuctionById(payload.auctionId);
@@ -220,6 +220,32 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
     } catch (error) {
       console.error('Get Auction Status Error:', error);
       socket.emit('auction_error', { message: 'Gagal mengambil status auction' });
+    }
+  });
+
+  socket.on('get_auction_list', async (payload: { page: number, limit: number, filter?: string }) => {
+    try {
+        console.log('Server received get_auction_list request');
+        const page = payload.page || 1;
+        const limit = payload.limit || 8;
+        
+        let filter: 'active' | 'scheduled' = 'active';
+        if (payload.filter === 'scheduled') {
+          filter = 'scheduled';
+        }
+
+        const result = await auctionRepository.getAuctionsPaginated(page, limit, filter);
+
+        socket.emit('auction_list_response', {
+            data: result.data,
+            total: result.total,
+            page: page,
+            totalPages: Math.ceil(result.total / limit)
+        });
+
+    } catch (error) {
+        console.error('Get List Error:', error);
+        socket.emit('auction_error', { message: 'Failed to fetch auction list' });
     }
   });
 }

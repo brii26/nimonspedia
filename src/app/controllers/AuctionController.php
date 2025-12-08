@@ -2,14 +2,13 @@
 
 class AuctionController extends BaseController {
     private $auctionService;
-
     public function __construct() {
         parent::__construct();
-        $this->requireRole('SELLER');
         $this->auctionService = new AuctionService();
     }
 
     public function create() {
+        $this->requireRole('SELLER');
         $post = $this->getPost();
 
         try {
@@ -72,6 +71,7 @@ class AuctionController extends BaseController {
     }
 
     public function cancel() {
+        $this->requireRole('SELLER');
         header('Content-Type: application/json');
         try {
             $rawInput = file_get_contents('php://input');
@@ -94,6 +94,36 @@ class AuctionController extends BaseController {
                 'success' => false, 
                 'message' => $e->getMessage()
             ]);
+            exit;
+        }
+    }
+
+    public function getAuctions() {
+        header('Content-Type: application/json');
+            
+        try {
+            $params = [
+                'page' => (int)$this->getQuery('page', 1),
+                'perPage' => 12,
+                'searchTerm' => $this->getQuery('search'),
+                'status' => $this->getQuery('status', 'ACTIVE')
+            ];
+
+            $result = $this->auctionService->getAuctionsForBuyer($params);
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $result['data'],
+                'pagination' => [
+                    'currentPage' => $params['page'],
+                    'totalPages' => ceil($result['total'] / $params['perPage']),
+                    'totalItems' => $result['total']
+                ]
+            ]);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             exit;
         }
     }

@@ -1,105 +1,161 @@
-// --- SHARED PAYLOADS ---
+// SHARED TYPES & ENUMS
+export type AuctionStatus = 'scheduled' | 'active' | 'ended' | 'cancelled';
+export type MessageType = 'text' | 'image' | 'item_preview';
 
-// Payload error standar untuk dikirim ke client
 export interface ErrorPayload {
   status: 'error';
   message: string;
 }
 
-// --- CHAT PAYLOADS ---
+// ==========================================
+// DATA MODELS 
+// ==========================================
 
-// Client -> Server: Kirim pesan
-export interface SendMessagePayload {
-  receiverId: number; // Bisa storeId (jika user=buyer) atau buyerId (jika user=seller)
-  message: string;
-  type?: 'text' | 'image' | 'item_preview'; 
-  productId?: number; // Wajib diisi jika type = 'item_preview'
+// Base Auction 
+export interface AuctionBase {
+  id: number; //
+  product_id: number;
+  product_name: string; 
+  image: string | null;
+  store_name: string;
+  starting_price: number;
+  current_price: number;
+  min_increment: number;
+  start_time: string;
+  end_time: string | null;
+  status: AuctionStatus;
 }
 
-
-// Client -> Server: Notifikasi sedang mengetik
-export interface TypingPayload {
-  receiverId: number; // Store ID (for buyer) or Buyer ID (for seller)
+// Data untuk List (Grid View)
+export interface AuctionListItem extends AuctionBase {
+  bid_count?: number; 
 }
 
-// Client -> Server: Join chat room
+// Data untuk Detail Room (Full View)
+export interface AuctionDetail extends AuctionBase {
+  description?: string;
+  winner_name?: string | null;
+  owner_id?: number;
+}
+
+// Model Pesan Chat
+export interface ChatMessage {
+  message_id: number;
+  sender_id: number;
+  content: string;
+  message_type: MessageType;
+  product_id?: number | null;
+  created_at: string;
+  is_read: boolean;
+  product_name?: string;
+  product_image?: string;
+  product_price?: number;
+}
+
+// ==========================================
+// CHAT SOCKET PAYLOADS
+// ==========================================
+
+// --- CLIENT REQUESTS (Client -> Server) ---
+
 export interface JoinChatPayload {
   storeId: number;
-  buyerId?: number; // Required for seller, auto-filled for buyer
+  buyerId?: number; 
 }
 
-// Client -> Server: Get chat history
+export interface SendMessagePayload {
+  receiverId: number; 
+  message: string;
+  type?: MessageType; 
+  productId?: number; 
+}
+
+export interface TypingPayload {
+  receiverId: number;
+}
+
 export interface GetChatHistoryPayload {
   storeId: number;
   buyerId?: number;
   limit?: number;
 }
 
-// Server -> Client: Struktur pesan chat lengkap (sesuai database)
-export interface ChatMessage {
-  message_id: number;
-  sender_id: number;
-  content: string;
-  message_type: 'text' | 'image' | 'item_preview';
-  product_id?: number | null;
-  created_at: string;
-  is_read: boolean;
+// --- SERVER RESPONSES (Server -> Client) ---
 
-  // field tambahan untuk preview product (optional, join dari DB)
-  product_name?: string;
-  product_image?: string;
-  product_price?: number;
-}
-
-// Server -> Client: Chat room joined
 export interface ChatJoinedPayload {
+  room: string;
   storeId: number;
   buyerId: number;
-  room: string;
 }
 
-// Server -> Client: Chat history response
 export interface ChatHistoryPayload {
   storeId: number;
   buyerId: number;
   messages: ChatMessage[];
 }
 
-// Server -> Client: Typing indicator
 export interface PartnerTypingPayload {
   senderId: number;
   senderName: string;
   isTyping: boolean;
 }
 
-// --- AUCTION PAYLOADS ---
+export interface MessageSentResponse {
+  message: ChatMessage;
+}
 
-// Client -> Server: User join room lelang tertentu
+// ==========================================
+// AUCTION SOCKET PAYLOADS
+// ==========================================
+
+// --- CLIENT REQUESTS (Client -> Server) ---
+
 export interface JoinAuctionPayload {
   auctionId: number;
 }
 
-// Client -> Server: User menawar harga
 export interface PlaceBidPayload {
   auctionId: number;
   amount: number;
 }
 
-// Server -> Client: Broadcast ada bid baru (untuk update UI real-time)
+export interface GetAuctionListPayload {
+  page: number;
+  limit: number;
+  filter: 'active' | 'scheduled';
+}
+
+// --- SERVER RESPONSES (Server -> Client) ---
+
+export interface AuctionJoinedPayload {
+  auctionId: number;
+  auction: AuctionDetail;
+  timeLeft: number;
+}
+
+// Response List Auction (Pagination)
+export interface AuctionListResponse {
+  data: AuctionListItem[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+// Broadcast ada bid baru
 export interface NewBidUpdatePayload {
   auctionId: number;
   bidderName: string;
   amount: number;
-  timestamp: string; // ISO String
+  timestamp: string;
 }
 
-// Server -> Client: Update timer mundur (dikirim tiap detik)
+// Broadcast timer update (per detik)
 export interface TimerUpdatePayload {
   auctionId: number;
-  timeLeft: number; // Detik tersisa
+  timeLeft: number;
 }
 
-// Server -> Client: Auction ended notification
+// Broadcast lelang selesai
 export interface AuctionEndedPayload {
   auctionId: number;
   finalPrice: number;
@@ -107,25 +163,18 @@ export interface AuctionEndedPayload {
   endTime: string;
 }
 
-// Server -> Client: Auction status response
+// Response sukses pasang bid
+export interface BidPlacedPayload {
+  auctionId: number;
+  amount: number;
+  newEndTime: number;
+}
+
+// Status snapshot
 export interface AuctionStatusPayload {
   auctionId: number;
   currentPrice: number;
   highestBidder: string | null;
   timeLeft: number;
   isActive: boolean;
-}
-
-// Server -> Client: Auction joined successfully
-export interface AuctionJoinedPayload {
-  auctionId: number;
-  auction: any; // Auction object
-  timeLeft: number;
-}
-
-// Server -> Client: Bid placed successfully
-export interface BidPlacedPayload {
-  auctionId: number;
-  amount: number;
-  newEndTime: number;
 }

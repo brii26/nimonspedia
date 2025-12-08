@@ -1,6 +1,7 @@
 import pool from '../config/database.js';
 import orderRepository from './orderRepository.js';
 import { QueryResult } from 'pg';
+import { AuctionListItem } from '../types/socket-payloads.js';
 
 interface Auction {
   auction_id: number;
@@ -18,15 +19,7 @@ interface Auction {
   created_at: string;
   winner_name?: string | null;
   product_name?: string;
-}
-
-interface Bid {
-  bid_id: number;
-  auction_id: number;
-  bidder_id: number;
-  bid_amount: number;
-  bid_time: string;
-  bidder_name?: string;
+  image?: string | null;
 }
 
 interface BidResult {
@@ -37,6 +30,7 @@ interface BidResult {
 
 class AuctionRepository {
   
+  // Get Auction By ID (Detail Page)
   async getAuctionById(auctionId: number): Promise<Auction | null> {
     const result = await pool.query(`
       SELECT 
@@ -44,6 +38,7 @@ class AuctionRepository {
         u.name as winner_name,
         p.product_name,
         p.store_id,
+        p.main_image_path AS image,
         s.user_id AS owner_id
       FROM auctions a
       LEFT JOIN users u ON a.winner_id = u.user_id
@@ -55,13 +50,12 @@ class AuctionRepository {
     return result.rows[0] || null;
   }
 
+  // Place Bid
   async placeBid(auctionId: number, userId: number, amount: number): Promise<BidResult> {
     const client = await pool.connect();
-    
     try {
       await client.query('BEGIN');
 
-      // Check auction exists and is active
       const auctionResult = await client.query(`
         SELECT * FROM auctions 
         WHERE auction_id = $1 AND status = 'active' AND start_time <= NOW()
@@ -74,57 +68,36 @@ class AuctionRepository {
       }
 
       const auction = auctionResult.rows[0];
-
-      // Validate bid amount (harus lebih dari current_price + min_increment)
-      const minimumBid = auction.current_price + auction.min_increment;
+      const minimumBid = Number(auction.current_price) + Number(auction.min_increment);
+      
       if (amount < minimumBid) {
         await client.query('ROLLBACK');
-        return { 
-          success: false, 
-          message: `Bid minimum Rp ${minimumBid.toLocaleString('id-ID')}` 
-        };
+        return { success: false, message: `Bid minimum Rp ${minimumBid.toLocaleString('id-ID')}` };
       }
 
-      // Check user balance
-      const userResult = await client.query(
-        'SELECT balance FROM users WHERE user_id = $1',
-        [userId]
-      );
-
+      const userResult = await client.query('SELECT balance FROM users WHERE user_id = $1', [userId]);
       if (userResult.rows.length === 0) {
         await client.query('ROLLBACK');
         return { success: false, message: 'User tidak ditemukan' };
       }
 
-      const userBalance = userResult.rows[0].balance || 0;
-      if (userBalance < amount) {
+      if (Number(userResult.rows[0].balance) < amount) {
         await client.query('ROLLBACK');
         return { success: false, message: 'Saldo tidak mencukupi' };
       }
 
-      // Insert bid record
       const bidResult = await client.query(`
         INSERT INTO auction_bids (auction_id, bidder_id, bid_amount, bid_time)
         VALUES ($1, $2, $3, NOW())
         RETURNING bid_id
       `, [auctionId, userId, amount]);
 
-      const bidId = bidResult.rows[0].bid_id;
-
-      // Update auction with new current price
       await client.query(`
-        UPDATE auctions 
-        SET current_price = $1
-        WHERE auction_id = $2
+        UPDATE auctions SET current_price = $1 WHERE auction_id = $2
       `, [amount, auctionId]);
 
       await client.query('COMMIT');
-      
-      return { 
-        success: true, 
-        message: 'Bid berhasil ditempatkan',
-        bid_id: bidId
-      };
+      return { success: true, message: 'Bid berhasil', bid_id: bidResult.rows[0].bid_id };
 
     } catch (error) {
       await client.query('ROLLBACK');
@@ -135,27 +108,22 @@ class AuctionRepository {
     }
   }
 
+  // Extend Auction
   async extendAuction(auctionId: number, newEndTime: Date): Promise<QueryResult> {
     return await pool.query(`
-      UPDATE auctions 
-      SET end_time = $1, updated_at = NOW()
-      WHERE auction_id = $2
+      UPDATE auctions SET end_time = $1, updated_at = NOW() WHERE auction_id = $2
     `, [newEndTime, auctionId]);
   }
 
+  // End Auction
   async endAuction(auctionId: number): Promise<QueryResult> {
     const client = await pool.connect();
-    
     try {
       await client.query('BEGIN');
-
-      // Cari pemenang (Highest Bidder)
+      
       const highestBidResult = await client.query(`
-        SELECT bidder_id, bid_amount
-        FROM auction_bids 
-        WHERE auction_id = $1 
-        ORDER BY bid_amount DESC, bid_time ASC 
-        LIMIT 1
+        SELECT bidder_id, bid_amount FROM auction_bids 
+        WHERE auction_id = $1 ORDER BY bid_amount DESC, bid_time ASC LIMIT 1
       `, [auctionId]);
 
       let winnerId: number | null = null;
@@ -166,25 +134,15 @@ class AuctionRepository {
         finalPrice = Number(highestBidResult.rows[0].bid_amount);
       }
 
-      // Update status Auction menjadi 'ended'
       const result = await client.query(`
         UPDATE auctions 
-        SET status = 'ended', 
-            end_time = NOW(),
-            winner_id = $1,
-            current_price = $2
-        WHERE auction_id = $3
-        AND status = 'active'
+        SET status = 'ended', end_time = NOW(), winner_id = $1, current_price = $2
+        WHERE auction_id = $3 AND status = 'active'
       `, [winnerId, finalPrice, auctionId]);
 
-      // Logika order otomatis
       if (winnerId) {
         const infoQuery = await client.query(`
-            SELECT 
-                p.product_id, 
-                p.store_id, 
-                u.address as shipping_address,
-                a.quantity
+            SELECT p.product_id, p.store_id, u.address as shipping_address, a.quantity
             FROM auctions a
             JOIN products p ON a.product_id = p.product_id
             JOIN users u ON u.user_id = $1
@@ -193,33 +151,22 @@ class AuctionRepository {
 
         if (infoQuery.rows.length > 0) {
           const info = infoQuery.rows[0];
-
-          // Susun Data Order (Header)
-          const orderData = {
+          await orderRepository.createOrder({
             buyer_id: winnerId,
             store_id: info.store_id,
             total_price: finalPrice,
             shipping_address: info.shipping_address || '-'
-          };
-
-          // Susun Data Item (Detail)
-          const orderItems = [{
+          }, [{
             product_id: info.product_id,
             quantity: info.quantity,
             price: info.quantity > 0 ? Math.floor(finalPrice / info.quantity) : finalPrice,
             subtotal: finalPrice
-          }];
-
-          // Panggil OrderRepository dengan Client Transaksi
-          await orderRepository.createOrder(orderData, orderItems, client);
-          
-          console.log(`Order created successfully for Auction #${auctionId}`);
+          }], client);
         }
       }
 
       await client.query('COMMIT');
       return result;
-
     } catch (error) {
       await client.query('ROLLBACK');
       console.error("End Auction Error:", error);
@@ -229,11 +176,66 @@ class AuctionRepository {
     }
   }
 
+  // Get Auctions List (Paginated)
+  async getAuctionsPaginated(page: number, limit: number, filter: 'active' | 'scheduled'): Promise<{ data: AuctionListItem[], total: number }> {
+      const offset = (page - 1) * limit;
+  
+      let statusFilter = '';
+      if (filter === 'active') {
+          statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
+      } else if (filter === 'scheduled') { 
+          statusFilter = "WHERE a.status = 'scheduled'"; 
+      } else {
+          statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
+      }
+  
+      // Query Count
+      const countQuery = await pool.query(`SELECT COUNT(*) FROM auctions a ${statusFilter}`);
+      const total = parseInt(countQuery.rows[0].count);
+  
+      // Query Data
+      const result = await pool.query(`
+          SELECT 
+              a.auction_id as id,
+              a.product_id,
+              a.starting_price,
+              a.current_price,
+              a.min_increment,
+              a.start_time,
+              a.end_time,
+              a.status,
+              p.product_name AS title,
+              p.main_image_path AS image,
+              s.store_name,
+              (SELECT COUNT(*) FROM auction_bids ab WHERE ab.auction_id = a.auction_id) as bid_count
+          FROM auctions a
+          JOIN products p ON a.product_id = p.product_id
+          JOIN stores s ON p.store_id = s.store_id
+          ${statusFilter}
+          ORDER BY a.start_time ASC
+          LIMIT $1 OFFSET $2
+      `, [limit, offset]);
+  
+      const data: AuctionListItem[] = result.rows.map(row => ({
+          id: row.id,
+          product_id: row.product_id,
+          product_name: row.title, 
+          image: row.image, 
+          store_name: row.store_name,
+          starting_price: parseFloat(row.starting_price),
+          current_price: row.current_price ? parseFloat(row.current_price) : parseFloat(row.starting_price),
+          min_increment: parseFloat(row.min_increment),
+          start_time: row.start_time,
+          end_time: row.end_time,
+          status: row.status, 
+          bid_count: parseInt(row.bid_count || '0')
+      }));
+  
+      return { data, total };
+  }
+
   async findAllActiveAuctions(): Promise<Auction[]> {
-    const result = await pool.query(`
-      SELECT * FROM auctions 
-      WHERE status = 'active'
-    `);
+    const result = await pool.query(`SELECT * FROM auctions WHERE status = 'active'`);
     return result.rows;
   }
 }

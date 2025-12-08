@@ -18,7 +18,7 @@ export interface AuctionData {
   winner_id?: number | null;
   current_price?: number;
   bid_count?: number;
-  status: 'upcoming' | 'active' | 'ended';
+  status: 'scheduled' | 'active' | 'ended' | 'cancelled';
 }
 
 export interface AuctionRoom {
@@ -41,8 +41,6 @@ export interface ChatMessage {
   is_read: boolean;
   created_at: string;
 }
-
-
 
 export interface ChatRoom {
   id: number;
@@ -90,6 +88,28 @@ export interface BidPlacedResponse {
 
 export interface AuctionTimerResponse {
   time_remaining: number;
+}
+
+export interface AuctionListItem extends AuctionData {
+  title: string;       
+  image: string;       
+  store_name: string;
+  bid_count?: number;
+}
+
+// Payload for Requesting the List
+export interface GetAuctionListPayload {
+  page: number;
+  limit: number;
+  filter: 'active' | 'scheduled'; 
+}
+
+// Response for the List
+export interface AuctionListResponse {
+  data: AuctionListItem[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export interface AuctionEndedResponse {

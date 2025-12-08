@@ -63,6 +63,11 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🏠</span>
                             <span class="nav-text">Home</span>
                         </a>
+
+                        <a href="/auction" class="nav-link <?= $activePage === 'auction' ? 'active' : '' ?>">
+                            <span class="nav-icon">🛎️</span>
+                            <span class="nav-text">Auction</span>
+                        </a>
                         <?php if ($checkoutAccess['allowed']): ?>
                             <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
                                 <span class="nav-icon">🛒
