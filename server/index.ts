@@ -37,7 +37,11 @@ fastify.register(socketio, {
     origin: [process.env.CLIENT_URL || "http://localhost:8080", "http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  // Heartbeat configuration
+  pingTimeout: 20000,    // Waktu tunggu sebelum menganggap client disconnect (20 detik)
+  pingInterval: 25000,   // Interval ping dari server ke client (25 detik)
+  connectTimeout: 45000  // Timeout untuk initial connection (45 detik)
 });
 
 // 3. Register Routes (Prefixing lebih gampang di Fastify)

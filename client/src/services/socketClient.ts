@@ -6,6 +6,8 @@ class SocketClient {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private isConnecting = false;
+  private heartbeatInterval: number | null = null;
+  private lastPongTime: number = Date.now();
 
   connect(): Socket {
     if (this.socket && this.socket.connected) {
@@ -52,11 +54,14 @@ class SocketClient {
       console.log('Socket connected:', this.socket?.id);
       this.reconnectAttempts = 0;
       this.isConnecting = false;
+      this.lastPongTime = Date.now();
+      this.startHeartbeat();
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);
       this.isConnecting = false;
+      this.stopHeartbeat();
     });
 
     this.socket.on('connect_error', (error) => {
@@ -81,9 +86,46 @@ class SocketClient {
         window.location.href = '/login';
       }
     });
+
+    // Heartbeat: Listen for pong response
+    this.socket.on('pong', () => {
+      this.lastPongTime = Date.now();
+    });
+  }
+
+  // Start heartbeat ping interval
+  private startHeartbeat(): void {
+    this.stopHeartbeat(); // Clear any existing interval
+    
+    // Ping server every 30 seconds
+    this.heartbeatInterval = window.setInterval(() => {
+      if (this.socket && this.socket.connected) {
+        this.socket.emit('ping');
+        
+        // Check if last pong was too long ago (60 seconds = missed 2 pings)
+        const timeSinceLastPong = Date.now() - this.lastPongTime;
+        if (timeSinceLastPong > 60000) {
+          console.warn('Heartbeat timeout - no pong received in 60s, reconnecting...');
+          this.socket.disconnect();
+          this.socket.connect();
+        }
+      }
+    }, 30000);
+    
+    console.log('Heartbeat started');
+  }
+
+  // Stop heartbeat interval
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+      console.log('Heartbeat stopped');
+    }
   }
 
   disconnect(): void {
+    this.stopHeartbeat();
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;

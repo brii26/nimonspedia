@@ -235,7 +235,12 @@ export default (io: Server, socket: AuthenticatedSocket) => {
     }
   });
 
-  // 5. Handle Disconnect
+  // 5. Heartbeat/Ping-Pong untuk keep-alive
+  socket.on('ping', () => {
+    socket.emit('pong');
+  });
+
+  // 6. Handle Disconnect
   socket.on('disconnect', () => {
     console.log(`User ${user.name} disconnected from chat socket`);
   });
