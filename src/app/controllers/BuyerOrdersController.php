@@ -98,8 +98,10 @@ class BuyerOrdersController extends BaseController {
             
             $this->render('pages/orders/show', [
                 'order' => $order,
-                // Load CSS DAN JS baru kita
-                'cssFiles' => ['/css/pages/seller/orders.css'],
+                'cssFiles' => [
+                    '/css/pages/seller/orders.css',
+                    '/css/pages/orders-detail.css'
+                ],
                 'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
             ]);
             
