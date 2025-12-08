@@ -227,7 +227,8 @@ class AuthController extends BaseController {
             'jsFiles' => [
                 '/js/components/password-toggle.js',
                 '/js/pages/auth/profile.js',
-                '/js/utils/fetchXhr.js'
+                '/js/utils/fetchXhr.js',
+                '/js/utils/notifications.js'
             ]
         ]);
     }

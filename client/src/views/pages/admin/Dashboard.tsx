@@ -230,16 +230,16 @@ const Dashboard: React.FC = () => {
   
   // 1. Handle toggle click (Update local pending state only)
   const handleGlobalToggle = (featureName: string, newValue: boolean) => {
-    setFeatures(prev => prev.map(f => 
+    setFeatures(prev => prev.map((f): GlobalFeature => 
       f.feature_name === featureName 
-        ? { ...f, pending_enabled: newValue, pending_reason: newValue ? '' : f.pending_reason } 
+        ? { ...f, pending_enabled: newValue, pending_reason: newValue ? '' : (f.pending_reason ?? '') } 
         : f
     ));
   };
 
   // 2. Handle Reason Input Change
   const handleGlobalReasonChange = (featureName: string, newReason: string) => {
-    setFeatures(prev => prev.map(f => 
+    setFeatures(prev => prev.map((f): GlobalFeature => 
         f.feature_name === featureName ? { ...f, pending_reason: newReason } : f
     ));
   };
