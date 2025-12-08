@@ -4,8 +4,9 @@ import {
   Table, TableHead, TableBody, TableRow, TableHeader, TableCell,
   Button, Badge, Switch, Modal, ModalHeader, ModalBody, ModalFooter,
   Input, Alert, Spinner, Tabs, TabList, Tab, TabPanels, TabPanel,
-  SearchInput, Pagination, Toast // Gunakan Toast
+  SearchInput, Pagination, Toast, SelectDropdown
 } from '../../components/ui/index.js';
+import type { SelectOption } from '../../components/ui/index.js';
 
 // ... (Interfaces DashboardStats, FeatureFlag, User, UserFlags tetap sama)
 
@@ -43,6 +44,7 @@ const Dashboard: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<string>('10');
   const [activeTab, setActiveTab] = useState<string>('0');
 
   // Modal States
@@ -61,9 +63,14 @@ const Dashboard: React.FC = () => {
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Reset to page 1 when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter, itemsPerPage]);
+
   useEffect(() => {
     fetchDashboardData();
-  }, [currentPage, searchTerm, roleFilter]);
+  }, [currentPage, searchTerm, roleFilter, itemsPerPage]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -84,7 +91,7 @@ const Dashboard: React.FC = () => {
 
       const [statsRes, usersRes, featuresRes] = await Promise.all([
         fetch('/api/node/admin/stats', { headers }),
-        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}&role=${roleFilter}`, { headers }),
+        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}&role=${roleFilter}&limit=${itemsPerPage}`, { headers }),
         fetch('/api/node/admin/flags/global', { headers })
       ]);
 
@@ -296,25 +303,38 @@ const Dashboard: React.FC = () => {
                     icon="🔍"
                     className="max-w-md flex-1"
                   />
-                  <select
+                  <SelectDropdown
+                    variant="fixed"
+                    options={[
+                      { value: '', label: 'All Roles' },
+                      { value: 'BUYER', label: 'Buyer' },
+                      { value: 'SELLER', label: 'Seller' },
+                      { value: 'ADMIN', label: 'Admin' }
+                    ]}
                     value={roleFilter}
-                    onChange={(e) => {
-                      setRoleFilter(e.target.value);
-                      setCurrentPage(1); // Reset to first page when filter changes
-                    }}
-                    className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 
-                      focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-[#667eea] 
-                      bg-white min-w-[160px] cursor-pointer shadow-sm
-                      hover:border-gray-400 transition-colors
-                      appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23667eea%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] 
-                      bg-no-repeat bg-[right_0.75rem_center] bg-[length:1rem]
-                      pr-10"
-                  >
-                    <option value="">All Roles</option>
-                    <option value="BUYER">Buyer</option>
-                    <option value="SELLER">Seller</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+                    onChange={setRoleFilter}
+                    placeholder="Filter by Role"
+                    className="min-w-[160px]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show:</span>
+                    <SelectDropdown
+                      variant="editable"
+                      value={itemsPerPage}
+                      onChange={setItemsPerPage}
+                      options={[
+                        { value: '10', label: '10' },
+                        { value: '25', label: '25' },
+                        { value: '50', label: '50' },
+                        { value: '100', label: '100' }
+                      ]}
+                      placeholder="10"
+                      inputType="number"
+                      min={1}
+                      max={200}
+                      className="w-20"
+                    />
+                  </div>
                 </div>
 
                 {/* Table ... (Tetap sama) */}
