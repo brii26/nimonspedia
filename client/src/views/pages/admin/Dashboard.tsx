@@ -352,19 +352,29 @@ const Dashboard: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {users.map(user => (
-                        <TableRow key={user.user_id}>
-                          <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell className="text-gray-600">{user.email}</TableCell>
-                          <TableCell>{getUserRoleBadge(user.role)}</TableCell>
-                          <TableCell className="font-semibold text-green-600">Rp {(user.balance || 0).toLocaleString('id-ID')}</TableCell>
-                          <TableCell className="text-gray-600">{new Date(user.created_at).toLocaleDateString('id-ID')}</TableCell>
-                          <TableCell>
-                            <Button size="sm" variant="primary" onClick={() => handleOpenFlagsModal(user)}>Kelola Flags</Button>
+                      {users.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                            {searchTerm || roleFilter 
+                              ? `Hasil tidak ditemukan${searchTerm ? ` untuk "${searchTerm}"` : ''}${roleFilter ? ` dengan role "${roleFilter}"` : ''}`
+                              : 'Tidak ada data pengguna'}
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        users.map(user => (
+                          <TableRow key={user.user_id}>
+                            <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
+                            <TableCell className="font-medium">{user.name}</TableCell>
+                            <TableCell className="text-gray-600">{user.email}</TableCell>
+                            <TableCell>{getUserRoleBadge(user.role)}</TableCell>
+                            <TableCell className="font-semibold text-green-600">Rp {(user.balance || 0).toLocaleString('id-ID')}</TableCell>
+                            <TableCell className="text-gray-600">{new Date(user.created_at).toLocaleDateString('id-ID')}</TableCell>
+                            <TableCell>
+                              <Button size="sm" variant="primary" onClick={() => handleOpenFlagsModal(user)}>Kelola Flags</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
