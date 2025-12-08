@@ -48,8 +48,10 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [customInput, setCustomInput] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const selectRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
 
   // Get display label
   const getDisplayLabel = (): string => {
@@ -64,25 +66,29 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-      }
-    };
-
-    const handleEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
+        setHighlightedIndex(-1);
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
+
+  // Reset highlighted index when dropdown opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      // Set initial highlight to current value
+      const currentIndex = options.findIndex(opt => opt.value === value);
+      setHighlightedIndex(currentIndex >= 0 ? currentIndex : 0);
+    } else {
+      setHighlightedIndex(-1);
+    }
+  }, [isOpen, options, value]);
 
   // Focus input when opening editable dropdown
   useEffect(() => {
@@ -91,10 +97,64 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
     }
   }, [isOpen, variant]);
 
+  // Scroll highlighted option into view
+  useEffect(() => {
+    if (isOpen && highlightedIndex >= 0 && optionsRef.current) {
+      const optionElements = optionsRef.current.querySelectorAll('button');
+      if (optionElements[highlightedIndex]) {
+        optionElements[highlightedIndex].scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [highlightedIndex, isOpen]);
+
+  const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+    if (!isOpen) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev < options.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev > 0 ? prev - 1 : options.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < options.length) {
+          const option = options[highlightedIndex];
+          if (option) {
+            handleOptionClick(option.value);
+          }
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+        break;
+      case 'Tab':
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+        break;
+    }
+  };
+
   const handleOptionClick = (optionValue: string) => {
     onChange(optionValue);
     setIsOpen(false);
     setCustomInput('');
+    setHighlightedIndex(-1);
   };
 
   const handleCustomInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -149,6 +209,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
       <button
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
+        onKeyDown={(e) => handleKeyDown(e.nativeEvent)}
         disabled={disabled}
         className={`
           relative w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 
@@ -214,16 +275,19 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
         )}
 
         {/* Options List */}
-        <div className="max-h-60 overflow-y-auto">
-          {options.map((option) => (
+        <div ref={optionsRef} className="max-h-60 overflow-y-auto">
+          {options.map((option, index) => (
             <button
               key={option.value}
               type="button"
               onClick={() => handleOptionClick(option.value)}
+              onMouseEnter={() => setHighlightedIndex(index)}
               className={`w-full px-4 py-2.5 text-left text-sm transition-colors
                 ${value === option.value 
                   ? 'bg-[#667eea] text-white font-medium' 
-                  : 'text-gray-700 hover:bg-gray-50'
+                  : highlightedIndex === index
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
             >
               {option.label}

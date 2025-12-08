@@ -42,6 +42,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('');
+  const [debouncedRoleFilter, setDebouncedRoleFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<string>('10');
@@ -63,14 +64,22 @@ const Dashboard: React.FC = () => {
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Debounce role filter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRoleFilter(roleFilter);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [roleFilter]);
+
   // Reset to page 1 when search/filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, roleFilter, itemsPerPage]);
+  }, [searchTerm, debouncedRoleFilter, itemsPerPage]);
 
   useEffect(() => {
     fetchDashboardData();
-  }, [currentPage, searchTerm, roleFilter, itemsPerPage]);
+  }, [currentPage, searchTerm, debouncedRoleFilter, itemsPerPage]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -91,7 +100,7 @@ const Dashboard: React.FC = () => {
 
       const [statsRes, usersRes, featuresRes] = await Promise.all([
         fetch('/api/node/admin/stats', { headers }),
-        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}&role=${roleFilter}&limit=${itemsPerPage}`, { headers }),
+        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}&role=${debouncedRoleFilter}&limit=${itemsPerPage}`, { headers }),
         fetch('/api/node/admin/flags/global', { headers })
       ]);
 
@@ -266,7 +275,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} variant={toast.type} onClose={() => setToast(null)} />}
 
       <header className="mb-8 flex justify-between items-center">
         <div>
@@ -335,6 +344,22 @@ const Dashboard: React.FC = () => {
                       className="w-20"
                     />
                   </div>
+                  {/* Clear Filters Button */}
+                  {(searchTerm || roleFilter || itemsPerPage !== '10') && (
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setRoleFilter('');
+                        setItemsPerPage('10');
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <span>✕</span>
+                      <span>Clear Filters</span>
+                    </Button>
+                  )}
                 </div>
 
                 {/* Table ... (Tetap sama) */}
@@ -352,7 +377,16 @@ const Dashboard: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {users.length === 0 ? (
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex items-center justify-center gap-2">
+                              <Spinner size="sm" />
+                              <span className="text-gray-500">Memuat data...</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : users.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                             {searchTerm || roleFilter 

@@ -66,7 +66,7 @@ const Toast: React.FC<ToastProps> = ({
 
   return (
     <div 
-      className={`flex items-center gap-3 min-w-[300px] max-w-md px-4 py-3 border-l-4 rounded-r-lg shadow-lg z-50 transition-all duration-300 ${
+      className={`flex items-center gap-3 min-w-[300px] max-w-md px-4 py-3 border-l-4 rounded-r-lg shadow-lg z-[1100] transition-all duration-300 ${
         variantClasses[variant]
       } ${positionClasses[position]} ${
         isExiting ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'
@@ -99,7 +99,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ children, positi
   };
 
   return (
-    <div className={`z-50 ${positionClasses[position]}`}>
+    <div className={`z-[1100] ${positionClasses[position]}`}>
       {children}
     </div>
   );
