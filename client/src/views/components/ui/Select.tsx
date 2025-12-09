@@ -239,9 +239,9 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
       {/* Dropdown Menu */}
       <div 
         className={`
-          absolute z-50 min-w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden
+          absolute left-0 z-50 w-full min-w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden
           transition-all duration-200
-          ${dropUp ? 'bottom-full mb-1 origin-bottom right-0' : 'top-full mt-1 origin-top'}
+          ${dropUp ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'}
           ${isOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible pointer-events-none'}
         `}
       >

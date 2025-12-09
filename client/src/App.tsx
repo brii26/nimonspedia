@@ -10,6 +10,7 @@ import ProtectedRoute from './services/routes/ProtectedRoute.js';
 // Pages
 import AdminLogin from './views/pages/admin/Login.js';
 import AdminDashboard from './views/pages/admin/Dashboard.js';
+import AdminReviews from './views/pages/admin/Reviews.js';
 import ChatPage from './views/pages/chat/ChatPage.js'; // Impor ChatPage yang benar
 
 import { 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="reviews" element={<AdminReviews />} />
             {/* Redirect /admin root to dashboard */}
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
           </Route>

@@ -77,12 +77,50 @@
       <nav class="pagination" id="products-pagination">
         <?php
           $queryParams = $_GET;
-          for ($i = 1; $i <= $totalPages; $i++):
-            $queryParams['page'] = $i;
+          
+          // Previous button
+          if ($current > 1):
+            $queryParams['page'] = $current - 1;
             $qs = http_build_query($queryParams);
-            $active = $i === $current ? 'active' : '';
-            echo "<a href='?{$qs}' class='{$active}'>{$i}</a>";
-          endfor;
+            echo "<a href='?{$qs}' class='page-arrow'>&laquo;</a>";
+          endif;
+          
+          // Calculate which pages to show
+          $showPages = [];
+          $showPages[] = 1; // Always show first page
+          
+          // Pages around current
+          for ($i = max(2, $current - 2); $i <= min($totalPages - 1, $current + 2); $i++) {
+            $showPages[] = $i;
+          }
+          
+          if ($totalPages > 1) {
+            $showPages[] = $totalPages; // Always show last page
+          }
+          
+          $showPages = array_unique($showPages);
+          sort($showPages);
+          
+          $lastShown = 0;
+          foreach ($showPages as $page):
+            // Add ellipsis if there's a gap
+            if ($lastShown && $page - $lastShown > 1):
+              echo "<span class='page-ellipsis'>...</span>";
+            endif;
+            
+            $queryParams['page'] = $page;
+            $qs = http_build_query($queryParams);
+            $active = $page === $current ? 'active' : '';
+            echo "<a href='?{$qs}' class='{$active}'>{$page}</a>";
+            $lastShown = $page;
+          endforeach;
+          
+          // Next button
+          if ($current < $totalPages):
+            $queryParams['page'] = $current + 1;
+            $qs = http_build_query($queryParams);
+            echo "<a href='?{$qs}' class='page-arrow'>&raquo;</a>";
+          endif;
         ?>
       </nav>
     <?php endif; ?>

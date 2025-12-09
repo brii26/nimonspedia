@@ -271,4 +271,15 @@ class ProductRepository extends BaseRepository {
 
         return $this->db->select($sql, [$categoryId, $excludeId, $limit]);
     }
+
+    /**
+     * Find all products belonging to a specific store.
+     * 
+     * @param int $storeId The ID of the store
+     * @return array Array of products
+     */
+    public function findByStore($storeId) {
+        $sql = "SELECT * FROM {$this->table} WHERE store_id = ? AND deleted_at IS NULL";
+        return $this->db->select($sql, [$storeId]);
+    }
 }

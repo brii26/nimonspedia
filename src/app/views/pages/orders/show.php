@@ -8,8 +8,6 @@ $statusClasses = [
 ];
 ?>
 
-<style>@import url('/css/pages/seller/orders.css');</style>
-
 <div class="orders-container">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -69,6 +67,9 @@ $statusClasses = [
                                 <th>Harga Satuan</th>
                                 <th>Jumlah</th>
                                 <th>Subtotal</th>
+                                <?php if ($order['status'] === 'received'): ?>
+                                <th>Review</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,12 +93,21 @@ $statusClasses = [
                                     <td data-label="Jumlah"><?= View::escape($item['quantity']) ?></td>
                                     
                                     <td data-label="Subtotal"><?= View::currency($item['subtotal']) ?></td>
+                                    
+                                    <?php if ($order['status'] === 'received'): ?>
+                                    <td data-label="Review">
+                                        <a href="/reviews/create?order_id=<?= View::escape($order['order_id']) ?>&product_id=<?= View::escape($item['product_id']) ?>" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Write Review
+                                        </a>
+                                    </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td colspan="<?= $order['status'] === 'received' ? '4' : '3' ?>" class="text-end"><strong>Total:</strong></td>
                                 <td data-label="Total"><strong><?= View::currency($order['total_price']) ?></strong></td>
                             </tr>
                         </tfoot>
