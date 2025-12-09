@@ -485,12 +485,15 @@ class ReviewController extends BaseController
                 'pageTitle' => 'Write a Review',
                 'cssFiles' => [
                     '/css/pages/reviews.css',
-                    '/css/components/notification.css'
+                    '/css/components/notification.css',
+                    'https://cdn.quilljs.com/1.3.6/quill.snow.css'
                 ],
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
                     '/js/utils/notification.js',
                     '/js/components/star-rating.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
                     '/js/pages/reviews/create.js'
                 ]
             ]);
@@ -542,12 +545,15 @@ class ReviewController extends BaseController
                 'pageTitle' => 'Edit Review',
                 'cssFiles' => [
                     '/css/pages/reviews.css',
-                    '/css/components/notification.css'
+                    '/css/components/notification.css',
+                    'https://cdn.quilljs.com/1.3.6/quill.snow.css'
                 ],
                 'jsFiles' => [
                     '/js/utils/fetchXhr.js',
                     '/js/utils/notification.js',
                     '/js/components/star-rating.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.js',
+                    '/js/utils/quill-setup.js',
                     '/js/pages/reviews/edit.js'
                 ]
             ]);

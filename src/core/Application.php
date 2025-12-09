@@ -128,6 +128,14 @@ class Application {
 		$this->router->post('/seller/orders/delivery', 'SellerOrdersController@setDelivery');
 		$this->router->post('/seller/store/update', 'SellerController@updateStore');
 
+		// Seller Reviews Management
+		$this->router->get('/seller/reviews', 'SellerReviewController@index');
+		$this->router->get('/seller/reviews/respond', 'SellerReviewController@respond');
+		$this->router->post('/seller/reviews/respond', 'SellerReviewController@submitResponse');
+		$this->router->get('/seller/reviews/edit-response', 'SellerReviewController@editResponse');
+		$this->router->post('/seller/reviews/update-response', 'SellerReviewController@updateResponse');
+		$this->router->post('/seller/reviews/delete-response', 'SellerReviewController@deleteResponse');
+
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
         
     }

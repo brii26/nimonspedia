@@ -1,11 +1,10 @@
 /**
  * Review Edit Form Handler
- * Handles review update with image management (delete existing, add new)
+ * Handles review update with image management (delete existing, add new) using Quill editor
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('review-form');
-    const commentInput = document.getElementById('comment');
     const charCount = document.getElementById('char-count');
     const imagesInput = document.getElementById('images-input');
     const uploadArea = document.getElementById('upload-area');
@@ -14,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const existingImagesContainer = document.getElementById('existing-images-container');
     const uploadLimitText = document.getElementById('upload-limit-text');
     const submitBtn = document.getElementById('submit-btn');
+
+    // Initialize Quill editor for comment
+    const quill = createEditor('#comment-editor', 'comment');
 
     // Get initial rating from data attribute
     const starRatingElement = document.getElementById('star-rating');
@@ -46,10 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUploadAvailability();
     }
 
-    // Character counter
-    if (commentInput && charCount) {
-        commentInput.addEventListener('input', () => {
-            const count = commentInput.value.length;
+    // Character counter for Quill
+    if (quill && charCount) {
+        quill.on('text-change', () => {
+            const text = quill.getText().trim();
+            const count = text.length;
             charCount.textContent = count;
             
             if (count > 500) {
@@ -303,7 +306,10 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('csrf_token', form.querySelector('[name="csrf_token"]').value);
         formData.append('review_id', form.querySelector('[name="review_id"]').value);
         formData.append('rating', starRating.getRating());
-        formData.append('comment', commentInput.value.trim());
+        
+        // Get Quill content
+        const commentHtml = quill ? quill.root.innerHTML : '';
+        formData.append('comment', commentHtml);
 
         const response = await fetch('/reviews/update', {
             method: 'POST',
@@ -353,9 +359,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Validate comment length (optional field, but if filled check length)
-        if (commentInput.value.length > 500) {
-            document.getElementById('comment-error').textContent = 'Comment exceeds maximum length';
-            isValid = false;
+        if (quill) {
+            const text = quill.getText().trim();
+            if (text.length > 500) {
+                document.getElementById('comment-error').textContent = 'Comment exceeds maximum length';
+                isValid = false;
+            }
         }
 
         return isValid;

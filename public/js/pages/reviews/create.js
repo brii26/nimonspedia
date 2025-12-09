@@ -1,16 +1,18 @@
 /**
  * Review Create Form Handler
- * Handles review submission with image uploads
+ * Handles review submission with image uploads using Quill editor
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('review-form');
-    const commentInput = document.getElementById('comment');
     const charCount = document.getElementById('char-count');
     const imagesInput = document.getElementById('images-input');
     const uploadArea = document.getElementById('upload-area');
     const imagePreviewContainer = document.getElementById('image-preview-container');
     const submitBtn = document.getElementById('submit-btn');
+
+    // Initialize Quill editor for comment
+    const quill = createEditor('#comment-editor', 'comment');
 
     // Initialize star rating
     const starRating = new StarRating('#star-rating', {
@@ -27,10 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-    // Character counter
-    if (commentInput && charCount) {
-        commentInput.addEventListener('input', () => {
-            const count = commentInput.value.length;
+    // Character counter for Quill
+    if (quill && charCount) {
+        quill.on('text-change', () => {
+            const text = quill.getText().trim();
+            const count = text.length;
             charCount.textContent = count;
             
             if (count > 500) {
@@ -162,7 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('order_id', form.querySelector('[name="order_id"]').value);
                 formData.append('product_id', form.querySelector('[name="product_id"]').value);
                 formData.append('rating', starRating.getRating());
-                formData.append('comment', commentInput.value.trim());
+                
+                // Get Quill content
+                const commentHtml = quill ? quill.root.innerHTML : '';
+                formData.append('comment', commentHtml);
 
                 // Add images
                 selectedFiles.forEach((file, index) => {
@@ -211,9 +217,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Validate comment length (optional field, but if filled check length)
-        if (commentInput.value.length > 500) {
-            document.getElementById('comment-error').textContent = 'Comment exceeds maximum length';
-            isValid = false;
+        if (quill) {
+            const text = quill.getText().trim();
+            if (text.length > 500) {
+                document.getElementById('comment-error').textContent = 'Comment exceeds maximum length';
+                isValid = false;
+            }
         }
 
         return isValid;

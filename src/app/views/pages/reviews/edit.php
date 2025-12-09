@@ -41,14 +41,9 @@
 
                 <!-- Review Comment -->
                 <div class="form-group">
-                    <label for="comment" class="form-label">Your Review <span class="text-muted">(Optional)</span></label>
-                    <textarea 
-                        id="comment" 
-                        name="comment" 
-                        class="form-control" 
-                        rows="5"
-                        maxlength="500"
-                        placeholder="Share your experience with this product..."><?= View::escape($review['comment'] ?? '') ?></textarea>
+                    <label for="comment-editor" class="form-label">Your Review <span class="text-muted">(Optional)</span></label>
+                    <div id="comment-editor" style="height: 150px;"><?= $review['comment'] ?? '' ?></div>
+                    <input type="hidden" name="comment" id="comment-input" value="<?= View::escape($review['comment'] ?? '') ?>">
                     <div class="char-counter">
                         <span id="char-count"><?= strlen($review['comment'] ?? '') ?></span> / 500 characters
                     </div>
