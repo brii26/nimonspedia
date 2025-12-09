@@ -3,11 +3,12 @@ import 'dotenv/config';
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import socketio from 'fastify-socket.io';
+import multipart from '@fastify/multipart';
 import { Server as SocketIOServer } from 'socket.io';
-
 import adminRoutes from './src/routes/adminRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
 import chatRoutes from './src/routes/chatRoutes.js';
+import uploadRoutes from './src/routes/uploadRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
@@ -44,6 +45,14 @@ fastify.register(socketio, {
 fastify.register(adminRoutes, { prefix: '/admin' });
 fastify.register(authRoutes, { prefix: '/auth' });
 fastify.register(chatRoutes, { prefix: '/chat' });
+
+// Untuk 
+fastify.register(multipart, {
+    limits: {
+        fileSize: 5 * 1024 * 1024 // Batas 5MB
+    }
+});
+fastify.register(uploadRoutes, { prefix: '/' });
 
 // 4. Root Route
 fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {

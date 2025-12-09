@@ -57,6 +57,8 @@ services:
       - PORT=${NODE_PORT}
     networks:
       - nimonspedia-network
+    volumes:
+     - ./storage:/app/public/uploads
 
   redis:
     image: redis:alpine

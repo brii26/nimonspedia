@@ -62,10 +62,12 @@ const ChatPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
   const [autoSelectRoomId, setAutoSelectRoomId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Callback Update Sidebar ---
   const handleNewMessage = useCallback((msg: any) => {
@@ -96,6 +98,37 @@ const ChatPage = () => {
         console.log('[ChatPage] Loading more messages, oldest ID:', oldestMessage.message_id);
         loadMoreMessages(oldestMessage.message_id);
       }
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran file maksimal 5MB");
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file); // key "file" sesuai backend req.file()
+
+    try {
+      const res = await api.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (res.data?.success && res.data.data?.url) {
+        // Kirim pesan tipe image dengan URL hasil upload
+        sendMessage(res.data.data.url, 'image');
+      }
+    } catch (err) {
+      console.error("Upload gagal:", err);
+      alert("Gagal mengupload gambar");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -358,9 +391,18 @@ const ChatPage = () => {
                              whitespace-pre-wrap: menghargai enter/newline
                              break-words: memecah kata panjang agar tidak tembus
                           */}
-                          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                            {msg.content}
-                          </p>
+                          {msg.message_type === 'image' ? (
+                            <img 
+                              src={msg.content}
+                              alt="Attachment" 
+                              className="rounded-lg max-w-full max-h-60 object-cover cursor-pointer"
+                              onClick={() => window.open(msg.content, '_blank')}
+                            />
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                              {msg.content}
+                            </p>
+                          )}
                           
                           {/* Info Waktu & Status */}
                           <div className={`text-[10px] mt-1 flex items-center gap-1 ${isMe ? 'justify-end text-blue-200' : 'justify-start text-gray-400'}`}>
@@ -397,9 +439,25 @@ const ChatPage = () => {
                 {!isConnected && (
                    <div className="text-xs text-red-500 mb-2 px-2">Status: Terputus ({socketError || 'Reconnecting...'})</div>
                 )}
-                <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-                   <Button type="button" variant="ghost" className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
-                      <ImageIcon className="w-6 h-6" />
+
+                 {/* Hidden file input for image upload */}
+                 <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                 />
+                
+                 <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                   <Button 
+                     type="button" 
+                     variant="ghost" 
+                     className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                     onClick={() => fileInputRef.current?.click()}
+                     disabled={!isConnected || isUploading}
+                   >
+                     <ImageIcon className={`w-6 h-6 ${isUploading ? 'animate-pulse text-blue-500' : ''}`} />
                    </Button>
                    
                    <Input 

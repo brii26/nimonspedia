@@ -161,10 +161,8 @@ export const useChatSocket = (
     }
   }, []); // Dependency Kosong = Stabil
 
-  // sendMessage, sendTyping, dll sama seperti kode Anda...
-
-  const sendMessage = useCallback((message: string) => {
-    // ... (Kode sendMessage Anda sudah benar)
+  // sendMessage dengan dukungan text/image/item_preview
+  const sendMessage = useCallback((message: string, type: 'text' | 'image' | 'item_preview' = 'text', productId?: number) => {
     if (!socket || !isConnected) {
          console.warn("[useChatSocket] Cannot send: Socket not connected");
          return;
@@ -174,8 +172,9 @@ export const useChatSocket = (
     const payload = {
       storeId: currentStoreId.current,
       buyerId: currentBuyerId.current,
-      message: message,
-      type: 'text'
+      message,
+      type,
+      productId
     };
 
     socket.emit('send_message', payload);
@@ -187,8 +186,8 @@ export const useChatSocket = (
       buyer_id: currentBuyerId.current || 0,
       sender_id: 0, 
       content: message,
-      message_type: 'text',
-      product_id: null as any,
+      message_type: type,
+      product_id: productId ?? (null as any),
       is_read: false,
       created_at: new Date().toISOString()
     };
@@ -247,7 +246,7 @@ export const useChatSocket = (
       }));
 
       // Prepend (tambah di depan) pesan lama
-      setMessages(prev => [...formattedOldMessages, ...prev]);
+      setMessages((prev: ChatMessage[]) => [...formattedOldMessages, ...prev]);
       setHasMore(data.hasMore);
       setIsLoadingMore(false);
     });
