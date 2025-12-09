@@ -8,7 +8,7 @@
     <!-- Product Info -->
     <div class="review-card-header">
         <div class="product-info">
-            <img src="/storage/<?= View::escape($review['product_image'] ?? 'product_images/default-product.svg') ?>" 
+            <img src="/storage/<?= View::escape($review['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                  alt="<?= View::escape($review['product_name']) ?>"
                  class="product-thumb">
             <div class="product-details">

@@ -49,7 +49,7 @@ $currentFilter = $filter ?? 'all';
                 <div class="review-item" data-review-id="<?= $review['review_id'] ?>">
                     <div class="review-header">
                         <div class="product-info">
-                            <img src="<?= View::escape($review['product_image'] ?? '/assets/images/placeholder.png') ?>" 
+                            <img src="/storage/<?= View::escape($review['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                                  alt="Product" 
                                  class="product-thumbnail">
                             <div class="product-details">

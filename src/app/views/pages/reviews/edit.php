@@ -7,7 +7,7 @@
             <!-- Product Info -->
             <div class="product-info-section mb-4">
                 <div class="product-preview">
-                    <img src="/storage/<?= View::escape($review['product_image'] ?? 'product_images/default-product.svg') ?>" 
+                    <img src="/storage/<?= View::escape($review['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                          alt="<?= View::escape($review['product_name']) ?>"
                          class="product-thumbnail">
                     <div class="product-details">

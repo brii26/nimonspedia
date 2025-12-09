@@ -156,7 +156,7 @@ class ReviewRepository extends BaseRepository
                 r.*,
                 u.name as username,
                 p.product_name,
-                p.product_image
+                p.main_image_path
             FROM {$this->table} r
             LEFT JOIN users u ON r.user_id = u.user_id
             LEFT JOIN products p ON r.product_id = p.product_id
@@ -185,7 +185,7 @@ class ReviewRepository extends BaseRepository
             SELECT 
                 r.*,
                 p.product_name,
-                p.product_image,
+                p.main_image_path,
                 s.store_name
             FROM {$this->table} r
             LEFT JOIN products p ON r.product_id = p.product_id
@@ -255,7 +255,7 @@ class ReviewRepository extends BaseRepository
                 r.*,
                 u.name as username,
                 p.product_name,
-                p.product_image,
+                p.main_image_path,
                 hider.name as hidden_by_username
             FROM {$this->table} r
             LEFT JOIN users u ON r.user_id = u.user_id
@@ -358,7 +358,7 @@ class ReviewRepository extends BaseRepository
             SELECT 
                 r.*,
                 p.product_name,
-                p.product_image
+                p.main_image_path
             FROM {$this->table} r
             LEFT JOIN products p ON r.product_id = p.product_id
             WHERE r.order_id = ? 
@@ -398,7 +398,7 @@ class ReviewRepository extends BaseRepository
                 r.*,
                 u.name as username,
                 p.product_name,
-                p.product_image,
+                p.main_image_path,
                 p.store_id,
                 (
                     SELECT COUNT(*) 

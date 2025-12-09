@@ -10,6 +10,8 @@ class SellerReviewController extends BaseController
         parent::__construct();
         $this->reviewService = new ReviewService();
         $this->storeRepository = new StoreRepository();
+        
+        $this->requireRole('SELLER');
     }
 
     /**
@@ -18,20 +20,13 @@ class SellerReviewController extends BaseController
      */
     public function index()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->redirect('/login');
-            return;
-        }
-
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->setFlashMessage('error', 'Store not found');
-            $this->redirect('/seller/dashboard');
+            $this->redirect('/seller/dashboard?error=store_not_found');
             return;
         }
 
@@ -48,10 +43,25 @@ class SellerReviewController extends BaseController
             $filter
         );
 
+        $hasMore = $reviewsData['has_more'] ?? false;
+
+        // AJAX request - return JSON for infinite scroll
+        if ($this->isAjax()) {
+            $this->json([
+                'success' => true,
+                'data' => $reviewsData['data'] ?? [],
+                'page' => $page,
+                'has_more' => $hasMore
+            ]);
+            return;
+        }
+
         $this->render('pages/seller/reviews/index', [
             'reviewsData' => $reviewsData,
             'filter' => $filter,
             'store' => $store,
+            'hasMore' => $hasMore,
+            'currentPage' => $page,
             'pageTitle' => 'Manage Reviews',
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
@@ -74,28 +84,20 @@ class SellerReviewController extends BaseController
      */
     public function respond()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->redirect('/login');
-            return;
-        }
-
         $reviewId = $this->getQuery('review_id');
         
         if (!$reviewId) {
-            $this->setFlashMessage('error', 'Review ID is required');
-            $this->redirect('/seller/reviews');
+            $this->redirect('/seller/reviews?error=review_id_required');
             return;
         }
 
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->setFlashMessage('error', 'Store not found');
-            $this->redirect('/seller/dashboard');
+            $this->redirect('/seller/dashboard?error=store_not_found');
             return;
         }
 
@@ -103,8 +105,7 @@ class SellerReviewController extends BaseController
         $canRespond = $this->reviewService->canRespondToReview($reviewId, $store['store_id']);
         
         if (!$canRespond['can_respond']) {
-            $this->setFlashMessage('error', $canRespond['reason']);
-            $this->redirect('/seller/reviews');
+            $this->redirect('/seller/reviews?error=' . urlencode($canRespond['reason']));
             return;
         }
 
@@ -141,19 +142,13 @@ class SellerReviewController extends BaseController
      */
     public function submitResponse()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
-            return;
-        }
-
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->jsonResponse(['success' => false, 'message' => 'Store not found'], 404);
+            $this->json(['success' => false, 'message' => 'Store not found'], 404);
             return;
         }
 
@@ -162,7 +157,7 @@ class SellerReviewController extends BaseController
         $responseText = $this->getPost('response_text');
 
         if (!$reviewId || !$responseText) {
-            $this->jsonResponse(['success' => false, 'message' => 'Review ID and response text are required'], 400);
+            $this->json(['success' => false, 'message' => 'Review ID and response text are required'], 400);
             return;
         }
 
@@ -174,7 +169,7 @@ class SellerReviewController extends BaseController
         );
 
         $statusCode = $result['success'] ? 200 : 400;
-        $this->jsonResponse($result, $statusCode);
+        $this->json($result, $statusCode);
     }
 
     /**
@@ -183,28 +178,20 @@ class SellerReviewController extends BaseController
      */
     public function editResponse()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->redirect('/login');
-            return;
-        }
-
         $responseId = $this->getQuery('response_id');
         
         if (!$responseId) {
-            $this->setFlashMessage('error', 'Response ID is required');
-            $this->redirect('/seller/reviews');
+            $this->redirect('/seller/reviews?error=response_id_required');
             return;
         }
 
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->setFlashMessage('error', 'Store not found');
-            $this->redirect('/seller/dashboard');
+            $this->redirect('/seller/dashboard?error=store_not_found');
             return;
         }
 
@@ -213,15 +200,13 @@ class SellerReviewController extends BaseController
         $response = $responseRepository->find($responseId);
 
         if (!$response) {
-            $this->setFlashMessage('error', 'Response not found');
-            $this->redirect('/seller/reviews');
+            $this->redirect('/seller/reviews?error=response_not_found');
             return;
         }
 
         // Check ownership
         if ($response['responder_id'] != $store['store_id']) {
-            $this->setFlashMessage('error', 'You do not own this response');
-            $this->redirect('/seller/reviews');
+            $this->redirect('/seller/reviews?error=unauthorized');
             return;
         }
 
@@ -259,19 +244,13 @@ class SellerReviewController extends BaseController
      */
     public function updateResponse()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
-            return;
-        }
-
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->jsonResponse(['success' => false, 'message' => 'Store not found'], 404);
+            $this->json(['success' => false, 'message' => 'Store not found'], 404);
             return;
         }
 
@@ -280,7 +259,7 @@ class SellerReviewController extends BaseController
         $responseText = $this->getPost('response_text');
 
         if (!$responseId || !$responseText) {
-            $this->jsonResponse(['success' => false, 'message' => 'Response ID and response text are required'], 400);
+            $this->json(['success' => false, 'message' => 'Response ID and response text are required'], 400);
             return;
         }
 
@@ -292,7 +271,7 @@ class SellerReviewController extends BaseController
         );
 
         $statusCode = $result['success'] ? 200 : 400;
-        $this->jsonResponse($result, $statusCode);
+        $this->json($result, $statusCode);
     }
 
     /**
@@ -301,19 +280,13 @@ class SellerReviewController extends BaseController
      */
     public function deleteResponse()
     {
-        // Check if user is seller
-        if (!$this->isLoggedIn() || $this->getSessionData('role') !== 'SELLER') {
-            $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
-            return;
-        }
-
-        $userId = $this->getSessionData('user_id');
+        $userId = Auth::user()['user_id'];
         
         // Get seller's store
         $store = $this->storeRepository->findByUserId($userId);
         
         if (!$store) {
-            $this->jsonResponse(['success' => false, 'message' => 'Store not found'], 404);
+            $this->json(['success' => false, 'message' => 'Store not found'], 404);
             return;
         }
 
@@ -321,7 +294,7 @@ class SellerReviewController extends BaseController
         $responseId = $this->getPost('response_id');
 
         if (!$responseId) {
-            $this->jsonResponse(['success' => false, 'message' => 'Response ID is required'], 400);
+            $this->json(['success' => false, 'message' => 'Response ID is required'], 400);
             return;
         }
 
@@ -332,6 +305,15 @@ class SellerReviewController extends BaseController
         );
 
         $statusCode = $result['success'] ? 200 : 400;
-        $this->jsonResponse($result, $statusCode);
+        $this->json($result, $statusCode);
+    }
+
+    /**
+     * Check if request is AJAX
+     */
+    protected function isAjax(): bool
+    {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
     }
 }

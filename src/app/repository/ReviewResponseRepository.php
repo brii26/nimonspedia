@@ -178,7 +178,7 @@ class ReviewResponseRepository extends BaseRepository
                 r.rating,
                 r.comment as review_comment,
                 p.product_name,
-                p.product_image,
+                p.main_image_path,
                 reviewer.name as reviewer_username
             FROM {$this->table} rr
             LEFT JOIN reviews r ON rr.review_id = r.review_id
