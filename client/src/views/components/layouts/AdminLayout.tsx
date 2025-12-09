@@ -21,7 +21,12 @@ const AdminLayout = () => {
           >
             Dashboard
           </Link>
-          {/* Tambahkan menu lain jika perlu */}
+          <Link 
+            to="/admin/reviews" 
+            className={`block p-3 rounded ${isActive('/admin/reviews') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
+          >
+            Reviews
+          </Link>
         </nav>
         <div className="p-4 border-t">
           <button 
