@@ -60,7 +60,7 @@
         <div class="review-images">
             <?php foreach ($review['images'] as $image): ?>
                 <div class="review-image">
-                    <img src="/storage/<?= View::escape($image['image_path']) ?>" 
+                    <img src="/storage/<?= View::escape($image['image_url']) ?>" 
                          alt="Review photo"
                          onclick="openImageModal(this.src)">
                 </div>

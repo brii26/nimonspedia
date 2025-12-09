@@ -98,6 +98,7 @@ class Application {
         
         // Review routes
         $this->router->get('/reviews/can-review', 'ReviewController@canReview');
+        $this->router->get('/reviews/get', 'ReviewController@get');
         $this->router->post('/reviews/submit', 'ReviewController@submit');
         $this->router->post('/reviews/update', 'ReviewController@update');
         $this->router->post('/reviews/delete', 'ReviewController@delete');

@@ -266,9 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show success message
                 Notification.success('Review updated successfully!');
                 
-                // Redirect after delay
+                // Redirect back to previous page or order detail
                 setTimeout(() => {
-                    window.location.href = '/reviews/my-reviews';
+                    if (document.referrer && document.referrer.includes('/orders/show')) {
+                        window.location.href = document.referrer;
+                    } else {
+                        history.back();
+                    }
                 }, 1500);
 
             } catch (error) {

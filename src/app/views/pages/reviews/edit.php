@@ -56,12 +56,12 @@
                     <label class="form-label">Current Photos</label>
                     <div class="existing-images-container" id="existing-images-container">
                         <?php foreach ($images as $image): ?>
-                        <div class="image-preview-item" data-image-id="<?= View::escape($image['review_image_id']) ?>">
-                            <img src="/storage/<?= View::escape($image['image_path']) ?>" 
+                        <div class="image-preview-item" data-image-id="<?= View::escape($image['image_id']) ?>">
+                            <img src="/storage/<?= View::escape($image['image_url']) ?>" 
                                  alt="Review photo">
                             <button type="button" 
                                     class="image-preview-remove" 
-                                    data-image-id="<?= View::escape($image['review_image_id']) ?>"
+                                    data-image-id="<?= View::escape($image['image_id']) ?>"
                                     aria-label="Remove image">
                                 ×
                             </button>

@@ -252,6 +252,37 @@
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
+    align-items: center;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-answered {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.status-unanswered {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+/* No Response CTA */
+.no-response {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-light, #e5e7eb);
+    display: flex;
+    justify-content: flex-end;
 }
 
 /* ========================================
@@ -387,18 +418,31 @@
    7. Response Form Specifics
    ======================================== */
 .review-preview {
-    background: var(--gray-50, #f9fafb);
-    padding: 1.25rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .review-preview-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reviewer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .reviewer-name {
@@ -406,9 +450,24 @@
     color: var(--gray-900, #111827);
 }
 
+.product-info-inline {
+    background: var(--gray-50, #f9fafb);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+    color: var(--gray-700, #374151);
+}
+
+.product-info-inline strong {
+    color: var(--gray-600, #6b7280);
+    font-weight: 500;
+}
+
 .review-preview-comment {
     color: var(--gray-700, #374151);
     line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 .review-preview-comment p {
@@ -417,6 +476,107 @@
 
 .review-preview-comment p:last-child {
     margin-bottom: 0;
+}
+
+/* Response Form Section */
+.response-form-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.response-form-section h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900, #111827);
+}
+
+.form-subtitle {
+    margin: 0 0 1.5rem 0;
+    color: var(--gray-600, #6b7280);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: var(--gray-700, #374151);
+    margin-bottom: 0.5rem;
+}
+
+.form-group label .required {
+    color: var(--danger, #ef4444);
+}
+
+.char-counter {
+    text-align: right;
+    font-size: 0.8125rem;
+    color: var(--gray-500, #6b7280);
+    margin-top: 0.5rem;
+}
+
+.response-tips {
+    background: #fef3c7;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.response-tips h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gray-800, #1f2937);
+}
+
+.response-tips ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.response-tips li {
+    color: var(--gray-700, #374151);
+    font-size: 0.875rem;
+    margin-bottom: 0.375rem;
+    line-height: 1.5;
+}
+
+.response-tips li:last-child {
+    margin-bottom: 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light, #e5e7eb);
+}
+
+/* Back link */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-600, #6b7280);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: var(--primary, #3b82f6);
+}
+
+.back-link svg {
+    width: 18px;
+    height: 18px;
 }
 
 /* Empty state - extend from reviews.css */
