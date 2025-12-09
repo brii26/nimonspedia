@@ -35,7 +35,17 @@ class SellerOrderService {
         if (!$order || $order['status'] !== 'waiting_approval') {
             return false;
         }
-        return $this->orderRepo->approveOrder($orderId);
+        
+        $success = $this->orderRepo->approveOrder($orderId);
+        
+        // Send notification to buyer
+        if ($success) {
+            $store = $this->storeService->getStoreById($storeId);
+            $storeName = $store['store_name'] ?? 'Toko';
+            NotificationService::notifyOrderApproved($orderId, (int)$order['buyer_id'], $storeName);
+        }
+        
+        return $success;
     }
 
     public function rejectOrder(int $orderId, int $storeId, string $reason): bool {
@@ -47,7 +57,16 @@ class SellerOrderService {
         $refunded = $this->orderRepo->refundBuyerBalance($orderId);
         $rejected = $this->orderRepo->rejectOrder($orderId, $reason);
 
-        return ($refunded && $rejected);
+        $success = ($refunded && $rejected);
+        
+        // Send notification to buyer
+        if ($success) {
+            $store = $this->storeService->getStoreById($storeId);
+            $storeName = $store['store_name'] ?? 'Toko';
+            NotificationService::notifyOrderRejected($orderId, (int)$order['buyer_id'], $storeName, $reason);
+        }
+
+        return $success;
     }
 
     public function setDeliveryTime(int $orderId, int $storeId, string $deliveryTime): bool {
@@ -56,6 +75,15 @@ class SellerOrderService {
             return false;
         }
 
-        return $this->orderRepo->setDelivery($orderId, $deliveryTime);
+        $success = $this->orderRepo->setDelivery($orderId, $deliveryTime);
+        
+        // Send notification to buyer
+        if ($success) {
+            $store = $this->storeService->getStoreById($storeId);
+            $storeName = $store['store_name'] ?? 'Toko';
+            NotificationService::notifyOrderOnDelivery($orderId, (int)$order['buyer_id'], $storeName);
+        }
+
+        return $success;
     }
 }

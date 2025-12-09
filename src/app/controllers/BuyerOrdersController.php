@@ -132,8 +132,22 @@ class BuyerOrdersController extends BaseController {
             }
 
             $buyerId = Auth::user()['user_id'];
+            $buyerName = Auth::user()['name'] ?? 'Pembeli';
+            
+            // Get order details before confirming to get store_id
+            $order = $this->buyerOrderService->getBuyerOrderDetails($orderId, $buyerId);
+            
             $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
             if ($ok) {
+                // Notify seller that order has been received
+                if ($order && isset($order['store_id'])) {
+                    $storeService = new StoreService();
+                    $store = $storeService->getStoreById($order['store_id']);
+                    if ($store && isset($store['user_id'])) {
+                        NotificationService::notifyOrderReceived($orderId, (int)$store['user_id'], $buyerName);
+                    }
+                }
+                
                 $this->json(['success' => true, 'message' => 'Pesanan dikonfirmasi diterima.']);
             } else {
                 $this->json([
