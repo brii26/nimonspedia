@@ -114,7 +114,11 @@ class BuyerOrdersController extends BaseController {
                     '/css/pages/seller/orders.css',
                     '/css/pages/orders-detail.css'
                 ],
-                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
+                'jsFiles' => [
+                    '/js/utils/fetchXhr.js', 
+                    '/js/pages/orders/index.js',
+                    '/js/pages/orders/show.js'
+                ]
             ]);
             
         } catch (Exception $e) {

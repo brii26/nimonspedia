@@ -155,74 +155,23 @@ $statusClasses = [
     </div>
 </div>
 
-<!-- Edit Review Modal -->
 <?php if ($order['status'] === 'received'): ?>
-<script>
-(function() {
-    // Delete button click handlers
-    document.querySelectorAll('.delete-review-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const reviewId = this.dataset.reviewId;
-            
-            if (!confirm('Are you sure you want to delete this review?')) {
-                return;
-            }
-            
-            try {
-                const formData = new FormData();
-                formData.append('csrf_token', '<?= View::csrf() ?>');
-                formData.append('review_id', reviewId);
-                
-                const response = await fetch('/reviews/delete', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    window.Notification && Notification.success('Review deleted successfully!');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    window.Notification && Notification.error(result.message || 'Failed to delete review');
-                }
-            } catch (error) {
-                console.error('Error deleting review:', error);
-                window.Notification && Notification.error('An error occurred');
-            }
-        });
-    });
-})();
-</script>
-
-<style>
-.existing-review {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.existing-review .review-rating .star {
-    color: #ddd;
-}
-
-.existing-review .review-rating .star.active {
-    color: #ffc107;
-}
-
-.existing-review .review-comment-preview {
-    font-size: 12px;
-    color: #666;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.existing-review .review-actions {
-    display: flex;
-    gap: 5px;
-    margin-top: 5px;
-}
-</style>
+<!-- Delete Review Confirmation Modal -->
+<div id="delete-review-modal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Review</h3>
+                <button type="button" class="modal-close" onclick="closeDeleteReviewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteReviewModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-review-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php endif; ?>
