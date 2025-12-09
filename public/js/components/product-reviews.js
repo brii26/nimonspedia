@@ -7,7 +7,7 @@ class ProductReviews {
     constructor(productId) {
         this.productId = productId;
         this.currentPage = 1;
-        this.perPage = 5;
+        this.perPage = 3;
         this.filterRating = null;
         this.sortBy = 'newest'; // newest, oldest, highest, lowest
         
@@ -23,7 +23,8 @@ class ProductReviews {
         // Rating filter buttons
         document.querySelectorAll('[data-filter-rating]').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const rating = e.target.getAttribute('data-filter-rating');
+                const button = e.currentTarget;
+                const rating = button.getAttribute('data-filter-rating');
                 this.setRatingFilter(rating === 'all' ? null : parseInt(rating));
             });
         });
@@ -148,13 +149,17 @@ class ProductReviews {
 
         const imagesHtml = images.length > 0 ? `
             <div class="review-images-grid">
-                ${images.map((img, idx) => `
-                    <div class="review-image-item" onclick="openReviewImageModal('${this.escapeHtml(img.image_path)}')">
-                        <img src="/storage/${this.escapeHtml(img.image_path)}" 
+                ${images.map((img, idx) => {
+                    const imageUrl = img.image_url;
+                    const previewUrl = this.getPreviewPath(imageUrl);
+                    return `
+                    <div class="review-image-item" onclick="openReviewImageModal('${this.escapeHtml(imageUrl)}')">
+                        <img src="/storage/${this.escapeHtml(previewUrl)}" 
                              alt="Review image ${idx + 1}"
-                             loading="lazy">
+                             loading="lazy"
+                             onerror="this.src='/storage/${this.escapeHtml(imageUrl)}'">
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         ` : '';
 
@@ -191,7 +196,7 @@ class ProductReviews {
                         </div>
                     </div>
                 </div>
-                ${comment ? `<div class="review-content"><p>${this.escapeHtml(comment).replace(/\n/g, '<br>')}</p></div>` : ''}
+                ${comment ? `<div class="review-content">${comment}</div>` : ''}
                 ${imagesHtml}
                 ${responseHtml}
             </div>
@@ -283,6 +288,17 @@ class ProductReviews {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Generate preview path from original image path
+     * Appends _preview before the extension
+     */
+    getPreviewPath(imagePath) {
+        if (!imagePath) return '';
+        const lastDot = imagePath.lastIndexOf('.');
+        if (lastDot === -1) return imagePath + '_preview';
+        return imagePath.substring(0, lastDot) + '_preview' + imagePath.substring(lastDot);
     }
 
     formatDate(dateString) {

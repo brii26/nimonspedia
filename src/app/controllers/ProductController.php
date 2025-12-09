@@ -63,8 +63,8 @@ class ProductController extends BaseController {
         // Get review stats
         $reviewStats = $this->reviewService->getProductStats($productId);
         
-        // Get initial reviews (first page)
-        $initialReviews = $this->reviewService->getProductReviews($productId, 1, 5);
+        // Get initial reviews (first page, 3 per page)
+        $initialReviews = $this->reviewService->getProductReviews($productId, 1, 3);
 
         $this->render('pages/products/show', [
             'product' => $product,

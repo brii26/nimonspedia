@@ -48,11 +48,17 @@ $isEdited = isset($review['updated_at']) && $review['updated_at'] !== $review['c
 
     <?php if (!empty($images)): ?>
         <div class="review-images-grid">
-            <?php foreach ($images as $index => $image): ?>
-                <div class="review-image-item" onclick="openReviewImageModal('<?= View::escape($image['image_path']) ?>')">
-                    <img src="/storage/<?= View::escape($image['image_path']) ?>" 
+            <?php foreach ($images as $index => $image): 
+                // Generate preview path: append _preview before extension
+                $imageUrl = $image['image_url'];
+                $pathInfo = pathinfo($imageUrl);
+                $previewUrl = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '_preview.' . ($pathInfo['extension'] ?? 'jpg');
+            ?>
+                <div class="review-image-item" onclick="openReviewImageModal('<?= View::escape($imageUrl) ?>')">
+                    <img src="/storage/<?= View::escape($previewUrl) ?>" 
                          alt="Review image <?= $index + 1 ?>"
-                         loading="lazy">
+                         loading="lazy"
+                         onerror="this.src='/storage/<?= View::escape($imageUrl) ?>'">
                 </div>
             <?php endforeach; ?>
         </div>

@@ -5,6 +5,7 @@ class BuyerOrdersController extends BaseController {
     private $cartService;
     private $orderRepository;
     private $authService;
+    private $reviewService;
     
     public function __construct() {
         parent::__construct();
@@ -16,6 +17,7 @@ class BuyerOrdersController extends BaseController {
             $this->cartService
         );
         $this->authService = new AuthService();
+        $this->reviewService = new ReviewService();
     }
     
     /**
@@ -102,8 +104,12 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
+            // Get reviews for this order (keyed by product_id)
+            $orderReviews = $this->reviewService->getOrderReviews($orderId);
+            
             $this->render('pages/orders/show', [
                 'order' => $order,
+                'orderReviews' => $orderReviews,
                 'cssFiles' => [
                     '/css/pages/seller/orders.css',
                     '/css/pages/orders-detail.css'

@@ -96,10 +96,43 @@ $statusClasses = [
                                     
                                     <?php if ($order['status'] === 'received'): ?>
                                     <td data-label="Review">
-                                        <a href="/reviews/create?order_id=<?= View::escape($order['order_id']) ?>&product_id=<?= View::escape($item['product_id']) ?>" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            Write Review
-                                        </a>
+                                        <?php 
+                                        $productId = $item['product_id'];
+                                        $existingReview = $orderReviews[$productId] ?? null;
+                                        ?>
+                                        
+                                        <?php if ($existingReview): ?>
+                                            <!-- Show existing review -->
+                                            <div class="existing-review">
+                                                <div class="review-rating">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <span class="star <?= $i <= $existingReview['rating'] ? 'active' : '' ?>">★</span>
+                                                    <?php endfor; ?>
+                                                </div>
+                                                <?php if (!empty($existingReview['comment'])): ?>
+                                                    <div class="review-comment-preview">
+                                                        <?= mb_substr(strip_tags($existingReview['comment']), 0, 50) ?>...
+                                                    </div>
+                                                <?php endif; ?>
+                                                <div class="review-actions">
+                                                    <a href="/reviews/edit?id=<?= $existingReview['review_id'] ?>" 
+                                                       class="btn btn-sm btn-outline-secondary">
+                                                        Edit
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger delete-review-btn"
+                                                            data-review-id="<?= $existingReview['review_id'] ?>">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <!-- Show write review button -->
+                                            <a href="/reviews/create?order_id=<?= View::escape($order['order_id']) ?>&product_id=<?= View::escape($item['product_id']) ?>" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                Write Review
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                     <?php endif; ?>
                                 </tr>
@@ -121,3 +154,75 @@ $statusClasses = [
         <a href="/orders" class="btn btn-outline-primary">Kembali ke Daftar Pesanan</a>
     </div>
 </div>
+
+<!-- Edit Review Modal -->
+<?php if ($order['status'] === 'received'): ?>
+<script>
+(function() {
+    // Delete button click handlers
+    document.querySelectorAll('.delete-review-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const reviewId = this.dataset.reviewId;
+            
+            if (!confirm('Are you sure you want to delete this review?')) {
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('csrf_token', '<?= View::csrf() ?>');
+                formData.append('review_id', reviewId);
+                
+                const response = await fetch('/reviews/delete', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.Notification && Notification.success('Review deleted successfully!');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    window.Notification && Notification.error(result.message || 'Failed to delete review');
+                }
+            } catch (error) {
+                console.error('Error deleting review:', error);
+                window.Notification && Notification.error('An error occurred');
+            }
+        });
+    });
+})();
+</script>
+
+<style>
+.existing-review {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.existing-review .review-rating .star {
+    color: #ddd;
+}
+
+.existing-review .review-rating .star.active {
+    color: #ffc107;
+}
+
+.existing-review .review-comment-preview {
+    font-size: 12px;
+    color: #666;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.existing-review .review-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+</style>
+<?php endif; ?>

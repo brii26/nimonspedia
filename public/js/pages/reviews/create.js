@@ -166,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('product_id', form.querySelector('[name="product_id"]').value);
                 formData.append('rating', starRating.getRating());
                 
-                // Get Quill content
-                const commentHtml = quill ? quill.root.innerHTML : '';
-                formData.append('comment', commentHtml);
+                // Get Quill content as plain text (strip HTML tags)
+                const commentText = quill ? quill.getText().trim() : '';
+                formData.append('comment', commentText);
 
                 // Add images
                 selectedFiles.forEach((file, index) => {
@@ -181,7 +181,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: formData
                 });
 
-                const result = await response.json();
+                // Debug response
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response was:', responseText);
+                    throw new Error('Invalid response format');
+                }
 
                 if (result.success) {
                     // Show success message
@@ -242,12 +253,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isSubmitting) {
             submitBtn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoading) btnLoading.style.display = 'inline-block';
         } else {
             submitBtn.disabled = false;
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
+            if (btnText) btnText.style.display = 'inline';
+            if (btnLoading) btnLoading.style.display = 'none';
         }
     }
 

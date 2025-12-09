@@ -99,6 +99,59 @@ class ReviewController extends BaseController
     }
 
     /**
+     * Get a single review by ID
+     * GET /reviews/get?id=X
+     */
+    public function get()
+    {
+        $this->requireAuth();
+        
+        try {
+            $reviewId = (int)$this->getQuery('id');
+            
+            if (!$reviewId) {
+                $this->json([
+                    'success' => false,
+                    'message' => 'Missing review id'
+                ], 400);
+                return;
+            }
+            
+            $review = $this->reviewService->getReviewById($reviewId);
+            
+            if (!$review) {
+                $this->json([
+                    'success' => false,
+                    'message' => 'Review not found'
+                ], 404);
+                return;
+            }
+            
+            // Check authorization - only review owner can get full details
+            $userId = Auth::user()['user_id'];
+            if ($review['user_id'] != $userId) {
+                $this->json([
+                    'success' => false,
+                    'message' => 'Not authorized'
+                ], 403);
+                return;
+            }
+            
+            $this->json([
+                'success' => true,
+                'data' => $review
+            ]);
+            
+        } catch (Exception $e) {
+            error_log('Error getting review: ' . $e->getMessage());
+            $this->json([
+                'success' => false,
+                'message' => 'Error fetching review'
+            ], 500);
+        }
+    }
+
+    /**
      * Update an existing review
      * POST /reviews/update
      */
@@ -315,8 +368,10 @@ class ReviewController extends BaseController
             
             $page = (int)$this->getQuery('page', 1);
             $perPage = (int)$this->getQuery('per_page', 10);
+            $rating = $this->getQuery('rating') ? (int)$this->getQuery('rating') : null;
+            $sortBy = $this->getQuery('sort_by', 'newest');
             
-            $result = $this->reviewService->getProductReviews($productId, $page, $perPage);
+            $result = $this->reviewService->getProductReviews($productId, $page, $perPage, $rating, $sortBy);
             
             $this->json([
                 'success' => true,

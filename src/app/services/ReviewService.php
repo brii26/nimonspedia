@@ -130,7 +130,8 @@ class ReviewService
             }
             
             // Start transaction
-            $this->reviewRepository->db->beginTransaction();
+            $db = Database::getInstance();
+            $db->beginTransaction();
             
             try {
                 // Create review
@@ -139,7 +140,7 @@ class ReviewService
                     'user_id' => (int)$data['user_id'],
                     'product_id' => (int)$data['product_id'],
                     'rating' => (int)$data['rating'],
-                    'comment' => htmlspecialchars($comment, ENT_QUOTES, 'UTF-8'),
+                    'comment' => SanitizerService::sanitizeRichText($comment),
                     'created_at' => date('Y-m-d H:i:s')
                 ];
                 
@@ -162,7 +163,7 @@ class ReviewService
                     }
                 }
                 
-                $this->reviewRepository->db->commit();
+                $db->commit();
                 
                 return [
                     'success' => true, 
@@ -236,7 +237,7 @@ class ReviewService
             }
             
             if (isset($data['comment'])) {
-                $updateData['comment'] = htmlspecialchars($data['comment'], ENT_QUOTES, 'UTF-8');
+                $updateData['comment'] = SanitizerService::sanitizeRichText($data['comment']);
             }
             
             if (empty($updateData)) {
@@ -384,11 +385,13 @@ class ReviewService
      * @param int $productId
      * @param int $page
      * @param int $perPage
+     * @param int|null $rating Filter by rating (1-5)
+     * @param string $sortBy Sort by (newest, oldest, highest, lowest)
      * @return array Paginated reviews with images
      */
-    public function getProductReviews($productId, $page = 1, $perPage = 10)
+    public function getProductReviews($productId, $page = 1, $perPage = 10, $rating = null, $sortBy = 'newest')
     {
-        $result = $this->reviewRepository->getByProduct($productId, $page, $perPage);
+        $result = $this->reviewRepository->getByProduct($productId, $page, $perPage, $rating, $sortBy);
         
         // Add images for each review
         foreach ($result['data'] as &$review) {
@@ -411,6 +414,41 @@ class ReviewService
     }
 
     /**
+     * Get all reviews for an order (keyed by product_id)
+     * 
+     * @param int $orderId
+     * @return array Associative array with product_id as key
+     */
+    public function getOrderReviews($orderId)
+    {
+        $reviews = $this->reviewRepository->getByOrder($orderId);
+        
+        // Add images for each review
+        foreach ($reviews as $productId => &$review) {
+            $review['images'] = $this->reviewImageRepository->getByReview($review['review_id']);
+        }
+        
+        return $reviews;
+    }
+
+    /**
+     * Get a single review by ID
+     * 
+     * @param int $reviewId
+     * @return array|null
+     */
+    public function getReviewById($reviewId)
+    {
+        $review = $this->reviewRepository->find($reviewId);
+        
+        if ($review) {
+            $review['images'] = $this->reviewImageRepository->getByReview($reviewId);
+        }
+        
+        return $review;
+    }
+
+    /**
      * Get product rating statistics
      * 
      * @param int $productId
@@ -421,7 +459,13 @@ class ReviewService
         $stats = $this->reviewRepository->getProductRatingStats($productId);
         $distribution = $this->reviewRepository->getRatingDistribution($productId);
         
-        return array_merge($stats, ['distribution' => $distribution]);
+        // Convert distribution to format expected by view: [['rating' => X, 'count' => Y], ...]
+        $formattedDistribution = [];
+        foreach ($distribution as $rating => $count) {
+            $formattedDistribution[] = ['rating' => $rating, 'count' => $count];
+        }
+        
+        return array_merge($stats, ['rating_distribution' => $formattedDistribution]);
     }
 
     /**

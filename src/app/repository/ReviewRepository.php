@@ -16,11 +16,45 @@ class ReviewRepository extends BaseRepository
      * @param int $productId
      * @param int $page
      * @param int $perPage
+     * @param int|null $rating Filter by rating
+     * @param string $sortBy Sort order (newest, oldest, highest, lowest)
      * @return array Paginated results with review data including user info
      */
-    public function getByProduct($productId, $page = 1, $perPage = 10)
+    public function getByProduct($productId, $page = 1, $perPage = 10, $rating = null, $sortBy = 'newest')
     {
         $offset = ($page - 1) * $perPage;
+        $params = [$productId];
+        
+        // Build WHERE clause
+        $whereClauses = [
+            "r.product_id = ?",
+            "r.deleted_at IS NULL",
+            "r.is_hidden = FALSE"
+        ];
+        
+        if ($rating !== null && $rating >= 1 && $rating <= 5) {
+            $whereClauses[] = "r.rating = ?";
+            $params[] = $rating;
+        }
+        
+        $whereStr = implode(' AND ', $whereClauses);
+        
+        // Build ORDER BY clause
+        switch ($sortBy) {
+            case 'oldest':
+                $orderBy = 'r.created_at ASC';
+                break;
+            case 'highest':
+                $orderBy = 'r.rating DESC, r.created_at DESC';
+                break;
+            case 'lowest':
+                $orderBy = 'r.rating ASC, r.created_at DESC';
+                break;
+            case 'newest':
+            default:
+                $orderBy = 'r.created_at DESC';
+                break;
+        }
         
         $sql = "
             SELECT 
@@ -30,25 +64,33 @@ class ReviewRepository extends BaseRepository
             FROM {$this->table} r
             LEFT JOIN users u ON r.user_id = u.user_id
             LEFT JOIN review_images ri ON r.review_id = ri.review_id
-            WHERE r.product_id = ? 
-                AND r.deleted_at IS NULL 
-                AND r.is_hidden = FALSE
+            WHERE {$whereStr}
             GROUP BY r.review_id, u.user_id
-            ORDER BY r.created_at DESC
+            ORDER BY {$orderBy}
             LIMIT ? OFFSET ?
         ";
         
-        $reviews = $this->db->select($sql, [$productId, $perPage, $offset]);
+        $params[] = $perPage;
+        $params[] = $offset;
         
-        // Get total count
-        $countSql = "
-            SELECT COUNT(*) as total 
-            FROM {$this->table} 
-            WHERE product_id = ? 
-                AND deleted_at IS NULL 
-                AND is_hidden = FALSE
-        ";
-        $countResult = $this->db->selectOne($countSql, [$productId]);
+        $reviews = $this->db->select($sql, $params);
+        
+        // Get total count with same filters
+        $countParams = [$productId];
+        $countWhereClauses = [
+            "product_id = ?",
+            "deleted_at IS NULL",
+            "is_hidden = FALSE"
+        ];
+        
+        if ($rating !== null && $rating >= 1 && $rating <= 5) {
+            $countWhereClauses[] = "rating = ?";
+            $countParams[] = $rating;
+        }
+        
+        $countWhereStr = implode(' AND ', $countWhereClauses);
+        $countSql = "SELECT COUNT(*) as total FROM {$this->table} WHERE {$countWhereStr}";
+        $countResult = $this->db->selectOne($countSql, $countParams);
         $total = $countResult ? (int)$countResult['total'] : 0;
         
         return [
@@ -84,7 +126,7 @@ class ReviewRepository extends BaseRepository
         
         return [
             'average_rating' => $result ? round((float)$result['average_rating'], 1) : 0,
-            'review_count' => $result ? (int)$result['review_count'] : 0
+            'total_reviews' => $result ? (int)$result['review_count'] : 0
         ];
     }
 
@@ -138,6 +180,32 @@ class ReviewRepository extends BaseRepository
         ";
         
         return $this->db->selectOne($sql, [$orderId, $productId]);
+    }
+
+    /**
+     * Get all reviews for an order (keyed by product_id)
+     * 
+     * @param int $orderId
+     * @return array Associative array with product_id as key
+     */
+    public function getByOrder($orderId)
+    {
+        $sql = "
+            SELECT * 
+            FROM {$this->table}
+            WHERE order_id = ? 
+                AND deleted_at IS NULL
+        ";
+        
+        $reviews = $this->db->select($sql, [$orderId]);
+        
+        // Key by product_id for easy lookup
+        $result = [];
+        foreach ($reviews as $review) {
+            $result[$review['product_id']] = $review;
+        }
+        
+        return $result;
     }
 
     /**
@@ -344,29 +412,6 @@ class ReviewRepository extends BaseRepository
         ";
         
         return $this->db->update($sql, [$reviewId]) > 0;
-    }
-
-    /**
-     * Get reviews for a specific order
-     * 
-     * @param int $orderId
-     * @return array
-     */
-    public function getByOrder($orderId)
-    {
-        $sql = "
-            SELECT 
-                r.*,
-                p.product_name,
-                p.main_image_path
-            FROM {$this->table} r
-            LEFT JOIN products p ON r.product_id = p.product_id
-            WHERE r.order_id = ? 
-                AND r.deleted_at IS NULL
-            ORDER BY r.created_at DESC
-        ";
-        
-        return $this->db->select($sql, [$orderId]);
     }
 
     /**

@@ -29,10 +29,6 @@ for ($i = 5; $i >= 1; $i--) {
 ?>
 
 <div class="rating-summary">
-    <div class="rating-summary-header">
-        <h2 class="section-title">Customer Reviews</h2>
-    </div>
-
     <?php if ($totalReviews > 0): ?>
         <div class="rating-summary-content">
             <!-- Overall Rating -->
