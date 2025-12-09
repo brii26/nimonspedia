@@ -43,7 +43,7 @@
             </a>
             <?php if ($order['status'] === 'on_delivery'): ?>
                 <form action="/orders/confirm-received" method="POST" data-form="confirm-received" style="display: inline;">
-                    <input type="hidden" name="csrf-token" value="<?= Auth::csrfToken() ?>">
+                    <input type="hidden" name="csrf_token" value="<?= Auth::csrfToken() ?>">
                     <input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
                     <button type="submit" class="btn btn-success confirm-received-btn">
                         Konfirmasi Diterima

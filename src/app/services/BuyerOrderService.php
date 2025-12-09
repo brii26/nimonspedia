@@ -90,21 +90,25 @@ class BuyerOrderService {
         $this->cartService->clearCart($buyerId);
         $_SESSION['cart_count'] = 0;
 
-        // Notify sellers about new orders
-        $buyer = Auth::user();
-        $buyerName = $buyer['name'] ?? 'Pembeli';
-        
-        foreach ($createdOrders as $order) {
-            if (isset($order['store_id']) && isset($order['order_id'])) {
-                $store = $this->storeService->getStoreById($order['store_id']);
-                if ($store && isset($store['user_id'])) {
-                    NotificationService::notifyOrderWaitingApproval(
-                        (int)$order['order_id'], 
-                        (int)$store['user_id'], 
-                        $buyerName
-                    );
+        // Notify sellers about new orders (non-blocking)
+        try {
+            $buyer = Auth::user();
+            $buyerName = $buyer['name'] ?? 'Pembeli';
+            
+            foreach ($createdOrders as $order) {
+                if (isset($order['store_id']) && isset($order['order_id'])) {
+                    $store = $this->storeService->getStoreById($order['store_id']);
+                    if ($store && isset($store['user_id'])) {
+                        NotificationService::notifyOrderWaitingApproval(
+                            (int)$order['order_id'], 
+                            (int)$store['user_id'], 
+                            $buyerName
+                        );
+                    }
                 }
             }
+        } catch (Exception $e) {
+            error_log('Notification error: ' . $e->getMessage());
         }
 
         return $createdOrders;

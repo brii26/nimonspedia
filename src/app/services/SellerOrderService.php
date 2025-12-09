@@ -38,11 +38,15 @@ class SellerOrderService {
         
         $success = $this->orderRepo->approveOrder($orderId);
         
-        // Send notification to buyer
+        // Send notification to buyer (non-blocking)
         if ($success) {
-            $store = $this->storeService->getStoreById($storeId);
-            $storeName = $store['store_name'] ?? 'Toko';
-            NotificationService::notifyOrderApproved($orderId, (int)$order['buyer_id'], $storeName);
+            try {
+                $store = $this->storeService->getStoreById($storeId);
+                $storeName = $store['store_name'] ?? 'Toko';
+                NotificationService::notifyOrderApproved($orderId, (int)$order['buyer_id'], $storeName);
+            } catch (Exception $e) {
+                error_log('Notification error: ' . $e->getMessage());
+            }
         }
         
         return $success;
@@ -59,11 +63,15 @@ class SellerOrderService {
 
         $success = ($refunded && $rejected);
         
-        // Send notification to buyer
+        // Send notification to buyer (non-blocking)
         if ($success) {
-            $store = $this->storeService->getStoreById($storeId);
-            $storeName = $store['store_name'] ?? 'Toko';
-            NotificationService::notifyOrderRejected($orderId, (int)$order['buyer_id'], $storeName, $reason);
+            try {
+                $store = $this->storeService->getStoreById($storeId);
+                $storeName = $store['store_name'] ?? 'Toko';
+                NotificationService::notifyOrderRejected($orderId, (int)$order['buyer_id'], $storeName, $reason);
+            } catch (Exception $e) {
+                error_log('Notification error: ' . $e->getMessage());
+            }
         }
 
         return $success;
@@ -77,11 +85,15 @@ class SellerOrderService {
 
         $success = $this->orderRepo->setDelivery($orderId, $deliveryTime);
         
-        // Send notification to buyer
+        // Send notification to buyer (non-blocking)
         if ($success) {
-            $store = $this->storeService->getStoreById($storeId);
-            $storeName = $store['store_name'] ?? 'Toko';
-            NotificationService::notifyOrderOnDelivery($orderId, (int)$order['buyer_id'], $storeName);
+            try {
+                $store = $this->storeService->getStoreById($storeId);
+                $storeName = $store['store_name'] ?? 'Toko';
+                NotificationService::notifyOrderOnDelivery($orderId, (int)$order['buyer_id'], $storeName);
+            } catch (Exception $e) {
+                error_log('Notification error: ' . $e->getMessage());
+            }
         }
 
         return $success;

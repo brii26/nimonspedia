@@ -139,13 +139,18 @@ class BuyerOrdersController extends BaseController {
             
             $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
             if ($ok) {
-                // Notify seller that order has been received
-                if ($order && isset($order['store_id'])) {
-                    $storeService = new StoreService();
-                    $store = $storeService->getStoreById($order['store_id']);
-                    if ($store && isset($store['user_id'])) {
-                        NotificationService::notifyOrderReceived($orderId, (int)$store['user_id'], $buyerName);
+                // Notify seller that order has been received (non-blocking)
+                try {
+                    if ($order && isset($order['store_id'])) {
+                        $storeService = new StoreService();
+                        $store = $storeService->getStoreById($order['store_id']);
+                        if ($store && isset($store['user_id'])) {
+                            NotificationService::notifyOrderReceived($orderId, (int)$store['user_id'], $buyerName);
+                        }
                     }
+                } catch (Exception $notifError) {
+                    // Log but don't fail the request
+                    error_log('Notification error: ' . $notifError->getMessage());
                 }
                 
                 $this->json(['success' => true, 'message' => 'Pesanan dikonfirmasi diterima.']);
@@ -158,7 +163,9 @@ class BuyerOrdersController extends BaseController {
 
         } catch (Exception $e) {
             error_log('Error confirming received: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             $this->json(['success' => false, 'message' => 'Terjadi kesalahan saat mengkonfirmasi pesanan.'], 500);
+            return;
         }
     }
     
