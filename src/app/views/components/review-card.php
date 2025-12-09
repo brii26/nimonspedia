@@ -6,7 +6,7 @@
  * - $review: array with review details including user, rating, comment, images, response
  */
 
-$userName = View::escape($review['full_name'] ?? $review['username'] ?? 'Anonymous');
+$userName = View::escape($review['username'] ?? 'Anonymous');
 $rating = (int)($review['rating'] ?? 0);
 $comment = $review['comment'] ?? '';
 $createdAt = $review['created_at'] ?? '';

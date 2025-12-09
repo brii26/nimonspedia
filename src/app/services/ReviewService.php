@@ -400,6 +400,17 @@ class ReviewService
     }
 
     /**
+     * Get product rating statistics (alias for getProductRatingStats)
+     * 
+     * @param int $productId
+     * @return array Rating stats and distribution
+     */
+    public function getProductStats($productId)
+    {
+        return $this->getProductRatingStats($productId);
+    }
+
+    /**
      * Get product rating statistics
      * 
      * @param int $productId
@@ -499,5 +510,292 @@ class ReviewService
         }
         
         return ['valid' => true, 'message' => null];
+    }
+
+    /**
+     * Check if seller can respond to a review
+     * 
+     * @param int $reviewId
+     * @param int $sellerId
+     * @return array ['can_respond' => bool, 'reason' => string|null]
+     */
+    public function canRespondToReview($reviewId, $sellerId)
+    {
+        // Get review with details
+        $review = $this->reviewRepository->findWithDetails($reviewId, true);
+        
+        if (!$review) {
+            return ['can_respond' => false, 'reason' => 'Review not found'];
+        }
+        
+        // Check if review is deleted
+        if ($review['deleted_at'] !== null) {
+            return ['can_respond' => false, 'reason' => 'Cannot respond to deleted review'];
+        }
+        
+        // Get product to verify store ownership
+        $product = $this->productRepository->find($review['product_id']);
+        
+        if (!$product) {
+            return ['can_respond' => false, 'reason' => 'Product not found'];
+        }
+        
+        // Check if seller owns the store
+        if ($product['store_id'] != $sellerId) {
+            return ['can_respond' => false, 'reason' => 'You do not own this store'];
+        }
+        
+        // Check if seller already responded
+        $existingResponse = $this->reviewResponseRepository->getByReview($reviewId);
+        
+        foreach ($existingResponse as $response) {
+            if ($response['responder_role'] === 'SELLER' && $response['deleted_at'] === null) {
+                return ['can_respond' => false, 'reason' => 'You have already responded to this review'];
+            }
+        }
+        
+        return ['can_respond' => true, 'reason' => null];
+    }
+
+    /**
+     * Submit seller response to a review
+     * 
+     * @param int $reviewId
+     * @param int $sellerId
+     * @param string $responseText
+     * @return array ['success' => bool, 'message' => string, 'response_id' => int|null]
+     */
+    public function submitSellerResponse($reviewId, $sellerId, $responseText)
+    {
+        // Check if seller can respond
+        $canRespond = $this->canRespondToReview($reviewId, $sellerId);
+        
+        if (!$canRespond['can_respond']) {
+            return [
+                'success' => false,
+                'message' => $canRespond['reason'],
+                'response_id' => null
+            ];
+        }
+        
+        // Validate response text
+        $responseText = trim($responseText);
+        
+        if (empty($responseText)) {
+            return [
+                'success' => false,
+                'message' => 'Response text is required',
+                'response_id' => null
+            ];
+        }
+        
+        if (strlen($responseText) > self::MAX_COMMENT_LENGTH) {
+            return [
+                'success' => false,
+                'message' => 'Response text exceeds maximum length of ' . self::MAX_COMMENT_LENGTH . ' characters',
+                'response_id' => null
+            ];
+        }
+        
+        try {
+            // Create response
+            $responseId = $this->reviewResponseRepository->create([
+                'review_id' => $reviewId,
+                'responder_id' => $sellerId,
+                'responder_role' => 'SELLER',
+                'response_text' => $responseText
+            ]);
+            
+            if ($responseId) {
+                return [
+                    'success' => true,
+                    'message' => 'Response submitted successfully',
+                    'response_id' => $responseId
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to submit response',
+                    'response_id' => null
+                ];
+            }
+            
+        } catch (Exception $e) {
+            error_log('Error submitting seller response: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'An error occurred while submitting response',
+                'response_id' => null
+            ];
+        }
+    }
+
+    /**
+     * Update seller response
+     * 
+     * @param int $responseId
+     * @param int $sellerId
+     * @param string $responseText
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public function updateSellerResponse($responseId, $sellerId, $responseText)
+    {
+        // Get response
+        $response = $this->reviewResponseRepository->find($responseId);
+        
+        if (!$response) {
+            return ['success' => false, 'message' => 'Response not found'];
+        }
+        
+        // Check if response is deleted
+        if ($response['deleted_at'] !== null) {
+            return ['success' => false, 'message' => 'Cannot update deleted response'];
+        }
+        
+        // Check ownership
+        if ($response['responder_id'] != $sellerId) {
+            return ['success' => false, 'message' => 'You do not own this response'];
+        }
+        
+        // Check if it's a seller response
+        if ($response['responder_role'] !== 'SELLER') {
+            return ['success' => false, 'message' => 'Invalid response type'];
+        }
+        
+        // Validate response text
+        $responseText = trim($responseText);
+        
+        if (empty($responseText)) {
+            return ['success' => false, 'message' => 'Response text is required'];
+        }
+        
+        if (strlen($responseText) > self::MAX_COMMENT_LENGTH) {
+            return [
+                'success' => false,
+                'message' => 'Response text exceeds maximum length of ' . self::MAX_COMMENT_LENGTH . ' characters'
+            ];
+        }
+        
+        try {
+            // Update response
+            $updated = $this->reviewResponseRepository->update($responseId, [
+                'response_text' => $responseText
+            ]);
+            
+            if ($updated) {
+                return [
+                    'success' => true,
+                    'message' => 'Response updated successfully'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to update response'
+                ];
+            }
+            
+        } catch (Exception $e) {
+            error_log('Error updating seller response: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'An error occurred while updating response'
+            ];
+        }
+    }
+
+    /**
+     * Delete seller response (soft delete)
+     * 
+     * @param int $responseId
+     * @param int $sellerId
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public function deleteSellerResponse($responseId, $sellerId)
+    {
+        // Get response
+        $response = $this->reviewResponseRepository->find($responseId);
+        
+        if (!$response) {
+            return ['success' => false, 'message' => 'Response not found'];
+        }
+        
+        // Check if already deleted
+        if ($response['deleted_at'] !== null) {
+            return ['success' => false, 'message' => 'Response is already deleted'];
+        }
+        
+        // Check ownership
+        if ($response['responder_id'] != $sellerId) {
+            return ['success' => false, 'message' => 'You do not own this response'];
+        }
+        
+        // Check if it's a seller response
+        if ($response['responder_role'] !== 'SELLER') {
+            return ['success' => false, 'message' => 'Invalid response type'];
+        }
+        
+        try {
+            // Soft delete
+            $deleted = $this->reviewResponseRepository->softDelete($responseId);
+            
+            if ($deleted) {
+                return [
+                    'success' => true,
+                    'message' => 'Response deleted successfully'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to delete response'
+                ];
+            }
+            
+        } catch (Exception $e) {
+            error_log('Error deleting seller response: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'An error occurred while deleting response'
+            ];
+        }
+    }
+
+    /**
+     * Get reviews for seller's products
+     * 
+     * @param int $sellerId (store_id)
+     * @param int $page
+     * @param int $perPage
+     * @param string|null $filter (all, unanswered, answered)
+     * @return array
+     */
+    public function getSellerReviews($sellerId, $page = 1, $perPage = 10, $filter = 'all')
+    {
+        // Get all products for this store
+        $products = $this->productRepository->findByStore($sellerId);
+        
+        if (empty($products)) {
+            return [
+                'data' => [],
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => 0,
+                'total_pages' => 0,
+                'has_more' => false
+            ];
+        }
+        
+        $productIds = array_map(function($p) { return $p['product_id']; }, $products);
+        
+        // Get reviews through repository
+        $result = $this->reviewRepository->getByProductIds($productIds, $page, $perPage, $filter);
+        
+        // Add images and responses for each review
+        foreach ($result['data'] as &$review) {
+            $review['images'] = $this->reviewImageRepository->getByReview($review['review_id']);
+            $responses = $this->reviewResponseRepository->getByReview($review['review_id']);
+            $review['response'] = !empty($responses) ? $responses[0] : null;
+        }
+        
+        return $result;
     }
 }

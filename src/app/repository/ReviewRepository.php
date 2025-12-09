@@ -25,8 +25,7 @@ class ReviewRepository extends BaseRepository
         $sql = "
             SELECT 
                 r.*,
-                u.username,
-                u.full_name,
+                u.name as username,
                 COUNT(ri.image_id) as image_count
             FROM {$this->table} r
             LEFT JOIN users u ON r.user_id = u.user_id
@@ -155,8 +154,7 @@ class ReviewRepository extends BaseRepository
         $sql = "
             SELECT 
                 r.*,
-                u.username,
-                u.full_name,
+                u.name as username,
                 p.product_name,
                 p.product_image
             FROM {$this->table} r
@@ -243,7 +241,7 @@ class ReviewRepository extends BaseRepository
         }
         
         if (!empty($filters['search'])) {
-            $where[] = '(p.product_name ILIKE ? OR u.username ILIKE ? OR r.comment ILIKE ?)';
+            $where[] = '(p.product_name ILIKE ? OR u.name ILIKE ? OR r.comment ILIKE ?)';
             $searchTerm = '%' . $filters['search'] . '%';
             $params[] = $searchTerm;
             $params[] = $searchTerm;
@@ -255,11 +253,10 @@ class ReviewRepository extends BaseRepository
         $sql = "
             SELECT 
                 r.*,
-                u.username,
-                u.full_name,
+                u.name as username,
                 p.product_name,
                 p.product_image,
-                hider.username as hidden_by_username
+                hider.name as hidden_by_username
             FROM {$this->table} r
             LEFT JOIN users u ON r.user_id = u.user_id
             LEFT JOIN products p ON r.product_id = p.product_id
@@ -370,5 +367,111 @@ class ReviewRepository extends BaseRepository
         ";
         
         return $this->db->select($sql, [$orderId]);
+    }
+
+    /**
+     * Get reviews for products by store with pagination and filters
+     * 
+     * @param array $productIds Array of product IDs
+     * @param int $page
+     * @param int $perPage
+     * @param string|null $filter 'all', 'unanswered', 'answered'
+     * @return array Paginated results
+     */
+    public function getByProductIds($productIds, $page = 1, $perPage = 10, $filter = 'all')
+    {
+        if (empty($productIds)) {
+            return [
+                'data' => [],
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => 0,
+                'total_pages' => 0,
+                'has_more' => false
+            ];
+        }
+
+        $offset = ($page - 1) * $perPage;
+        
+        $sql = "
+            SELECT 
+                r.*,
+                u.name as username,
+                u.full_name,
+                p.product_name,
+                p.product_image,
+                p.store_id,
+                (
+                    SELECT COUNT(*) 
+                    FROM review_responses rr 
+                    WHERE rr.review_id = r.review_id 
+                    AND rr.responder_role = 'SELLER'
+                    AND rr.deleted_at IS NULL
+                ) as has_seller_response
+            FROM {$this->table} r
+            LEFT JOIN users u ON r.user_id = u.user_id
+            LEFT JOIN products p ON r.product_id = p.product_id
+            WHERE r.product_id = ANY(?)
+                AND r.deleted_at IS NULL
+        ";
+        
+        // Apply filter
+        if ($filter === 'unanswered') {
+            $sql .= " AND NOT EXISTS (
+                SELECT 1 FROM review_responses rr 
+                WHERE rr.review_id = r.review_id 
+                AND rr.responder_role = 'SELLER'
+                AND rr.deleted_at IS NULL
+            )";
+        } elseif ($filter === 'answered') {
+            $sql .= " AND EXISTS (
+                SELECT 1 FROM review_responses rr 
+                WHERE rr.review_id = r.review_id 
+                AND rr.responder_role = 'SELLER'
+                AND rr.deleted_at IS NULL
+            )";
+        }
+        
+        $sql .= " ORDER BY r.created_at DESC LIMIT ? OFFSET ?";
+        
+        $reviews = $this->db->select($sql, ['{' . implode(',', $productIds) . '}', $perPage, $offset]);
+        
+        // Get total count
+        $countSql = "
+            SELECT COUNT(*) as total
+            FROM {$this->table} r
+            WHERE r.product_id = ANY(?)
+                AND r.deleted_at IS NULL
+        ";
+        
+        if ($filter === 'unanswered') {
+            $countSql .= " AND NOT EXISTS (
+                SELECT 1 FROM review_responses rr 
+                WHERE rr.review_id = r.review_id 
+                AND rr.responder_role = 'SELLER'
+                AND rr.deleted_at IS NULL
+            )";
+        } elseif ($filter === 'answered') {
+            $countSql .= " AND EXISTS (
+                SELECT 1 FROM review_responses rr 
+                WHERE rr.review_id = r.review_id 
+                AND rr.responder_role = 'SELLER'
+                AND rr.deleted_at IS NULL
+            )";
+        }
+        
+        $countResult = $this->db->selectOne($countSql, ['{' . implode(',', $productIds) . '}']);
+        $total = $countResult['total'] ?? 0;
+        
+        $totalPages = ceil($total / $perPage);
+        
+        return [
+            'data' => $reviews,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'has_more' => $page < $totalPages
+        ];
     }
 }

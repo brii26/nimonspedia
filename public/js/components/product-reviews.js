@@ -135,7 +135,7 @@ class ProductReviews {
     }
 
     renderReviewCard(review) {
-        const userName = this.escapeHtml(review.full_name || review.username || 'Anonymous');
+        const userName = this.escapeHtml(review.username || 'Anonymous');
         const rating = parseInt(review.rating || 0);
         const comment = review.comment || '';
         const images = review.images || [];

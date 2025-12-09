@@ -21,8 +21,7 @@ class ReviewResponseRepository extends BaseRepository
         $sql = "
             SELECT 
                 rr.*,
-                u.username,
-                u.full_name
+                u.name as username,
             FROM {$this->table} rr
             LEFT JOIN users u ON rr.user_id = u.user_id
             WHERE rr.review_id = ?
@@ -52,8 +51,7 @@ class ReviewResponseRepository extends BaseRepository
         $sql = "
             SELECT 
                 rr.*,
-                u.username,
-                u.full_name
+                u.name as username,
             FROM {$this->table} rr
             LEFT JOIN users u ON rr.user_id = u.user_id
             WHERE rr.review_id = ? AND rr.response_type = ?
@@ -177,7 +175,7 @@ class ReviewResponseRepository extends BaseRepository
                 r.comment as review_comment,
                 p.product_name,
                 p.product_image,
-                reviewer.username as reviewer_username
+                reviewer.name as reviewer_username
             FROM {$this->table} rr
             LEFT JOIN reviews r ON rr.review_id = r.review_id
             LEFT JOIN products p ON r.product_id = p.product_id
