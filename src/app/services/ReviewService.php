@@ -397,6 +397,15 @@ class ReviewService
         foreach ($result['data'] as &$review) {
             $review['images'] = $this->reviewImageRepository->getByReview($review['review_id']);
             $review['responses'] = $this->reviewResponseRepository->getByReview($review['review_id']);
+            
+            // Add seller response for display (only SELLER, not ADMIN)
+            $review['response'] = null;
+            foreach ($review['responses'] as $resp) {
+                if ($resp['responder_role'] === 'SELLER') {
+                    $review['response'] = $resp;
+                    break;
+                }
+            }
         }
         
         return $result;

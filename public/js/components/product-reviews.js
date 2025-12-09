@@ -173,7 +173,7 @@ class ProductReviews {
                     <span class="response-date">${this.formatDate(response.created_at)}</span>
                 </div>
                 <div class="response-content">
-                    <p>${this.escapeHtml(response.response_text).replace(/\n/g, '<br>')}</p>
+                    ${response.response_text}
                 </div>
             </div>
         ` : '';
