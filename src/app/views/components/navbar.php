@@ -140,6 +140,10 @@ $activePage = $currentPage ?? '';
                                         <span class="nav-icon">📦</span>
                                         <span class="nav-text">Orders</span>
                                     </a>
+                                    <a href="/reviews/my-reviews" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
+                                        <span class="nav-icon">⭐</span>
+                                        <span class="nav-text">My Ratings</span>
+                                    </a>
                                 <?php endif; ?>
                                         
                                 <div class="dropdown-divider"></div>

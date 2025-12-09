@@ -11,6 +11,9 @@ class BuyerOrderService {
     /** @var CartService */
     protected $cartService;
 
+    /** @var StoreService */
+    protected $storeService;
+
     /**
      * @param OrderRepository $orderRepo Repository for order data
      * @param CartService $cartService Service for cart operations
@@ -18,6 +21,7 @@ class BuyerOrderService {
     public function __construct(OrderRepository $orderRepo, CartService $cartService) {
         $this->orderRepo = $orderRepo;
         $this->cartService = $cartService;
+        $this->storeService = new StoreService();
     }
 
     /**
@@ -64,6 +68,7 @@ class BuyerOrderService {
      * 1. Validates the cart and user.
      * 2. Calls the repository to perform the complex checkout transaction.
      * 3. Clears the cart if successful.
+     * 4. Notifies sellers about new orders.
      *
      * @param int $buyerId The ID of the buyer checking out
      * @return array The first order that was created (for redirection)
@@ -84,6 +89,27 @@ class BuyerOrderService {
         }
         $this->cartService->clearCart($buyerId);
         $_SESSION['cart_count'] = 0;
+
+        // Notify sellers about new orders (non-blocking)
+        try {
+            $buyer = Auth::user();
+            $buyerName = $buyer['name'] ?? 'Pembeli';
+            
+            foreach ($createdOrders as $order) {
+                if (isset($order['store_id']) && isset($order['order_id'])) {
+                    $store = $this->storeService->getStoreById($order['store_id']);
+                    if ($store && isset($store['user_id'])) {
+                        NotificationService::notifyOrderWaitingApproval(
+                            (int)$order['order_id'], 
+                            (int)$store['user_id'], 
+                            $buyerName
+                        );
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Notification error: ' . $e->getMessage());
+        }
 
         return $createdOrders;
     }

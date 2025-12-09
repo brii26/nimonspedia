@@ -96,10 +96,43 @@ $statusClasses = [
                                     
                                     <?php if ($order['status'] === 'received'): ?>
                                     <td data-label="Review">
-                                        <a href="/reviews/create?order_id=<?= View::escape($order['order_id']) ?>&product_id=<?= View::escape($item['product_id']) ?>" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            Write Review
-                                        </a>
+                                        <?php 
+                                        $productId = $item['product_id'];
+                                        $existingReview = $orderReviews[$productId] ?? null;
+                                        ?>
+                                        
+                                        <?php if ($existingReview): ?>
+                                            <!-- Show existing review -->
+                                            <div class="existing-review">
+                                                <div class="review-rating">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <span class="star <?= $i <= $existingReview['rating'] ? 'active' : '' ?>">★</span>
+                                                    <?php endfor; ?>
+                                                </div>
+                                                <?php if (!empty($existingReview['comment'])): ?>
+                                                    <div class="review-comment-preview">
+                                                        <?= mb_substr(strip_tags($existingReview['comment']), 0, 50) ?>...
+                                                    </div>
+                                                <?php endif; ?>
+                                                <div class="review-actions">
+                                                    <a href="/reviews/edit?review_id=<?= $existingReview['review_id'] ?>" 
+                                                       class="btn btn-sm btn-outline-secondary">
+                                                        Edit
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger delete-review-btn"
+                                                            data-review-id="<?= $existingReview['review_id'] ?>">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <!-- Show write review button -->
+                                            <a href="/reviews/create?order_id=<?= View::escape($order['order_id']) ?>&product_id=<?= View::escape($item['product_id']) ?>" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                Write Review
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                     <?php endif; ?>
                                 </tr>
@@ -121,3 +154,24 @@ $statusClasses = [
         <a href="/orders" class="btn btn-outline-primary">Kembali ke Daftar Pesanan</a>
     </div>
 </div>
+
+<?php if ($order['status'] === 'received'): ?>
+<!-- Delete Review Confirmation Modal -->
+<div id="delete-review-modal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Review</h3>
+                <button type="button" class="modal-close" onclick="closeDeleteReviewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteReviewModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-review-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

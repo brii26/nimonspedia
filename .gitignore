@@ -7,6 +7,7 @@
 /storage/store_logos/*
 !/storage/store_logos/default-store.svg
 !/storage/store_logos/.gitkeep
+/storage/review_images/*
 
 *.log
 *.pid

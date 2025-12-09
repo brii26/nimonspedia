@@ -30,7 +30,7 @@ for ($i = 5; $i >= 1; $i--) {
 
 <div class="rating-summary">
     <div class="rating-summary-header">
-        <h2 class="section-title">Customer Reviews</h2>
+        <h2 class="section-title">Rating</h2>
     </div>
 
     <?php if ($totalReviews > 0): ?>
@@ -76,10 +76,6 @@ for ($i = 5; $i >= 1; $i--) {
         </div>
     <?php else: ?>
         <div class="no-reviews">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
             <p>No reviews yet</p>
             <p class="text-muted">Be the first to review this product!</p>
         </div>

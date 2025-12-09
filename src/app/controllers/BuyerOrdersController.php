@@ -5,6 +5,7 @@ class BuyerOrdersController extends BaseController {
     private $cartService;
     private $orderRepository;
     private $authService;
+    private $reviewService;
     
     public function __construct() {
         parent::__construct();
@@ -16,6 +17,7 @@ class BuyerOrdersController extends BaseController {
             $this->cartService
         );
         $this->authService = new AuthService();
+        $this->reviewService = new ReviewService();
     }
     
     /**
@@ -102,13 +104,21 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
+            // Get reviews for this order (keyed by product_id)
+            $orderReviews = $this->reviewService->getOrderReviews($orderId);
+            
             $this->render('pages/orders/show', [
                 'order' => $order,
+                'orderReviews' => $orderReviews,
                 'cssFiles' => [
                     '/css/pages/seller/orders.css',
                     '/css/pages/orders-detail.css'
                 ],
-                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
+                'jsFiles' => [
+                    '/js/utils/fetchXhr.js', 
+                    '/js/pages/orders/index.js',
+                    '/js/pages/orders/show.js'
+                ]
             ]);
             
         } catch (Exception $e) {
@@ -132,8 +142,27 @@ class BuyerOrdersController extends BaseController {
             }
 
             $buyerId = Auth::user()['user_id'];
+            $buyerName = Auth::user()['name'] ?? 'Pembeli';
+            
+            // Get order details before confirming to get store_id
+            $order = $this->buyerOrderService->getBuyerOrderDetails($orderId, $buyerId);
+            
             $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
             if ($ok) {
+                // Notify seller that order has been received (non-blocking)
+                try {
+                    if ($order && isset($order['store_id'])) {
+                        $storeService = new StoreService();
+                        $store = $storeService->getStoreById($order['store_id']);
+                        if ($store && isset($store['user_id'])) {
+                            NotificationService::notifyOrderReceived($orderId, (int)$store['user_id'], $buyerName);
+                        }
+                    }
+                } catch (Exception $notifError) {
+                    // Log but don't fail the request
+                    error_log('Notification error: ' . $notifError->getMessage());
+                }
+                
                 $this->json(['success' => true, 'message' => 'Pesanan dikonfirmasi diterima.']);
             } else {
                 $this->json([
@@ -144,7 +173,9 @@ class BuyerOrdersController extends BaseController {
 
         } catch (Exception $e) {
             error_log('Error confirming received: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             $this->json(['success' => false, 'message' => 'Terjadi kesalahan saat mengkonfirmasi pesanan.'], 500);
+            return;
         }
     }
     

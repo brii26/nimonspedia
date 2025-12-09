@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="/orders/show?id=${order.order_id}" class="btn btn-detail">Lihat Detail</a>
                     ${order.status === 'on_delivery' ? `
                         <form action="/orders/confirm-received" method="POST" data-form="confirm-received" style="display: inline;">
-                            <input type="hidden" name="csrf-token" value="${getCSRFToken()}">
+                            <input type="hidden" name="csrf_token" value="${getCSRFToken()}">
                             <input type="hidden" name="order_id" value="${order.order_id}">
                             <button type="submit" class="btn btn-success confirm-received-btn">Konfirmasi Diterima</button>
                         </form>

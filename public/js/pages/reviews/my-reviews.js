@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<div class="review-images">
                 ${review.images.map(img => `
                     <div class="review-image">
-                        <img src="/storage/${escapeHtml(img.image_path)}" 
+                        <img src="/storage/${escapeHtml(img.image_url)}" 
                              alt="Review photo"
                              onclick="openImageModal(this.src)">
                     </div>

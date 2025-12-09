@@ -372,6 +372,20 @@
     margin-bottom: 0.75rem;
 }
 
+.review-rating .stars {
+    display: flex;
+    gap: 0.125rem;
+}
+
+.review-rating .stars .star {
+    font-size: 1rem;
+    color: var(--gray-300, #d1d5db);
+}
+
+.review-rating .stars .star.active {
+    color: #fbbf24;
+}
+
 .rating-value {
     font-size: 0.875rem;
     font-weight: 600;
