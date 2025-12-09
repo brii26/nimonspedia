@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build rating stars
         let starsHTML = '';
         for (let i = 1; i <= 5; i++) {
-            starsHTML += `<span class="star ${i <= review.rating ? 'filled' : ''}">★</span>`;
+            starsHTML += `<span class="star ${i <= review.rating ? 'active' : ''}">★</span>`;
         }
 
         // Build review images
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (review.images && review.images.length > 0) {
             imagesHTML = '<div class="review-images">';
             review.images.forEach(image => {
-                imagesHTML += `<img src="${escapeHtml(image.image_url)}" alt="Review image" class="review-image-thumb">`;
+                imagesHTML += `<img src="/storage/${escapeHtml(image.image_url)}" alt="Review image">`;
             });
             imagesHTML += '</div>';
         }
@@ -260,19 +260,24 @@ document.addEventListener('DOMContentLoaded', () => {
             responseHTML = `
                 <div class="seller-response">
                     <div class="response-header">
-                        <strong>Your Response</strong>
+                        <span class="response-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                            Your Response
+                        </span>
                         <span class="response-date">${responseDate}</span>
                     </div>
                     <div class="response-text">${review.response.response_text}</div>
                     <div class="response-actions">
                         <a href="/seller/reviews/edit-response?response_id=${review.response.response_id}" 
                            class="btn btn-sm btn-secondary">
-                            Edit Response
+                            Edit
                         </a>
                         <button type="button" 
                                 class="btn btn-sm btn-danger btn-delete-response" 
                                 data-response-id="${review.response.response_id}">
-                            Delete Response
+                            Delete
                         </button>
                     </div>
                 </div>
@@ -293,19 +298,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const imagePath = review.main_image_path || 'product_images/default-product.svg';
+        const initial = (review.username || 'U').charAt(0).toUpperCase();
 
         return `
             <div class="review-item" data-review-id="${review.review_id}">
-                <div class="review-header">
-                    <div class="product-info">
-                        <img src="/storage/${escapeHtml(imagePath)}" 
-                             alt="Product" 
-                             class="product-thumbnail">
-                        <div class="product-details">
-                            <h3 class="product-name">${escapeHtml(review.product_name)}</h3>
+                <div class="review-item-header">
+                    <div class="customer-info">
+                        <div class="customer-avatar">${initial}</div>
+                        <div class="customer-details">
+                            <h4 class="customer-name">${escapeHtml(review.username)}</h4>
                             <div class="review-meta">
-                                <span class="reviewer-name">${escapeHtml(review.username)}</span>
-                                <span class="separator">•</span>
+                                <div class="rating-stars">
+                                    ${starsHTML}
+                                </div>
+                                <span class="meta-separator">•</span>
                                 <span class="review-date">${reviewDate}</span>
                             </div>
                         </div>
@@ -316,10 +322,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <div class="review-content">
-                    <div class="rating-stars">
-                        ${starsHTML}
-                    </div>
+                <div class="review-item-body">
+                    <a href="/product?id=${review.product_id}" class="product-link">
+                        <img src="/storage/${escapeHtml(imagePath)}" alt="${escapeHtml(review.product_name)}">
+                        <span>${escapeHtml(review.product_name)}</span>
+                    </a>
                     
                     ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
                     ${imagesHTML}
@@ -363,19 +370,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Close modal on outside click
-        if (deleteModal) {
-            deleteModal.addEventListener('click', (e) => {
-                if (e.target === deleteModal) {
-                    closeModal();
-                    responseIdToDelete = null;
-                }
+        // Close modal on close button
+        const closeModalBtn = document.getElementById('closeDeleteModal');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                closeModal();
+                responseIdToDelete = null;
+            });
+        }
+
+        // Close modal on backdrop click
+        const backdrop = deleteModal?.querySelector('.app-modal-backdrop');
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                closeModal();
+                responseIdToDelete = null;
             });
         }
 
         // Close modal on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && deleteModal && deleteModal.classList.contains('active')) {
+            if (e.key === 'Escape' && deleteModal && deleteModal.getAttribute('aria-hidden') === 'false') {
                 closeModal();
                 responseIdToDelete = null;
             }
@@ -437,14 +452,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openModal() {
         if (deleteModal) {
-            deleteModal.classList.add('active');
+            deleteModal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
         }
     }
 
     function closeModal() {
         if (deleteModal) {
-            deleteModal.classList.remove('active');
+            deleteModal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
         }
         

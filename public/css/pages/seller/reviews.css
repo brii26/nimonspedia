@@ -252,6 +252,37 @@
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
+    align-items: center;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-answered {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.status-unanswered {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+/* No Response CTA */
+.no-response {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-light, #e5e7eb);
+    display: flex;
+    justify-content: flex-end;
 }
 
 /* ========================================

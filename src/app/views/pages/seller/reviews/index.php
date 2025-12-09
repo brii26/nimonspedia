@@ -73,13 +73,21 @@ $currentFilter = $filter ?? 'all';
 </script>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h3>Delete Response</h3>
-        <p>Are you sure you want to delete this response? This action cannot be undone.</p>
-        <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" id="cancelDelete">Cancel</button>
-            <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+<div id="deleteModal" class="app-modal" aria-hidden="true">
+    <div class="app-modal-backdrop"></div>
+    <div class="app-modal-wrapper">
+        <div class="app-modal-card" style="max-width: 450px;">
+            <div class="app-modal-header">
+                <h2>Delete Response</h2>
+                <button type="button" class="app-modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="app-modal-body">
+                <p>Are you sure you want to delete this response? This action cannot be undone.</p>
+            </div>
+            <div class="app-modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDelete">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
         </div>
     </div>
 </div>
