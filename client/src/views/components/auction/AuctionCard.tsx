@@ -21,7 +21,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   const navigate = useNavigate();
   
   const targetTime = status === 'scheduled' ? startTime : endsAt;
-  const { timeLeft, isEnded } = useAuctionTimer(targetTime, status);
+  const { timeLeft, isEnded } = useAuctionTimer(targetTime, status, id);
   const finalImageUrl = getProductImageUrl(image);
 
   const getBadgeVariant = () => {

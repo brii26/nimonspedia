@@ -74,12 +74,10 @@ class SocketClient {
       }
     });
 
-    // Auth errors
     this.socket.on('auth_error', (error) => {
       console.error('Socket auth error:', error);
     });
 
-    // Heartbeat: Listen for pong response
     this.socket.on('pong', () => {
       this.lastPongTime = Date.now();
     });
@@ -137,9 +135,10 @@ class SocketClient {
   // Helper method untuk emit dengan error handling
   emit(event: string, data?: any): void {
     if (this.socket && this.socket.connected) {
-      this.socket.emit(event, data);
+		console.log("sending " + event + data);
+      	this.socket.emit(event, data);
     } else {
-      console.warn('Socket not connected. Cannot emit event:', event);
+      	console.warn('Socket not connected. Cannot emit event:', event);
     }
   }
 

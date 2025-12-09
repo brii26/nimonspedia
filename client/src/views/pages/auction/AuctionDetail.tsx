@@ -225,7 +225,7 @@ const AuctionDetail = () => {
              </div>
            ) : auction.status === 'ended' ? (
              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-                <p className="text-yellow-800 font-bold text-lg">Lelang Telah Berakhir</p>
+                <p className="text-yellow-800 font-bold text-lg">Auction Ended</p>
                 {auction.winner_name && (
                     <p className="text-yellow-700">Pemenang: {auction.winner_name}</p>
                 )}

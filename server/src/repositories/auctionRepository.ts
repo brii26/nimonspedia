@@ -216,20 +216,20 @@ class AuctionRepository {
           LIMIT $1 OFFSET $2
       `, [limit, offset]);
   
-      const data: AuctionListItem[] = result.rows.map(row => ({
-          id: row.id,
-          product_id: row.product_id,
-          product_name: row.title, 
-          image: row.image, 
-          store_name: row.store_name,
-          starting_price: parseFloat(row.starting_price),
-          current_price: row.current_price ? parseFloat(row.current_price) : parseFloat(row.starting_price),
-          min_increment: parseFloat(row.min_increment),
-          start_time: row.start_time,
-          end_time: row.end_time,
-          status: row.status, 
-          bid_count: parseInt(row.bid_count || '0')
-      }));
+	const data: AuctionListItem[] = result.rows.map((row: QueryResult['rows'][0]) => ({
+		id: row.id as number,
+		product_id: row.product_id as number,
+		product_name: row.title as string, 
+		image: row.image as string | null, 
+		store_name: row.store_name as string,
+		starting_price: parseFloat(row.starting_price as string),
+		current_price: row.current_price ? parseFloat(row.current_price as string) : parseFloat(row.starting_price as string),
+		min_increment: parseFloat(row.min_increment as string),
+		start_time: row.start_time as string,
+		end_time: row.end_time as string | null,
+		status: row.status as 'scheduled' | 'active' | 'ended' | 'cancelled', 
+		bid_count: parseInt(row.bid_count as string || '0')
+	}));
   
       return { data, total };
   }
@@ -237,6 +237,20 @@ class AuctionRepository {
   async findAllActiveAuctions(): Promise<Auction[]> {
     const result = await pool.query(`SELECT * FROM auctions WHERE status = 'active'`);
     return result.rows;
+  }
+
+  // Update auction status
+  async updateAuctionStatus(auctionId: number, newStatus: 'scheduled' | 'active' | 'ended' | 'cancelled'): Promise<Auction | null> {
+    const result = await pool.query(`
+      UPDATE auctions 
+      SET status = $1
+      WHERE auction_id = $2
+      RETURNING *
+    `, [newStatus, auctionId]);
+
+	console.log(result.rows[0]);
+    
+    return result.rows[0] || null;
   }
 }
 

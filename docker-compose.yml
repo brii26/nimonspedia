@@ -53,6 +53,7 @@ services:
       - db
       - redis
     environment:
+      - TZ=Asia/Jakarta
       - DB_HOST=${POSTGRES_HOST}
       - DB_USER=${POSTGRES_USER}
       - DB_PASS=${POSTGRES_PASSWORD}

@@ -60,10 +60,16 @@ const AuctionList = () => {
       setLoading(false);
     };
 
+    const handleStatusUpdate = () => {
+      // Refresh auctions when status changes to ensure proper ordering
+      fetchAuctions(page, filter);
+    };
+
     socketClient.on('connect', handleConnect);
     socketClient.on('reconnect', handleConnect);
     socketClient.on('connect_error', handleConnectError);
     socketClient.on('auction_list_response', handleResponse);
+    socketClient.on('auction_status_updated', handleStatusUpdate);
     
     if (socketClient.isConnected()) {
         handleConnect();
@@ -74,6 +80,7 @@ const AuctionList = () => {
       socketClient.off('reconnect', handleConnect);
       socketClient.off('connect_error', handleConnectError);
       socketClient.off('auction_list_response', handleResponse);
+      socketClient.off('auction_status_updated', handleStatusUpdate);
     };
   }, [page, filter]); 
 

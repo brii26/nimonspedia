@@ -73,6 +73,23 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
     }
   });
 
+  socket.on('update_auction_status', async (payload) => {
+    const { auction_id, new_status } = payload;
+    try {
+      await auctionRepository.updateAuctionStatus(auction_id, new_status);
+      
+      // Broadcast ke semua user di auction room
+      io.to(`auction_${auction_id}`).emit('auction_status_updated', {
+        auction_id,
+        status: new_status,
+        updated_at: new Date()
+      });
+    } catch (error) {
+      console.error('Error updating auction status:', error);
+      socket.emit('error', { message: 'Failed to update auction status' });
+    }
+  });
+
   // Leave Auction Room
   socket.on('leave_auction', (payload: JoinAuctionPayload) => {
     const auctionRoom = `auction_${payload.auctionId}`;
