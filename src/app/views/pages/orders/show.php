@@ -115,7 +115,7 @@ $statusClasses = [
                                                     </div>
                                                 <?php endif; ?>
                                                 <div class="review-actions">
-                                                    <a href="/reviews/edit?id=<?= $existingReview['review_id'] ?>" 
+                                                    <a href="/reviews/edit?review_id=<?= $existingReview['review_id'] ?>" 
                                                        class="btn btn-sm btn-outline-secondary">
                                                         Edit
                                                     </a>
