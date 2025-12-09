@@ -72,7 +72,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // 1. Cek Feature Flag (Tetap dipertahankan)
       const flagAccess = await featureFlagRepository.getUserFlag(user.user_id, 'chat_enabled');
       if (flagAccess && flagAccess.is_enabled === false) {
-        socket.emit('error_message', { 
+        socket.emit('chat_error', { 
           message: `Fitur Chat nonaktif: ${flagAccess.reason || 'Maintenance'}` 
         });
         return;
@@ -89,7 +89,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         buyerId = user.user_id;
         
         if (!storeId) {
-             socket.emit('error_message', { message: 'Target Store ID diperlukan' });
+             socket.emit('chat_error', { message: 'Target Store ID diperlukan' });
              return;
         }
 
@@ -99,7 +99,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         // - buyerId diambil dari payload (siapa customer yang dibalas)
         const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
         if (storeResult.rows.length === 0) {
-          socket.emit('error_message', { message: 'Anda tidak memiliki toko' });
+          socket.emit('chat_error', { message: 'Anda tidak memiliki toko' });
           return;
         }
         
@@ -107,11 +107,11 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         storeId = storeResult.rows[0].store_id;
 
         if (!buyerId) {
-            socket.emit('error_message', { message: 'Target Buyer ID diperlukan' });
+            socket.emit('chat_error', { message: 'Target Buyer ID diperlukan' });
             return;
         }
       } else {
-        socket.emit('error_message', { message: 'Role tidak valid' });
+        socket.emit('chat_error', { message: 'Role tidak valid' });
         return;
       }
 
@@ -145,7 +145,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
     } catch (error) {
       console.error('Chat Error:', error);
-      socket.emit('error_message', { message: 'Gagal mengirim pesan.' });
+      socket.emit('chat_error', { message: 'Gagal mengirim pesan.' });
     }
   });
 
