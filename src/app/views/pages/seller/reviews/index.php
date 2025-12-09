@@ -46,7 +46,7 @@ $currentFilter = $filter ?? 'all';
             </div>
         <?php else: ?>
             <?php foreach ($reviews as $review): ?>
-                <?php View::component('seller-review-card', ['review' => $review]); ?>
+                <?= View::component('seller-review-card', ['review' => $review]) ?>
             <?php endforeach; ?>
 
             <!-- Infinite Scroll Sentinel -->
