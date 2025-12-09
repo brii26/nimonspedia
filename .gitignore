@@ -17,6 +17,7 @@
 .idea/
 *.sublime-project
 *.sublime-workspace
+**/dist/
 
 .DS_Store
 Thumbs.db
