@@ -4,7 +4,7 @@ $currentUser = Auth::user();
 $isLoggedIn = Auth::check();
 $userRole = $currentUser ? $currentUser['role'] : null;
 $storeBalance = $storeBalance ?? 0;
-$userId = $user ? $user['user_id'] : null;
+$userId = $currentUser ? $currentUser['user_id'] : null;
 $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 
 // Get cart count for buyers

@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 
 import adminRoutes from './src/routes/adminRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
+import notificationRoutes from './src/routes/notificationRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
@@ -36,12 +37,17 @@ fastify.register(socketio, {
     origin: [process.env.CLIENT_URL || "http://localhost:8080", "http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  // Heartbeat configuration
+  pingTimeout: 20000,    // Waktu tunggu sebelum menganggap client disconnect (20 detik)
+  pingInterval: 25000,   // Interval ping dari server ke client (25 detik)
+  connectTimeout: 45000  // Timeout untuk initial connection (45 detik)
 });
 
 // 3. Register Routes (Prefixing lebih gampang di Fastify)
 fastify.register(adminRoutes, { prefix: '/admin' });
 fastify.register(authRoutes, { prefix: '/auth' });
+fastify.register(notificationRoutes, { prefix: '/notifications' });
 
 // 4. Root Route
 fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {

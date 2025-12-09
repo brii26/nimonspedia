@@ -1,0 +1,569 @@
+/**
+ * Seller Reviews CSS - Review Management Pages
+ * Covers: index, respond, edit-response
+ * 
+ * NOTE: Reuses from existing components:
+ * - components.css: .card, .card-header, .card-body, .btn, .btn-*, .badge, .badge-*, .pagination-*
+ * - components/modal.css: .app-modal, .app-modal-*
+ * - components/notification.css: .notification
+ * - components/reviews.css: .rating-stars, .star
+ * - pages/reviews.css: .form-group, .form-label, .form-actions, .empty-state, .btn-icon
+ * 
+ * Table of Contents:
+ * 1. Layout
+ * 2. Page Header with Stats
+ * 3. Filter Tabs
+ * 4. Review Item Card
+ * 5. Review Content
+ * 6. Seller Response Section
+ * 7. Response Form Specifics
+ * 8. Responsive Design
+ */
+
+/* ========================================
+   1. Layout
+   ======================================== */
+.seller-reviews-container,
+.response-form-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ========================================
+   2. Page Header with Stats
+   ======================================== */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.page-header-content h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--gray-900, #111827);
+}
+
+.page-header-content .subtitle {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--gray-600, #6b7280);
+}
+
+.stats-cards {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 0.875rem 1.25rem;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900, #111827);
+    line-height: 1.2;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-600, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.25rem;
+}
+
+.stat-card.stat-success .stat-value {
+    color: var(--success, #10b981);
+}
+
+.stat-card.stat-warning .stat-value {
+    color: var(--warning, #f59e0b);
+}
+
+.stat-card.stat-primary .stat-value {
+    color: var(--primary, #3b82f6);
+}
+
+/* ========================================
+   3. Filter Tabs
+   ======================================== */
+.filter-tabs-container {
+    margin-bottom: 1.5rem;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--gray-600, #6b7280);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.filter-tab:hover {
+    color: var(--gray-700, #374151);
+    background: var(--gray-50, #f9fafb);
+}
+
+.filter-tab.active {
+    background: var(--primary, #3b82f6);
+    color: white;
+}
+
+.filter-tab .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 0.375rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.filter-tab.active .count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   4. Review Item Card
+   ======================================== */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-item {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.review-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.customer-info {
+    display: flex;
+    gap: 0.875rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.customer-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary, #3b82f6) 0%, #60a5fa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.customer-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.customer-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-900, #111827);
+}
+
+.review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--gray-600, #6b7280);
+}
+
+.meta-separator {
+    color: var(--border-light, #e5e7eb);
+}
+
+.review-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   5. Review Content
+   ======================================== */
+.review-item-body {
+    padding: 1.25rem;
+}
+
+.product-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--gray-50, #f9fafb);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s;
+}
+
+.product-link:hover {
+    background: #f3f4f6;
+}
+
+.product-link img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.product-link span {
+    font-weight: 500;
+    color: var(--primary, #3b82f6);
+}
+
+.review-comment {
+    color: var(--gray-700, #374151);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+}
+
+.review-comment p {
+    margin: 0 0 0.5rem 0;
+}
+
+.review-comment p:last-child {
+    margin-bottom: 0;
+}
+
+.review-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.review-images img {
+    aspect-ratio: 1;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.review-images img:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+/* ========================================
+   6. Seller Response Section
+   ======================================== */
+.seller-response {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border-left: 4px solid var(--primary, #3b82f6);
+    padding: 1rem 1.25rem;
+    margin: 1rem 1.25rem 1.25rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.response-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--primary, #3b82f6);
+    font-size: 0.875rem;
+}
+
+.response-title svg {
+    width: 16px;
+    height: 16px;
+}
+
+.response-date {
+    font-size: 0.75rem;
+    color: var(--gray-600, #6b7280);
+}
+
+.response-text {
+    color: var(--gray-700, #374151);
+    line-height: 1.6;
+}
+
+.response-text p {
+    margin: 0 0 0.5rem 0;
+}
+
+.response-text p:last-child {
+    margin-bottom: 0;
+}
+
+.response-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+/* ========================================
+   7. Response Form Specifics
+   ======================================== */
+.review-preview {
+    background: var(--gray-50, #f9fafb);
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.review-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--gray-900, #111827);
+}
+
+.review-preview-comment {
+    color: var(--gray-700, #374151);
+    line-height: 1.6;
+}
+
+.review-preview-comment p {
+    margin: 0 0 0.5rem 0;
+}
+
+.review-preview-comment p:last-child {
+    margin-bottom: 0;
+}
+
+/* Empty state - extend from reviews.css */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state svg {
+    color: var(--gray-400, #9ca3af);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--gray-700, #374151);
+}
+
+.empty-state p {
+    margin: 0;
+    color: var(--gray-600, #6b7280);
+    line-height: 1.5;
+}
+
+/* ========================================
+   8. Responsive Design
+   ======================================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .seller-reviews-container,
+    .response-form-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .stats-cards {
+        width: 100%;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .filter-tabs {
+        padding: 0.25rem;
+    }
+
+    .filter-tab {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+
+    .review-item-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .review-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .seller-response {
+        margin: 1rem;
+    }
+
+    .response-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.375rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .seller-reviews-container,
+    .response-form-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .page-header-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .stats-cards {
+        flex-direction: column;
+    }
+
+    .stat-card {
+        padding: 0.75rem 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .filter-tab .count {
+        display: none;
+    }
+
+    .review-item-header,
+    .review-item-body,
+    .seller-response {
+        padding: 1rem;
+    }
+
+    .seller-response {
+        margin: 0.75rem;
+    }
+
+    .customer-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9375rem;
+    }
+
+    .customer-name {
+        font-size: 0.9375rem;
+    }
+
+    .review-meta {
+        font-size: 0.75rem;
+    }
+
+    .product-link img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .empty-state {
+        padding: 3rem 1.5rem;
+    }
+}
+
+/* Touch devices */
+@media (hover: none) {
+    .filter-tab {
+        min-height: 44px;
+    }
+}

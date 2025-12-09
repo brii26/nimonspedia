@@ -69,6 +69,69 @@
                         <button type="submit" class="btn btn-primary" id="updateProfileButton">Update Profile</button>
                     </form>
                 </div>
+                <div class="profile-card notification-section">
+                    <header class="section-header">
+                        <h2>Pengaturan Notifikasi</h2>
+                    </header>
+                    <div class="section-content">
+                        
+                        <button id="btn-enable-notif" class="btn btn-primary btn-enable-notif" style="display: none;">
+                            <span class="btn-icon">🔔</span>
+                            Aktifkan Push Notification
+                        </button>
+
+                        <div id="notification-settings-area" style="display: none;">
+                            <div class="notification-status">
+                                <span><i>Notifikasi Aktif di Browser ini</i></span>
+                            </div>
+                            
+                            <div class="notification-toggles">
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <span class="toggle-icon">💬</span>
+                                        <div class="toggle-text">
+                                            <span class="toggle-label">Chat Notification</span>
+                                            <span class="toggle-desc">Notifikasi pesan baru</span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="toggle-chat">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <span class="toggle-icon">🔨</span>
+                                        <div class="toggle-text">
+                                            <span class="toggle-label">Auction Updates</span>
+                                            <span class="toggle-desc">Update lelang & penawaran</span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="toggle-auction">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <span class="toggle-icon">📦</span>
+                                        <div class="toggle-text">
+                                            <span class="toggle-label">Order Status</span>
+                                            <span class="toggle-desc">Update status pesanan</span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="toggle-order">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </section>
             
             <aside class="profile-sidebar">

@@ -1,35 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardBody,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableHeader,
-  TableCell,
-  Button,
-  Badge,
-  Switch,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Input,
-  Alert,
-  Spinner,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-  SearchInput,
-  Pagination
+  Card, CardHeader, CardTitle, CardBody,
+  Table, TableHead, TableBody, TableRow, TableHeader, TableCell,
+  Button, Badge, Switch, Modal, ModalHeader, ModalBody, ModalFooter,
+  Input, Alert, Spinner, Tabs, TabList, Tab, TabPanels, TabPanel,
+  SearchInput, Pagination, Toast, SelectDropdown
 } from '../../components/ui/index.js';
+import type { SelectOption } from '../../components/ui/index.js';
 
-// TypeScript interfaces
 interface DashboardStats {
   totalUsers: number;
   totalBuyers: number;
@@ -52,18 +30,22 @@ interface User {
   feature_flags?: FeatureFlag[];
 }
 
-interface GlobalFeature {
-  access_id: string;
-  feature_name: string;
-  reason?: string;
-  is_enabled: boolean;
-}
-
 interface UserFlags {
   checkout: boolean;
   chat: boolean;
   auction: boolean;
   [key: string]: boolean;
+}
+
+// Update Interface GlobalFeature untuk handling state lokal UI
+interface GlobalFeature {
+  access_id: string;
+  feature_name: string;
+  reason?: string;
+  is_enabled: boolean;
+  // State lokal untuk editing
+  pending_enabled?: boolean;
+  pending_reason?: string;
 }
 
 interface FlagReasons {
@@ -78,128 +60,116 @@ interface FlagErrors {
 }
 
 const Dashboard: React.FC = () => {
+  // ... (State stats, users, loading, dll tetap sama)
+  const enabled_msg = 'Enabled via Dashboard';
+
   const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalBuyers: 0,
-    totalSellers: 0,
-    activeAuctions: 0
+    totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0
   });
   const [users, setUsers] = useState<User[]>([]);
   const [features, setFeatures] = useState<GlobalFeature[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [roleFilter, setRoleFilter] = useState<string>('');
+  const [debouncedRoleFilter, setDebouncedRoleFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [showFlagsModal, setShowFlagsModal] = useState<boolean>(false);
+  const [itemsPerPage, setItemsPerPage] = useState<string>('10');
   const [activeTab, setActiveTab] = useState<string>('0');
+
+  // Modal States
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showFlagsModal, setShowFlagsModal] = useState<boolean>(false);
   
+  // NEW: Global Feature Confirmation Modal State
+  const [showGlobalConfirmModal, setShowGlobalConfirmModal] = useState<boolean>(false);
+  const [pendingGlobalFeature, setPendingGlobalFeature] = useState<GlobalFeature | null>(null);
+
   // User flags state
-  const [userFlags, setUserFlags] = useState<UserFlags>({
-    checkout: true,
-    chat: true,
-    auction: true
-  });
-  const [flagReasons, setFlagReasons] = useState<FlagReasons>({
-    checkout: '',
-    chat: '',
-    auction: ''
-  });
+  const [userFlags, setUserFlags] = useState<UserFlags>({ checkout: true, chat: true, auction: true });
+  const [flagReasons, setFlagReasons] = useState<FlagReasons>({ checkout: '', chat: '', auction: '' });
   const [flagErrors, setFlagErrors] = useState<FlagErrors>({});
+
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Debounce role filter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRoleFilter(roleFilter);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [roleFilter]);
+
+  // Reset to page 1 when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, debouncedRoleFilter, itemsPerPage]);
 
   useEffect(() => {
     fetchDashboardData();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, debouncedRoleFilter, itemsPerPage]);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    window.location.href = '/admin/login';
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('admin_token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+
       const [statsRes, usersRes, featuresRes] = await Promise.all([
-        fetch('/api/node/admin/stats', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
-        }),
-        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
-        }),
-        fetch('/api/node/admin/flags/global', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
-        })
+        fetch('/api/node/admin/stats', { headers }),
+        fetch(`/api/node/admin/users?page=${currentPage}&search=${searchTerm}&role=${debouncedRoleFilter}&limit=${itemsPerPage}`, { headers }),
+        fetch('/api/node/admin/flags/global', { headers })
       ]);
 
-      if (statsRes.status === 403 || usersRes.status === 403 || featuresRes.status === 403) {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_user');
-        window.location.href = '/admin/login';
+      if (statsRes.status === 403 || usersRes.status === 403) {
+        handleLogout();
         return;
       }
 
       const statsData = await statsRes.json();
-      if (statsData.success && statsData.data) {
-        setStats(statsData.data);
-      } else {
-        setStats({ totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0 });
-      }
+      setStats(statsData.data || { totalUsers: 0, totalBuyers: 0, totalSellers: 0, activeAuctions: 0 });
       
       const usersData = await usersRes.json();
-      const featuresData = await featuresRes.json();
-
-      console.log('Features Response:', featuresData); // Debug feature flags
-
       setUsers(usersData.data || []); 
+      if (usersData.pagination) setTotalPages(usersData.pagination.total_pages || 1);
 
-      if (usersData.pagination) {
-        setTotalPages(usersData.pagination.total_pages || 1);
-      }
-
+      const featuresData = await featuresRes.json();
       const sortedFeatures = (featuresData.data || []).sort((a: GlobalFeature, b: GlobalFeature) => 
         a.feature_name.localeCompare(b.feature_name)
-      );
+      ) .map((f: GlobalFeature) => ({
+          ...f,
+          pending_enabled: f.is_enabled, // Init pending state
+          pending_reason: f.is_enabled ? '' : (f.reason || '')
+      }));
       setFeatures(sortedFeatures);
 
     } catch (err) {
-      console.error("Dashboard Error:", err); // Log error biar gampang debug
-      setError('Failed to load dashboard data');
+      console.error("Dashboard Error:", err);
+      showToast('Failed to load dashboard data', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleFeature = async (featureName: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(`/api/node/admin/flags/global`, {
-        method: 'POST', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-        },
-        body: JSON.stringify({ 
-            feature_name: featureName,
-            is_enabled: !currentStatus,
-            reason: 'Changed via Dashboard'
-        })
-      });
-
-      if (response.ok) {
-        setSuccess('Feature updated successfully');
-        fetchDashboardData();
-      } else {
-        throw new Error('Update failed');
-      }
-    } catch (err) {
-      setError('Failed to update feature');
-    }
-  };
-
+  // --- LOGIC USER FLAGS (Sama, tapi pakai Toast) ---
   const handleOpenFlagsModal = (user: User) => {
     setSelectedUser(user);
-    // Set current flags dari user data
     const currentFlags = {
-      checkout: user.feature_flags?.some((f: FeatureFlag) => f.feature_name === 'checkout_enabled' && f.is_enabled) ?? true,
-      chat: user.feature_flags?.some((f: FeatureFlag) => f.feature_name === 'chat_enabled' && f.is_enabled) ?? true,
-      auction: user.feature_flags?.some((f: FeatureFlag) => f.feature_name === 'auction_enabled' && f.is_enabled) ?? true
+      checkout: user.feature_flags?.some(f => f.feature_name === 'checkout_enabled' && f.is_enabled) ?? true,
+      chat: user.feature_flags?.some(f => f.feature_name === 'chat_enabled' && f.is_enabled) ?? true,
+      auction: user.feature_flags?.some(f => f.feature_name === 'auction_enabled' && f.is_enabled) ?? true
     };
     setUserFlags(currentFlags);
     setFlagReasons({ checkout: '', chat: '', auction: '' });
@@ -207,27 +177,16 @@ const Dashboard: React.FC = () => {
     setShowFlagsModal(true);
   };
 
-  const handleFlagChange = (flagName: string, isChecked: boolean) => {
-    setUserFlags(prev => ({ ...prev, [flagName]: isChecked }));
-    // Clear reason and error if checked
-    if (isChecked) {
-      setFlagReasons(prev => ({ ...prev, [flagName]: '' }));
-      setFlagErrors(prev => ({ ...prev, [flagName]: '' }));
-    }
-  };
-
-  const handleReasonChange = (flagName: string, reason: string) => {
-    setFlagReasons(prev => ({ ...prev, [flagName]: reason }));
-    // Validate reason length
-    if (reason.trim().length < 10) {
-      setFlagErrors(prev => ({ ...prev, [flagName]: 'Alasan minimal 10 karakter' }));
-    } else {
-      setFlagErrors(prev => ({ ...prev, [flagName]: '' }));
-    }
+  const handleUserReasonChange = (flagName: string, reason: string) => {
+      setFlagReasons(prev => ({ ...prev, [flagName]: reason }));
+      if (!userFlags[flagName] && reason.trim().length < 10) {
+          setFlagErrors(prev => ({ ...prev, [flagName]: 'Alasan minimal 10 karakter' }));
+      } else {
+          setFlagErrors(prev => ({ ...prev, [flagName]: '' }));
+      }
   };
 
   const handleSaveUserFlags = async () => {
-    // Validate: jika ada flag yang unchecked, harus ada reason minimal 10 char
     const errors: FlagErrors = {};
     Object.keys(userFlags).forEach(flagName => {
       if (!userFlags[flagName] && (flagReasons[flagName]?.trim().length || 0) < 10) {
@@ -241,18 +200,9 @@ const Dashboard: React.FC = () => {
     }
 
     try {
-      const flagNameMap = {
-        checkout: 'checkout_enabled',
-        chat: 'chat_enabled',
-        auction: 'auction_enabled'
-      };
-
-      // Send requests untuk setiap flag yang berubah
+      const flagNameMap = { checkout: 'checkout_enabled', chat: 'chat_enabled', auction: 'auction_enabled' };
       const flagUpdates = Object.keys(userFlags).map(async (flagName) => {
-        const reason = userFlags[flagName] 
-          ? 'Enabled via Dashboard' 
-          : flagReasons[flagName];
-        
+        const reason = userFlags[flagName] ? enabled_msg : flagReasons[flagName];
         return fetch('/api/node/admin/flags/user', {
           method: 'POST',
           headers: {
@@ -269,88 +219,107 @@ const Dashboard: React.FC = () => {
       });
 
       await Promise.all(flagUpdates);
-      
-      setSuccess('User flags updated successfully');
+      showToast('User flags updated successfully', 'success');
       setShowFlagsModal(false);
       setSelectedUser(null);
       fetchDashboardData();
     } catch (err) {
-      setError('Failed to update user flags');
+      showToast('Failed to update user flags', 'error');
     }
   };
+  
+  // 1. Handle toggle click (Update local pending state only)
+  const handleGlobalToggle = (featureName: string, newValue: boolean) => {
+    setFeatures(prev => prev.map((f): GlobalFeature => 
+      f.feature_name === featureName 
+        ? { ...f, pending_enabled: newValue, pending_reason: newValue ? '' : (f.pending_reason ?? '') } 
+        : f
+    ));
+  };
+
+  // 2. Handle Reason Input Change
+  const handleGlobalReasonChange = (featureName: string, newReason: string) => {
+    setFeatures(prev => prev.map((f): GlobalFeature => 
+        f.feature_name === featureName ? { ...f, pending_reason: newReason } : f
+    ));
+  };
+
+  // 3. Trigger Confirmation Modal
+  const handleSaveGlobalClick = (feature: GlobalFeature) => {
+     // Validation: Jika disable, wajib reason min 20 char
+     if (!feature.pending_enabled) {
+         if ((feature.pending_reason?.trim().length || 0) < 20) {
+             showToast('Alasan mematikan fitur global minimal 20 karakter', 'error');
+             return;
+         }
+     }
+     setPendingGlobalFeature(feature);
+     setShowGlobalConfirmModal(true);
+  };
+
+  // 4. Confirm Save (API Call)
+  const confirmSaveGlobalFeature = async () => {
+      if (!pendingGlobalFeature) return;
+
+      try {
+        const response = await fetch(`/api/node/admin/flags/global`, {
+            method: 'POST', 
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            },
+            body: JSON.stringify({ 
+                feature_name: pendingGlobalFeature.feature_name,
+                is_enabled: pendingGlobalFeature.pending_enabled,
+                reason: pendingGlobalFeature.pending_enabled ? enabled_msg : pendingGlobalFeature.pending_reason
+            })
+        });
+
+        if (response.ok) {
+            showToast(`Global feature ${pendingGlobalFeature.feature_name} updated`, 'success');
+            fetchDashboardData(); // Refresh data asli
+            setShowGlobalConfirmModal(false);
+            setPendingGlobalFeature(null);
+        } else {
+            throw new Error('Update failed');
+        }
+      } catch (err) {
+          showToast('Failed to update global feature', 'error');
+      }
+  };
+
+  // --- RENDER ---
 
   const getUserRoleBadge = (role: string) => {
-    const variants: Record<string, string> = {
-      BUYER: 'info',
-      SELLER: 'success',
-      ADMIN: 'danger'
-    };
+    const variants: Record<string, string> = { BUYER: 'info', SELLER: 'success', ADMIN: 'danger' };
     return <Badge variant={variants[role] || 'gray'}>{role}</Badge>;
   };
 
-  if (loading && users.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
+  // Only show full-page spinner on initial load (no previous data)
+  const isInitialLoading = loading && users.length === 0 && searchTerm === '';
+  
+  if (isInitialLoading) {
+    return <div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>;
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-lg text-gray-600">Manage users and system features</p>
+      {toast && <Toast message={toast.message} variant={toast.type} onClose={() => setToast(null)} />}
+
+      <header className="mb-8 flex justify-between items-center">
+        <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+            <p className="text-lg text-gray-600">Manage users and system features</p>
+        </div>
+        <Button variant="danger" onClick={handleLogout}>Logout</Button>
       </header>
 
-      {error && (
-        <Alert variant="error" onClose={() => setError('')} className="mb-6">
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert variant="success" onClose={() => setSuccess('')} className="mb-6">
-          {success}
-        </Alert>
-      )}
-
+      {/* Stats Cards ... (Tetap sama) */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Users</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div className="text-4xl font-bold text-[#667eea]">{stats.totalUsers}</div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Buyers</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div className="text-4xl font-bold text-blue-600">{stats.totalBuyers}</div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Sellers</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div className="text-4xl font-bold text-green-600">{stats.totalSellers}</div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Auctions</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div className="text-4xl font-bold text-orange-600">{stats.activeAuctions}</div>
-          </CardBody>
-        </Card>
+        <Card><CardHeader><CardTitle>Total Users</CardTitle></CardHeader><CardBody><div className="text-4xl font-bold text-[#667eea]">{stats.totalUsers}</div></CardBody></Card>
+        <Card><CardHeader><CardTitle>Buyers</CardTitle></CardHeader><CardBody><div className="text-4xl font-bold text-blue-600">{stats.totalBuyers}</div></CardBody></Card>
+        <Card><CardHeader><CardTitle>Sellers</CardTitle></CardHeader><CardBody><div className="text-4xl font-bold text-green-600">{stats.totalSellers}</div></CardBody></Card>
+        <Card><CardHeader><CardTitle>Active Auctions</CardTitle></CardHeader><CardBody><div className="text-4xl font-bold text-orange-600">{stats.activeAuctions}</div></CardBody></Card>
       </section>
 
       <Card className="shadow-lg">
@@ -363,18 +332,66 @@ const Dashboard: React.FC = () => {
 
             <TabPanels activeTab={activeTab}>
               <TabPanel eventKey={'0'} activeTab={activeTab}>
-                <div className="mb-6">
+                <div className="mb-6 flex flex-wrap gap-4 items-center">
                   <SearchInput
                     placeholder="Search users by name or email..."
                     value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                     onSearch={setSearchTerm}
-                    debounce={500}
+                    debounce={300} 
                     icon="🔍"
-                    className="max-w-md"
+                    className="max-w-md flex-1"
                   />
+                  <SelectDropdown
+                    variant="fixed"
+                    options={[
+                      { value: '', label: 'All Roles' },
+                      { value: 'BUYER', label: 'Buyer' },
+                      { value: 'SELLER', label: 'Seller' },
+                      { value: 'ADMIN', label: 'Admin' }
+                    ]}
+                    value={roleFilter}
+                    onChange={setRoleFilter}
+                    placeholder="Filter by Role"
+                    className="min-w-[160px]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show:</span>
+                    <SelectDropdown
+                      variant="editable"
+                      value={itemsPerPage}
+                      onChange={setItemsPerPage}
+                      options={[
+                        { value: '10', label: '10' },
+                        { value: '25', label: '25' },
+                        { value: '50', label: '50' },
+                        { value: '100', label: '100' }
+                      ]}
+                      placeholder="10"
+                      inputType="number"
+                      min={1}
+                      max={200}
+                      className="w-20"
+                    />
+                  </div>
+                  {/* Clear Filters Button */}
+                  {(searchTerm || roleFilter || itemsPerPage !== '10') && (
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setRoleFilter('');
+                        setItemsPerPage('10');
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <span>✕</span>
+                      <span>Clear Filters</span>
+                    </Button>
+                  )}
                 </div>
 
+                {/* Table ... (Tetap sama) */}
                 <div className="overflow-hidden rounded-lg border border-gray-200">
                   <Table striped hover>
                     <TableHead>
@@ -389,67 +406,114 @@ const Dashboard: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {users.map(user => (
-                        <TableRow key={user.user_id}>
-                          <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell className="text-gray-600">{user.email}</TableCell>
-                          <TableCell>{getUserRoleBadge(user.role)}</TableCell>
-                          <TableCell className="font-semibold text-green-600">
-                            Rp {(user.balance || 0).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-gray-600">
-                            {new Date(user.created_at).toLocaleDateString('id-ID')}
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              size="sm" 
-                              variant="primary"
-                              onClick={() => handleOpenFlagsModal(user)}
-                            >
-                              Kelola Flags
-                            </Button>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex items-center justify-center gap-2">
+                              <Spinner size="sm" />
+                              <span className="text-gray-500">Memuat data...</span>
+                            </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : users.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                            {searchTerm || roleFilter 
+                              ? `Hasil tidak ditemukan${searchTerm ? ` untuk "${searchTerm}"` : ''}${roleFilter ? ` dengan role "${roleFilter}"` : ''}`
+                              : 'Tidak ada data pengguna'}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        users.map(user => (
+                          <TableRow key={user.user_id}>
+                            <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
+                            <TableCell className="font-medium">{user.name}</TableCell>
+                            <TableCell className="text-gray-600">{user.email}</TableCell>
+                            <TableCell>{getUserRoleBadge(user.role)}</TableCell>
+                            <TableCell className="font-semibold text-green-600">Rp {(user.balance || 0).toLocaleString('id-ID')}</TableCell>
+                            <TableCell className="text-gray-600">{new Date(user.created_at).toLocaleDateString('id-ID')}</TableCell>
+                            <TableCell>
+                              <Button size="sm" variant="primary" onClick={() => handleOpenFlagsModal(user)}>Kelola Flags</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
-
                 <div className="mt-6 flex justify-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 </div>
               </TabPanel>
 
+              {/* REVISI GLOBAL FLAGS SECTION */}
               <TabPanel eventKey={'1'} activeTab={activeTab}>
-                <div className="space-y-4">
-                  {features.map(feature => (
-                    <Card key={feature.access_id} className="hover:shadow-md transition-shadow">
-                      <CardBody>
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                              {feature.feature_name}
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                              {feature.reason || "No reason"}
-                            </p>
-                          </div>
-                          <Switch
-                            id={`feature-${feature.access_id}`}
-                            name={`feature-${feature.feature_name}`}
-                            label=""
-                            checked={feature.is_enabled}
-                            onChange={() => handleToggleFeature(feature.feature_name, feature.is_enabled)}
-                          />
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
+                <div className="mb-6">
+                    <Alert variant="warning">
+                        <strong>Warning:</strong> Mengubah Global Feature Flags akan berdampak pada seluruh pengguna aplikasi. Mohon berhati-hati.
+                    </Alert>
+                </div>
+                <div className="space-y-6">
+                  {features.map(feature => {
+                    const isToggleChanged = feature.is_enabled !== feature.pending_enabled;
+                    const isReasonChanged = (feature.reason || enabled_msg) !== (feature.pending_reason || enabled_msg);
+                    const isChanged = isToggleChanged || isReasonChanged;
+                    return (
+                        <Card key={feature.access_id} className={`transition-shadow border-l-4 ${feature.is_enabled ? 'border-green-500' : 'border-red-500'}`}>
+                        <CardBody>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-lg text-gray-900">
+                                            {feature.feature_name.replace(/_/g, ' ').toUpperCase()}
+                                        </h3>
+                                        <p className="text-sm text-gray-500">
+                                            Status: <span className={feature.is_enabled ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                                                {feature.is_enabled ? 'ENABLED' : 'DISABLED'}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        id={`feature-${feature.access_id}`}
+                                        name={`feature-${feature.feature_name}`}
+                                        label=""
+                                        checked={feature.pending_enabled ?? feature.is_enabled}
+                                        onChange={() => handleGlobalToggle(feature.feature_name, !feature.pending_enabled)}
+                                    />
+                                </div>
+                                
+                                {/* Show input reason only if pending status is DISABLED */}
+                                {feature.pending_enabled === false && (
+                                    <div className="mt-2 bg-red-50 p-3 rounded-md">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Alasan mematikan fitur (Wajib, Min 20 Karakter) <span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea 
+                                            className="w-full border border-red-300 rounded p-2 text-sm focus:ring-red-500"
+                                            rows={2}
+                                            placeholder="Jelaskan alasan pemadaman fitur global..."
+                                            value={feature.pending_reason}
+                                            onChange={(e) => handleGlobalReasonChange(feature.feature_name, e.target.value)}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {(feature.pending_reason?.length || 0)}/20 karakter
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Save Button only if changed */}
+                                {isChanged && (
+                                    <div className="flex justify-end mt-2">
+                                        <Button size="sm" variant="primary" onClick={() => handleSaveGlobalClick(feature)}>
+                                            Simpan Perubahan
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </CardBody>
+                        </Card>
+                    );
+                  })}
                 </div>
               </TabPanel>
             </TabPanels>
@@ -458,175 +522,70 @@ const Dashboard: React.FC = () => {
       </Card>
 
       {/* Modal Kelola Flags User */}
-      <Modal
-        isOpen={showFlagsModal}
-        onClose={() => {
-          setShowFlagsModal(false);
-          setSelectedUser(null);
-          setFlagErrors({});
-        }}
-        size="lg"
-      >
-        <ModalHeader onClose={() => {
-          setShowFlagsModal(false);
-          setSelectedUser(null);
-          setFlagErrors({});
-        }}>
+      <Modal isOpen={showFlagsModal} onClose={() => setShowFlagsModal(false)} size="lg">
+        <ModalHeader onClose={() => setShowFlagsModal(false)}>
           Kelola Feature Flags - {selectedUser?.name}
         </ModalHeader>
         <ModalBody>
           <div className="space-y-6">
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="text-blue-800 text-sm">
-                <strong>User:</strong> {selectedUser?.email} ({selectedUser?.role})
-              </p>
+              <p className="text-blue-800 text-sm"><strong>User:</strong> {selectedUser?.email}</p>
             </div>
-
-            {/* Checkout Flag */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="flag-checkout"
-                  checked={userFlags.checkout}
-                  onChange={(e) => handleFlagChange('checkout', e.target.checked)}
-                  className="mt-1 h-4 w-4 text-[#667eea] border-gray-300 rounded focus:ring-[#667eea]"
-                />
-                <div className="flex-1">
-                  <label htmlFor="flag-checkout" className="block font-semibold text-gray-900 mb-1">
-                    Checkout Feature
-                  </label>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Izinkan user melakukan checkout dan pembayaran
-                  </p>
-                  
-                  {!userFlags.checkout && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Alasan menonaktifkan <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={flagReasons.checkout}
-                        onChange={(e) => handleReasonChange('checkout', e.target.value)}
-                        placeholder="Minimal 10 karakter..."
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                          flagErrors.checkout 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 focus:ring-[#667eea]'
-                        }`}
-                      />
-                      {flagErrors.checkout && (
-                        <p className="mt-1 text-sm text-red-600">{flagErrors.checkout}</p>
-                      )}
+            {['checkout', 'chat', 'auction'].map(flag => (
+                <div key={flag} className={`border rounded-lg p-4 ${!userFlags[flag] ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+                    <div className="flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            checked={userFlags[flag]}
+                            onChange={(e) => {
+                                setUserFlags(prev => ({ ...prev, [flag]: e.target.checked }));
+                                if (e.target.checked) handleUserReasonChange(flag, '');
+                            }}
+                            className="mt-1 h-4 w-4"
+                        />
+                        <div className="flex-1">
+                            <label className="block font-semibold text-gray-900 capitalize">{flag} Feature</label>
+                            {!userFlags[flag] && (
+                                <div className="mt-2">
+                                    <label className="text-sm text-gray-700">Alasan disable <span className="text-red-500">*</span></label>
+                                    <textarea
+                                        value={flagReasons[flag]}
+                                        onChange={(e) => handleUserReasonChange(flag, e.target.value)}
+                                        className="w-full border rounded p-2 text-sm mt-1"
+                                        placeholder="Min 10 karakter..."
+                                    />
+                                    {flagErrors[flag] && <p className="text-xs text-red-600 mt-1">{flagErrors[flag]}</p>}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                  )}
                 </div>
-              </div>
-            </div>
-
-            {/* Chat Flag */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="flag-chat"
-                  checked={userFlags.chat}
-                  onChange={(e) => handleFlagChange('chat', e.target.checked)}
-                  className="mt-1 h-4 w-4 text-[#667eea] border-gray-300 rounded focus:ring-[#667eea]"
-                />
-                <div className="flex-1">
-                  <label htmlFor="flag-chat" className="block font-semibold text-gray-900 mb-1">
-                    Chat Feature
-                  </label>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Izinkan user berkomunikasi via chat dengan penjual
-                  </p>
-                  
-                  {!userFlags.chat && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Alasan menonaktifkan <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={flagReasons.chat}
-                        onChange={(e) => handleReasonChange('chat', e.target.value)}
-                        placeholder="Minimal 10 karakter..."
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                          flagErrors.chat 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 focus:ring-[#667eea]'
-                        }`}
-                      />
-                      {flagErrors.chat && (
-                        <p className="mt-1 text-sm text-red-600">{flagErrors.chat}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Auction Flag */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="flag-auction"
-                  checked={userFlags.auction}
-                  onChange={(e) => handleFlagChange('auction', e.target.checked)}
-                  className="mt-1 h-4 w-4 text-[#667eea] border-gray-300 rounded focus:ring-[#667eea]"
-                />
-                <div className="flex-1">
-                  <label htmlFor="flag-auction" className="block font-semibold text-gray-900 mb-1">
-                    Auction Feature
-                  </label>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Izinkan user berpartisipasi dalam lelang produk
-                  </p>
-                  
-                  {!userFlags.auction && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Alasan menonaktifkan <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={flagReasons.auction}
-                        onChange={(e) => handleReasonChange('auction', e.target.value)}
-                        placeholder="Minimal 10 karakter..."
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                          flagErrors.auction 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 focus:ring-[#667eea]'
-                        }`}
-                      />
-                      {flagErrors.auction && (
-                        <p className="mt-1 text-sm text-red-600">{flagErrors.auction}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowFlagsModal(false);
-              setSelectedUser(null);
-              setFlagErrors({});
-            }}
-          >
-            Batal
-          </Button>
-          <Button variant="primary" onClick={handleSaveUserFlags}>
-            Simpan Flags
-          </Button>
+          <Button variant="secondary" onClick={() => setShowFlagsModal(false)}>Batal</Button>
+          <Button variant="primary" onClick={handleSaveUserFlags}>Simpan Flags</Button>
         </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={showGlobalConfirmModal} onClose={() => setShowGlobalConfirmModal(false)} size="md">
+          <ModalHeader onClose={() => setShowGlobalConfirmModal(false)}>Konfirmasi Perubahan Global</ModalHeader>
+          <ModalBody>
+              <p>Apakah Anda yakin ingin mengubah status fitur <strong>{pendingGlobalFeature?.feature_name}</strong>?</p>
+              <p className="mt-2 text-sm text-gray-600">
+                  Tindakan: <strong>{pendingGlobalFeature?.pending_enabled ? 'MENGAKTIFKAN' : 'MEMATIKAN'}</strong>
+              </p>
+              {!pendingGlobalFeature?.pending_enabled && (
+                  <p className="mt-2 text-sm text-gray-600 bg-gray-100 p-2 rounded italic">
+                      " {pendingGlobalFeature?.pending_reason} "
+                  </p>
+              )}
+          </ModalBody>
+          <ModalFooter>
+              <Button variant="secondary" onClick={() => setShowGlobalConfirmModal(false)}>Batal</Button>
+              <Button variant="primary" onClick={confirmSaveGlobalFeature}>Ya, Simpan Perubahan</Button>
+          </ModalFooter>
       </Modal>
     </div>
   );

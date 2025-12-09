@@ -96,6 +96,19 @@ class Application {
         $this->router->get('/orders/success', 'BuyerOrdersController@successCheckout');
 		$this->router->post('/orders/confirm-received', 'BuyerOrdersController@confirmReceived');
         
+        // Review routes
+        $this->router->get('/reviews/can-review', 'ReviewController@canReview');
+        $this->router->post('/reviews/submit', 'ReviewController@submit');
+        $this->router->post('/reviews/update', 'ReviewController@update');
+        $this->router->post('/reviews/delete', 'ReviewController@delete');
+        $this->router->post('/reviews/add-images', 'ReviewController@addImages');
+        $this->router->post('/reviews/delete-image', 'ReviewController@deleteImage');
+        $this->router->get('/reviews/product', 'ReviewController@getProductReviews');
+        $this->router->get('/reviews/product-stats', 'ReviewController@getProductStats');
+        $this->router->get('/reviews/my-reviews', 'ReviewController@myReviews');
+        $this->router->get('/reviews/create', 'ReviewController@create');
+        $this->router->get('/reviews/edit', 'ReviewController@edit');
+        
         // Seller routes
         $this->router->get('/seller/products', 'SellerController@listProducts');
 		$this->router->post('/seller/products/filter', 'SellerController@filter');
@@ -114,6 +127,14 @@ class Application {
 		$this->router->post('/seller/orders/reject', 'SellerOrdersController@reject');
 		$this->router->post('/seller/orders/delivery', 'SellerOrdersController@setDelivery');
 		$this->router->post('/seller/store/update', 'SellerController@updateStore');
+
+		// Seller Reviews Management
+		$this->router->get('/seller/reviews', 'SellerReviewController@index');
+		$this->router->get('/seller/reviews/respond', 'SellerReviewController@respond');
+		$this->router->post('/seller/reviews/respond', 'SellerReviewController@submitResponse');
+		$this->router->get('/seller/reviews/edit-response', 'SellerReviewController@editResponse');
+		$this->router->post('/seller/reviews/update-response', 'SellerReviewController@updateResponse');
+		$this->router->post('/seller/reviews/delete-response', 'SellerReviewController@deleteResponse');
 
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
 

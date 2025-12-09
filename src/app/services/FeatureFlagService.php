@@ -35,7 +35,7 @@ class FeatureFlagService {
         $service = self::getInstance();
         
         // 1. Cek Global Flag
-        $queryGlobal = "SELECT is_enabled FROM user_feature_access WHERE feature_name = :name AND user_id IS NULL LIMIT 1";
+        $queryGlobal = "SELECT is_enabled, reason FROM user_feature_access WHERE feature_name = :name AND user_id IS NULL LIMIT 1";
         $global = $service->db->selectOne($queryGlobal, [
             ':name' => $featureName
         ]);
@@ -45,7 +45,7 @@ class FeatureFlagService {
         if ($global && !$isGlobalEnabled) {
             return [
                 'allowed' => false, 
-                'reason' => 'Fitur sedang dalam pemeliharaan sistem (Global Maintenance).'
+                'reason' => $global['reason'] ?? 'Fitur ini sedang maintenance.'
             ];
         }
 

@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply} from 'fastify';
 import adminController from '../controllers/adminController.js';
+import reviewController from '../controllers/reviewController.js';
 import { verifyAdminToken } from '../middleware/authMiddleware.js';
 
 interface AdminUser {
@@ -59,4 +60,45 @@ export default async function adminRoutes(
   fastify.get('/stats', { 
     preHandler: verifyAdminToken 
   }, adminController.getStats);
+
+  // --- Review Moderation Routes ---
+  // GET /admin/reviews - List all reviews with filters
+  fastify.get('/reviews', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.getReviews as any);
+
+  // GET /admin/reviews/stats - Get review statistics
+  fastify.get('/reviews/stats', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.getReviewStats as any);
+
+  // GET /admin/reviews/:review_id - Get single review
+  fastify.get('/reviews/:review_id', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.getReviewById as any);
+
+  // POST /admin/reviews/:review_id/hide - Hide a review
+  fastify.post('/reviews/:review_id/hide', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.hideReview as any);
+
+  // POST /admin/reviews/:review_id/unhide - Unhide a review
+  fastify.post('/reviews/:review_id/unhide', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.unhideReview as any);
+
+  // POST /admin/reviews/:review_id/respond - Add admin response
+  fastify.post('/reviews/:review_id/respond', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.addAdminResponse as any);
+
+  // PUT /admin/reviews/response - Update admin response
+  fastify.put('/reviews/response', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.updateAdminResponse as any);
+
+  // DELETE /admin/reviews/response - Delete admin response
+  fastify.delete('/reviews/response', { 
+    preHandler: verifyAdminToken 
+  }, reviewController.deleteAdminResponse as any);
 }

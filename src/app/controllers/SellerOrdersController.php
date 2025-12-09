@@ -30,20 +30,27 @@ class SellerOrdersController extends BaseController {
         $page = (int) $this->getQuery('page', 1);
         
         $ordersData = $this->sellerOrderService->getOrders($storeId, $status, $search, $page);
+        $hasMore = $ordersData['has_more'] ?? false;
+
+        // AJAX request - return JSON for infinite scroll
+        if ($this->isAjax()) {
+            $this->json([
+                'success' => true,
+                'data' => $ordersData['orders'] ?? [],
+                'page' => $page,
+                'has_more' => $hasMore
+            ]);
+            return;
+        }
 
         $viewData = [
             'ordersData' => $ordersData,
             'currentStatus' => $status,
             'search' => $search,
             'currentPage' => $page,
-            'totalPages' => $ordersData['totalPages'] ?? 1 // Penting untuk pagination
+            'totalPages' => $ordersData['totalPages'] ?? 1,
+            'hasMore' => $hasMore
         ];
-        
-        if ($this->isAjax()) {
-            $html = View::component('seller-order-list', $viewData);
-            $this->json(['html' => $html]);
-            return;
-        }
 
         $jsFiles = [
             '/js/utils/fetchXhr.js',
