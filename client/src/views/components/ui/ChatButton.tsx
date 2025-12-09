@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Button from './Button.js'; // Import dari folder yang sama
 import api from '../../../services/api/axios.js';
 import { useAuth } from '../../../context/AuthContext.js';
-import { MessageCircle } from 'lucide-react';
 
 interface ChatButtonProps {
   storeId: number;
@@ -38,7 +37,11 @@ const ChatButton: React.FC<ChatButtonProps> = ({ storeId, className }) => {
       variant="ghost"
       size="sm"
     >
-      <MessageCircle size={18} />
+      <img 
+        src="/assets/icons/message-circle.svg" 
+        alt="Chat" 
+        className="w-[18px] h-[18px] opacity-70" 
+      />
       {loading ? '...' : 'Chat Penjual'}
     </Button>
   );

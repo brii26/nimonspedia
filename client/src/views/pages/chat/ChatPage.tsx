@@ -12,7 +12,6 @@ import Button from '../../components/ui/Button.js';
 import Input from '../../components/ui/Input.js';
 import Avatar from '../../components/ui/Avatar.js';
 import TypingIndicator from '../../components/ui/TypingIndicator.js';
-import { Send, Search, Image as ImageIcon, MoreVertical, ArrowLeft, Check, CheckCheck } from 'lucide-react';
 
 // --- Helper Function: Format Waktu ---
 const formatTimeAgo = (dateString: string) => {
@@ -346,7 +345,7 @@ const ChatPage = () => {
                     onClick={() => setActiveRoom(null)}
                     className="md:hidden mr-3 p-2 hover:bg-gray-100 rounded-full"
                   >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    <img src="/assets/icons/arrow-left.svg" alt="Back" className="w-5 h-5" />
                   </button>
                   <Avatar 
                     src={getOpponentInfo(activeRoom).image} 
@@ -362,7 +361,7 @@ const ChatPage = () => {
                   </div>
                 </div>
                 <Button variant="ghost" size="sm">
-                  <MoreVertical className="w-5 h-5 text-gray-500" />
+                  <img src="/assets/icons/more-vertical.svg" alt="Options" className="w-5 h-5" />
                 </Button>
               </div>
 
@@ -387,10 +386,7 @@ const ChatPage = () => {
                             }
                           `}
                         >
-                          {/* PERBAIKAN CSS TEKS:
-                             whitespace-pre-wrap: menghargai enter/newline
-                             break-words: memecah kata panjang agar tidak tembus
-                          */}
+                          
                           {msg.message_type === 'image' ? (
                             <img 
                               src={msg.content}
@@ -410,9 +406,9 @@ const ChatPage = () => {
                              {isMe && (
                                 <span>
                                    {msg.is_read ? (
-                                      <CheckCheck className="w-3 h-3 text-blue-300" />
+                                      <img src="/assets/icons/check-read.svg" alt="Read" className="w-3 h-3" />
                                    ) : (
-                                      <Check className="w-3 h-3" />
+                                      <img src="/assets/icons/check.svg" alt="Sent" className="w-3 h-3" />
                                    )}
                                 </span>
                              )}
@@ -457,7 +453,7 @@ const ChatPage = () => {
                      onClick={() => fileInputRef.current?.click()}
                      disabled={!isConnected || isUploading}
                    >
-                     <ImageIcon className={`w-6 h-6 ${isUploading ? 'animate-pulse text-blue-500' : ''}`} />
+                     <img src="/assets/icons/image.svg" alt="Upload" className={`w-6 h-6 ${isUploading ? 'animate-pulse' : ''}`} />
                    </Button>
                    
                    <Input 
