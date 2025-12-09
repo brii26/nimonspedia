@@ -62,7 +62,8 @@ const ChatPage = () => {
   const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
   const [autoSelectRoomId, setAutoSelectRoomId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -129,6 +130,14 @@ const ChatPage = () => {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+  
+  const getThumbUrl = (url: string) => {
+      if (!url) return '';
+      const lastDotIndex = url.lastIndexOf('.');
+      if (lastDotIndex === -1) return url;
+      // Menyisipkan "_thumb" sebelum ekstensi
+      return url.substring(0, lastDotIndex) + '_thumb' + url.substring(lastDotIndex);
   };
 
   // --- Init Hook ---
@@ -284,7 +293,7 @@ const ChatPage = () => {
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Pesan</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <img src="/assets/icons/search.svg" alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" />
               <Input 
                 placeholder="Cari chat..." 
                 className="pl-10"
@@ -388,17 +397,20 @@ const ChatPage = () => {
                         >
                           
                           {msg.message_type === 'image' ? (
-                            <img 
-                              src={msg.content}
-                              alt="Attachment" 
-                              className="rounded-lg max-w-full max-h-60 object-cover cursor-pointer"
-                              onClick={() => window.open(msg.content, '_blank')}
-                            />
-                          ) : (
+                            <div className="relative group">
+                                <img 
+                                  src={getThumbUrl(msg.content)} 
+                                  onError={(e) => { e.currentTarget.src = msg.content }} 
+                                  alt="Attachment" 
+                                  className="rounded-lg max-w-[200px] max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => setSelectedImage(msg.content)} 
+                                />
+                            </div>
+                        ) : (
                             <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                               {msg.content}
                             </p>
-                          )}
+                        )}
                           
                           {/* Info Waktu & Status */}
                           <div className={`text-[10px] mt-1 flex items-center gap-1 ${isMe ? 'justify-end text-blue-200' : 'justify-start text-gray-400'}`}>
@@ -468,7 +480,7 @@ const ChatPage = () => {
                       className={`rounded-full p-2 px-4 ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400'}`}
                       disabled={!inputMessage.trim() || !isConnected}
                    >
-                      <Send className="w-5 h-5 text-white" />
+                      <img src="/assets/icons/send.svg" alt="Send" className="w-5 h-5" />
                    </Button>
                 </form>
               </div>
@@ -482,6 +494,27 @@ const ChatPage = () => {
                <p className="mt-2 text-gray-500">Pilih percakapan untuk mulai berkirim pesan.</p>
             </div>
           )}
+          {selectedImage && (
+            <div 
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-95 p-4 animate-fade-in"
+                onClick={() => setSelectedImage(null)}
+            >
+                <button 
+                    className="absolute top-4 right-4 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    {/* Pastikan file x.svg sudah ada di assets */}
+                    <img src="/assets/icons/x.svg" alt="Close" className="w-8 h-8 invert filter brightness-0 invert" /> 
+                </button>
+                <img 
+                    src={selectedImage} 
+                    alt="Full Preview" 
+                    className="max-w-full max-h-full object-contain rounded-md shadow-2xl"
+                    onClick={(e) => e.stopPropagation()} 
+                />
+            </div>
+          )}
+          
         </div>
       </Card>
     </div>
