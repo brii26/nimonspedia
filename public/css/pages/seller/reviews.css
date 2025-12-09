@@ -2,49 +2,26 @@
  * Seller Reviews CSS - Review Management Pages
  * Covers: index, respond, edit-response
  * 
+ * NOTE: Reuses from existing components:
+ * - components.css: .card, .card-header, .card-body, .btn, .btn-*, .badge, .badge-*, .pagination-*
+ * - components/modal.css: .app-modal, .app-modal-*
+ * - components/notification.css: .notification
+ * - components/reviews.css: .rating-stars, .star
+ * - pages/reviews.css: .form-group, .form-label, .form-actions, .empty-state, .btn-icon
+ * 
  * Table of Contents:
- * 1. CSS Variables (uses same as reviews.css)
- * 2. Common Layout
- * 3. Page Header with Stats
- * 4. Filter Tabs
- * 5. Review List
- * 6. Review Item Card
- * 7. Review Content
- * 8. Seller Response Section
- * 9. Response Form
- * 10. Status & Badges
- * 11. Empty State
- * 12. Modals
- * 13. Notifications
- * 14. Responsive Design
+ * 1. Layout
+ * 2. Page Header with Stats
+ * 3. Filter Tabs
+ * 4. Review Item Card
+ * 5. Review Content
+ * 6. Seller Response Section
+ * 7. Response Form Specifics
+ * 8. Responsive Design
  */
 
 /* ========================================
-   1. CSS Variables (shared)
-   ======================================== */
-:root {
-    --seller-primary: #3b82f6;
-    --seller-primary-hover: #2563eb;
-    --seller-danger: #dc2626;
-    --seller-danger-hover: #b91c1c;
-    --seller-success: #10b981;
-    --seller-warning: #f59e0b;
-    --seller-star: #fbbf24;
-    --seller-star-empty: #d1d5db;
-    --seller-text: #374151;
-    --seller-text-muted: #6b7280;
-    --seller-text-light: #9ca3af;
-    --seller-bg: #f9fafb;
-    --seller-border: #e5e7eb;
-    --seller-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --seller-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --seller-radius: 12px;
-    --seller-radius-sm: 8px;
-    --seller-radius-xs: 6px;
-}
-
-/* ========================================
-   2. Common Layout
+   1. Layout
    ======================================== */
 .seller-reviews-container,
 .response-form-container {
@@ -54,7 +31,7 @@
 }
 
 /* ========================================
-   3. Page Header with Stats
+   2. Page Header with Stats
    ======================================== */
 .page-header {
     display: flex;
@@ -69,13 +46,13 @@
     margin: 0 0 0.5rem 0;
     font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 700;
-    color: #111827;
+    color: var(--gray-900, #111827);
 }
 
 .page-header-content .subtitle {
     margin: 0;
     font-size: 1rem;
-    color: var(--seller-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 .stats-cards {
@@ -86,16 +63,16 @@
 
 .stat-card {
     background: white;
-    border-radius: var(--seller-radius-sm);
+    border-radius: 8px;
     padding: 0.875rem 1.25rem;
     min-width: 120px;
     text-align: center;
-    box-shadow: var(--seller-shadow);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .stat-card:hover {
-    box-shadow: var(--seller-shadow-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
 
@@ -103,33 +80,33 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--gray-900, #111827);
     line-height: 1.2;
 }
 
 .stat-label {
     display: block;
     font-size: 0.75rem;
-    color: var(--seller-text-muted);
+    color: var(--gray-600, #6b7280);
     text-transform: uppercase;
     letter-spacing: 0.03em;
     margin-top: 0.25rem;
 }
 
 .stat-card.stat-success .stat-value {
-    color: var(--seller-success);
+    color: var(--success, #10b981);
 }
 
 .stat-card.stat-warning .stat-value {
-    color: var(--seller-warning);
+    color: var(--warning, #f59e0b);
 }
 
 .stat-card.stat-primary .stat-value {
-    color: var(--seller-primary);
+    color: var(--primary, #3b82f6);
 }
 
 /* ========================================
-   4. Filter Tabs
+   3. Filter Tabs
    ======================================== */
 .filter-tabs-container {
     margin-bottom: 1.5rem;
@@ -140,8 +117,8 @@
     gap: 0.5rem;
     padding: 0.375rem;
     background: white;
-    border-radius: var(--seller-radius);
-    box-shadow: var(--seller-shadow);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -158,8 +135,8 @@
     padding: 0.625rem 1rem;
     background: transparent;
     border: none;
-    border-radius: var(--seller-radius-sm);
-    color: var(--seller-text-muted);
+    border-radius: 8px;
+    color: var(--gray-600, #6b7280);
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -169,12 +146,12 @@
 }
 
 .filter-tab:hover {
-    color: var(--seller-text);
-    background: var(--seller-bg);
+    color: var(--gray-700, #374151);
+    background: var(--gray-50, #f9fafb);
 }
 
 .filter-tab.active {
-    background: var(--seller-primary);
+    background: var(--primary, #3b82f6);
     color: white;
 }
 
@@ -196,7 +173,7 @@
 }
 
 /* ========================================
-   5. Review List
+   4. Review Item Card
    ======================================== */
 .reviews-list {
     display: flex;
@@ -204,19 +181,16 @@
     gap: 1rem;
 }
 
-/* ========================================
-   6. Review Item Card
-   ======================================== */
 .review-item {
     background: white;
-    border-radius: var(--seller-radius);
-    box-shadow: var(--seller-shadow);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: box-shadow 0.2s;
 }
 
 .review-item:hover {
-    box-shadow: var(--seller-shadow-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .review-item-header {
@@ -225,7 +199,7 @@
     align-items: flex-start;
     gap: 1rem;
     padding: 1.25rem;
-    border-bottom: 1px solid var(--seller-border);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
 }
 
 .customer-info {
@@ -239,7 +213,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--seller-primary) 0%, #60a5fa 100%);
+    background: linear-gradient(135deg, var(--primary, #3b82f6) 0%, #60a5fa 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -258,7 +232,7 @@
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--gray-900, #111827);
 }
 
 .review-meta {
@@ -267,32 +241,11 @@
     gap: 0.75rem;
     align-items: center;
     font-size: 0.8125rem;
-    color: var(--seller-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 .meta-separator {
-    color: var(--seller-border);
-}
-
-/* Star Rating */
-.star-rating,
-.rating-stars {
-    display: flex;
-    gap: 0.125rem;
-}
-
-.star-rating .star,
-.rating-stars .star {
-    font-size: 1.125rem;
-    color: var(--seller-star-empty);
-    line-height: 1;
-}
-
-.star-rating .star.filled,
-.star-rating .star.active,
-.rating-stars .star.filled,
-.rating-stars .star.active {
-    color: var(--seller-star);
+    color: var(--border-light, #e5e7eb);
 }
 
 .review-actions {
@@ -302,7 +255,7 @@
 }
 
 /* ========================================
-   7. Review Content
+   5. Review Content
    ======================================== */
 .review-item-body {
     padding: 1.25rem;
@@ -313,8 +266,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem;
-    background: var(--seller-bg);
-    border-radius: var(--seller-radius-sm);
+    background: var(--gray-50, #f9fafb);
+    border-radius: 8px;
     text-decoration: none;
     color: inherit;
     margin-bottom: 1rem;
@@ -329,17 +282,17 @@
     width: 48px;
     height: 48px;
     object-fit: cover;
-    border-radius: var(--seller-radius-xs);
+    border-radius: 6px;
     flex-shrink: 0;
 }
 
 .product-link span {
     font-weight: 500;
-    color: var(--seller-primary);
+    color: var(--primary, #3b82f6);
 }
 
 .review-comment {
-    color: var(--seller-text);
+    color: var(--gray-700, #374151);
     line-height: 1.65;
     margin-bottom: 1rem;
 }
@@ -363,7 +316,7 @@
     aspect-ratio: 1;
     width: 100%;
     object-fit: cover;
-    border-radius: var(--seller-radius-xs);
+    border-radius: 6px;
     cursor: pointer;
     transition: transform 0.2s, opacity 0.2s;
 }
@@ -374,14 +327,14 @@
 }
 
 /* ========================================
-   8. Seller Response Section
+   6. Seller Response Section
    ======================================== */
 .seller-response {
     background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-    border-left: 4px solid var(--seller-primary);
+    border-left: 4px solid var(--primary, #3b82f6);
     padding: 1rem 1.25rem;
     margin: 1rem 1.25rem 1.25rem 1.25rem;
-    border-radius: 0 var(--seller-radius-sm) var(--seller-radius-sm) 0;
+    border-radius: 0 8px 8px 0;
 }
 
 .response-header {
@@ -397,7 +350,7 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    color: var(--seller-primary);
+    color: var(--primary, #3b82f6);
     font-size: 0.875rem;
 }
 
@@ -408,11 +361,11 @@
 
 .response-date {
     font-size: 0.75rem;
-    color: var(--seller-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 .response-text {
-    color: var(--seller-text);
+    color: var(--gray-700, #374151);
     line-height: 1.6;
 }
 
@@ -431,36 +384,12 @@
 }
 
 /* ========================================
-   9. Response Form
+   7. Response Form Specifics
    ======================================== */
-.card {
-    background: white;
-    border-radius: var(--seller-radius);
-    box-shadow: var(--seller-shadow);
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--seller-border);
-}
-
-.card-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-/* Review Preview in Form */
 .review-preview {
-    background: var(--seller-bg);
+    background: var(--gray-50, #f9fafb);
     padding: 1.25rem;
-    border-radius: var(--seller-radius-sm);
+    border-radius: 8px;
     margin-bottom: 1.5rem;
 }
 
@@ -474,11 +403,11 @@
 
 .reviewer-name {
     font-weight: 600;
-    color: #111827;
+    color: var(--gray-900, #111827);
 }
 
 .review-preview-comment {
-    color: var(--seller-text);
+    color: var(--gray-700, #374151);
     line-height: 1.6;
 }
 
@@ -490,542 +419,35 @@
     margin-bottom: 0;
 }
 
-/* Form Elements */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--seller-text);
-    font-size: 0.9375rem;
-}
-
-.form-label.required::after {
-    content: " *";
-    color: var(--seller-danger);
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--seller-border);
-    border-radius: var(--seller-radius-xs);
-    font-size: 0.9375rem;
-    font-family: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: white;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--seller-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.char-counter {
-    text-align: right;
-    font-size: 0.75rem;
-    color: var(--seller-text-muted);
-    margin-top: 0.375rem;
-}
-
-.error-message {
-    color: var(--seller-danger);
-    font-size: 0.8125rem;
-    margin-top: 0.375rem;
-    min-height: 1.25rem;
-}
-
-/* Quill Editor */
-.ql-container {
-    font-family: inherit;
-    font-size: 0.9375rem;
-    border-bottom-left-radius: var(--seller-radius-xs);
-    border-bottom-right-radius: var(--seller-radius-xs);
-}
-
-.ql-toolbar {
-    border-top-left-radius: var(--seller-radius-xs);
-    border-top-right-radius: var(--seller-radius-xs);
-    background: var(--seller-bg);
-}
-
-.ql-editor {
-    min-height: 120px;
-}
-
-.ql-editor.ql-blank::before {
-    color: var(--seller-text-light);
-    font-style: normal;
-}
-
-/* Form Actions */
-.form-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--seller-border);
-}
-
-/* ========================================
-   10. Status & Badges
-   ======================================== */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.badge-warning {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.badge-info {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-/* ========================================
-   11. Buttons
-   ======================================== */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--seller-radius-xs);
-    font-weight: 500;
-    font-size: 0.9375rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn-primary {
-    background: var(--seller-primary);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: var(--seller-primary-hover);
-}
-
-.btn-secondary {
-    background: #f3f4f6;
-    color: var(--seller-text);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: var(--seller-border);
-}
-
-.btn-danger {
-    background: var(--seller-danger);
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: var(--seller-danger-hover);
-}
-
-.btn-outline {
-    background: white;
-    border: 1px solid var(--seller-border);
-    color: var(--seller-text);
-}
-
-.btn-outline:hover:not(:disabled) {
-    background: var(--seller-bg);
-    border-color: var(--seller-primary);
-    color: var(--seller-primary);
-}
-
-.btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
-}
-
-.btn-icon {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--seller-border);
-    border-radius: var(--seller-radius-xs);
-    background: white;
-    color: var(--seller-text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-icon:hover {
-    background: var(--seller-bg);
-    border-color: var(--seller-primary);
-    color: var(--seller-primary);
-}
-
-.btn-icon.btn-delete:hover {
-    border-color: var(--seller-danger);
-    color: var(--seller-danger);
-}
-
-.spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ========================================
-   12. Empty State
-   ======================================== */
+/* Empty state - extend from reviews.css */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
     background: white;
-    border-radius: var(--seller-radius);
-    box-shadow: var(--seller-shadow);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.empty-state svg,
-.empty-state .empty-icon {
-    color: var(--seller-text-light);
+.empty-state svg {
+    color: var(--gray-400, #9ca3af);
     margin-bottom: 1.5rem;
-    font-size: 4rem;
 }
 
 .empty-state h3 {
     margin: 0 0 0.75rem 0;
     font-size: 1.375rem;
     font-weight: 600;
-    color: var(--seller-text);
+    color: var(--gray-700, #374151);
 }
 
 .empty-state p {
     margin: 0;
-    color: var(--seller-text-muted);
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+    color: var(--gray-600, #6b7280);
     line-height: 1.5;
 }
 
 /* ========================================
-   13. Modals
-   ======================================== */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    backdrop-filter: blur(2px);
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-dialog {
-    background: white;
-    border-radius: var(--seller-radius);
-    max-width: 450px;
-    width: 100%;
-    overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--seller-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-}
-
-.modal-close {
-    font-size: 1.5rem;
-    color: var(--seller-text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--seller-radius-xs);
-    transition: background-color 0.2s;
-    line-height: 1;
-}
-
-.modal-close:hover {
-    background: var(--seller-bg);
-    color: var(--seller-text);
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-body p {
-    margin: 0;
-    color: var(--seller-text-muted);
-    line-height: 1.5;
-}
-
-.modal-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--seller-border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    background: var(--seller-bg);
-}
-
-/* Image Modal */
-.image-modal .modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    color: white;
-    font-size: 2.5rem;
-    font-weight: bold;
-    z-index: 10000;
-}
-
-.image-modal .modal-close:hover {
-    color: #ccc;
-    background: transparent;
-}
-
-.modal-image {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    border-radius: var(--seller-radius-sm);
-}
-
-/* ========================================
-   14. Notifications
-   ======================================== */
-.notification-container {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 10001;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-width: calc(100% - 3rem);
-}
-
-.notification {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
-    background: white;
-    border-radius: var(--seller-radius-sm);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    max-width: 400px;
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.notification.success {
-    border-left: 4px solid var(--seller-success);
-}
-
-.notification.error {
-    border-left: 4px solid var(--seller-danger);
-}
-
-.notification-icon {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-}
-
-.notification.success .notification-icon {
-    color: var(--seller-success);
-}
-
-.notification.error .notification-icon {
-    color: var(--seller-danger);
-}
-
-.notification-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.notification-title {
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.25rem;
-    font-size: 0.9375rem;
-}
-
-.notification-message {
-    color: var(--seller-text-muted);
-    font-size: 0.8125rem;
-    line-height: 1.4;
-}
-
-.notification-close {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    color: var(--seller-text-light);
-    cursor: pointer;
-    padding: 0;
-    font-size: 1.25rem;
-    line-height: 1;
-}
-
-.notification-close:hover {
-    color: var(--seller-text);
-}
-
-/* ========================================
-   15. Pagination
-   ======================================== */
-.pagination-container {
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-}
-
-.pagination {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.page-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--seller-border);
-    border-radius: var(--seller-radius-xs);
-    background: white;
-    color: var(--seller-text);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-}
-
-.page-link:hover {
-    background: var(--seller-bg);
-    border-color: var(--seller-primary);
-    color: var(--seller-primary);
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.page-number {
-    min-width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--seller-border);
-    border-radius: var(--seller-radius-xs);
-    background: white;
-    color: var(--seller-text);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-}
-
-.page-number:hover {
-    background: var(--seller-bg);
-    border-color: var(--seller-primary);
-    color: var(--seller-primary);
-}
-
-.page-number.active {
-    background: var(--seller-primary);
-    border-color: var(--seller-primary);
-    color: white;
-}
-
-.pagination-info {
-    font-size: 0.875rem;
-    color: var(--seller-text-muted);
-}
-
-/* ========================================
-   16. Responsive Design
+   8. Responsive Design
    ======================================== */
 
 /* Tablet */
@@ -1068,34 +490,13 @@
     }
 
     .seller-response {
-        margin: 1rem 1rem 1rem 1rem;
+        margin: 1rem;
     }
 
     .response-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.375rem;
-    }
-
-    .card-header,
-    .card-body {
-        padding: 1.25rem;
-    }
-
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .form-actions .btn {
-        width: 100%;
-    }
-
-    .modal-footer {
-        flex-direction: column;
-    }
-
-    .modal-footer .btn {
-        width: 100%;
     }
 }
 
@@ -1155,50 +556,14 @@
         height: 40px;
     }
 
-    .card-header,
-    .card-body {
-        padding: 1rem;
-    }
-
     .empty-state {
         padding: 3rem 1.5rem;
-    }
-
-    .modal-header,
-    .modal-body,
-    .modal-footer {
-        padding: 1rem;
-    }
-
-    .notification-container {
-        bottom: 1rem;
-        right: 1rem;
-        left: 1rem;
-        max-width: none;
-    }
-
-    .notification {
-        max-width: none;
     }
 }
 
 /* Touch devices */
 @media (hover: none) {
-    .btn {
-        min-height: 44px;
-    }
-
-    .btn-icon {
-        width: 44px;
-        height: 44px;
-    }
-
     .filter-tab {
-        min-height: 44px;
-    }
-
-    .page-number,
-    .page-link {
         min-height: 44px;
     }
 }

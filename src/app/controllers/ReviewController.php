@@ -410,7 +410,10 @@ class ReviewController extends BaseController
                 'pagination' => $result,
                 'pageTitle' => 'My Reviews',
                 'cssFiles' => [
+                    '/css/components.css',
+                    '/css/components/modal.css',
                     '/css/components/notification.css',
+                    '/css/components/reviews.css',
                     '/css/pages/reviews.css'
                 ],
                 'jsFiles' => [
@@ -436,7 +439,13 @@ class ReviewController extends BaseController
                 'pagination' => ['total' => 0, 'total_pages' => 0],
                 'error' => 'Failed to load reviews',
                 'pageTitle' => 'My Reviews',
-                'cssFiles' => ['/css/pages/reviews.css'],
+                'cssFiles' => [
+                    '/css/components.css',
+                    '/css/components/modal.css',
+                    '/css/components/notification.css',
+                    '/css/components/reviews.css',
+                    '/css/pages/reviews.css'
+                ],
                 'jsFiles' => ['/js/utils/fetchXhr.js']
             ]);
         }
@@ -484,8 +493,11 @@ class ReviewController extends BaseController
                 'order' => $order,
                 'pageTitle' => 'Write a Review',
                 'cssFiles' => [
-                    '/css/pages/reviews.css',
+                    '/css/components.css',
+                    '/css/components/modal.css',
                     '/css/components/notification.css',
+                    '/css/components/reviews.css',
+                    '/css/pages/reviews.css',
                     'https://cdn.quilljs.com/1.3.6/quill.snow.css'
                 ],
                 'jsFiles' => [
@@ -544,8 +556,11 @@ class ReviewController extends BaseController
                 'images' => $images,
                 'pageTitle' => 'Edit Review',
                 'cssFiles' => [
-                    '/css/pages/reviews.css',
+                    '/css/components.css',
+                    '/css/components/modal.css',
                     '/css/components/notification.css',
+                    '/css/components/reviews.css',
+                    '/css/pages/reviews.css',
                     'https://cdn.quilljs.com/1.3.6/quill.snow.css'
                 ],
                 'jsFiles' => [

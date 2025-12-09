@@ -2,49 +2,26 @@
  * Reviews CSS - Buyer Review Pages
  * Covers: my-reviews, create, edit
  * 
+ * NOTE: Reuses from existing components:
+ * - components.css: .card, .card-header, .card-body, .btn, .btn-*, .badge, .badge-*, .pagination-*
+ * - components/modal.css: .app-modal, .app-modal-*
+ * - components/notification.css: .notification
+ * - components/reviews.css: .rating-stars, .star
+ * 
  * Table of Contents:
- * 1. CSS Variables
- * 2. Common Layout
- * 3. Cards & Containers
- * 4. Form Elements
- * 5. Star Rating
+ * 1. Layout
+ * 2. Page Header
+ * 3. Product Preview (form)
+ * 4. Star Rating (interactive)
+ * 5. Form Elements
  * 6. Image Upload
- * 7. Buttons
- * 8. Review List (My Reviews)
- * 9. Review Card Component
- * 10. Pagination
- * 11. Empty State
- * 12. Modals
- * 13. Utilities
- * 14. Responsive Design
+ * 7. Review Card (my-reviews)
+ * 8. Empty State
+ * 9. Responsive Design
  */
 
 /* ========================================
-   1. CSS Variables
-   ======================================== */
-:root {
-    --review-primary: #3b82f6;
-    --review-primary-hover: #2563eb;
-    --review-danger: #dc2626;
-    --review-danger-hover: #b91c1c;
-    --review-success: #10b981;
-    --review-warning: #f59e0b;
-    --review-star: #fbbf24;
-    --review-star-empty: #d1d5db;
-    --review-text: #374151;
-    --review-text-muted: #6b7280;
-    --review-text-light: #9ca3af;
-    --review-bg: #f9fafb;
-    --review-border: #e5e7eb;
-    --review-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --review-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --review-radius: 12px;
-    --review-radius-sm: 8px;
-    --review-radius-xs: 6px;
-}
-
-/* ========================================
-   2. Common Layout
+   1. Layout
    ======================================== */
 .review-form-container,
 .my-reviews-container {
@@ -53,6 +30,9 @@
     padding: 2rem 1rem;
 }
 
+/* ========================================
+   2. Page Header
+   ======================================== */
 .page-header {
     margin-bottom: 2rem;
 }
@@ -61,46 +41,22 @@
     margin: 0 0 0.5rem 0;
     font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 700;
-    color: #111827;
+    color: var(--gray-900, #111827);
 }
 
-.page-header .text-muted,
 .page-header .subtitle {
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
     font-size: 1rem;
     margin: 0;
 }
 
 /* ========================================
-   3. Cards & Containers
+   3. Product Preview (form)
    ======================================== */
-.card {
-    background: white;
-    border-radius: var(--review-radius);
-    box-shadow: var(--review-shadow);
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--review-border);
-}
-
-.card-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
 .product-info-section {
-    background: var(--review-bg);
+    background: var(--gray-50, #f9fafb);
     padding: 1rem;
-    border-radius: var(--review-radius-sm);
+    border-radius: 8px;
     margin-bottom: 1.5rem;
 }
 
@@ -114,7 +70,7 @@
     width: 80px;
     height: 80px;
     object-fit: cover;
-    border-radius: var(--review-radius-sm);
+    border-radius: 8px;
     flex-shrink: 0;
 }
 
@@ -122,95 +78,17 @@
     margin: 0 0 0.25rem 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--gray-900, #111827);
 }
 
 .product-details .text-muted {
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
     font-size: 0.875rem;
     margin: 0;
 }
 
 /* ========================================
-   4. Form Elements
-   ======================================== */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--review-text);
-    font-size: 0.9375rem;
-}
-
-.form-label.required::after {
-    content: " *";
-    color: var(--review-danger);
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--review-border);
-    border-radius: var(--review-radius-xs);
-    font-size: 0.9375rem;
-    font-family: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: white;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--review-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.form-control::placeholder {
-    color: var(--review-text-light);
-}
-
-.char-counter {
-    text-align: right;
-    font-size: 0.75rem;
-    color: var(--review-text-muted);
-    margin-top: 0.375rem;
-}
-
-.error-message {
-    color: var(--review-danger);
-    font-size: 0.8125rem;
-    margin-top: 0.375rem;
-    min-height: 1.25rem;
-}
-
-/* Quill Editor Integration */
-.ql-container {
-    font-family: inherit;
-    font-size: 0.9375rem;
-    border-bottom-left-radius: var(--review-radius-xs);
-    border-bottom-right-radius: var(--review-radius-xs);
-}
-
-.ql-toolbar {
-    border-top-left-radius: var(--review-radius-xs);
-    border-top-right-radius: var(--review-radius-xs);
-    background: var(--review-bg);
-}
-
-.ql-editor {
-    min-height: 120px;
-}
-
-.ql-editor.ql-blank::before {
-    color: var(--review-text-light);
-    font-style: normal;
-}
-
-/* ========================================
-   5. Star Rating
+   4. Star Rating (interactive for forms)
    ======================================== */
 .star-rating-container {
     display: flex;
@@ -226,7 +104,7 @@
 
 .star-rating .star {
     font-size: 2rem;
-    color: var(--review-star-empty);
+    color: var(--gray-300, #d1d5db);
     cursor: pointer;
     transition: color 0.15s, transform 0.15s;
     user-select: none;
@@ -235,39 +113,61 @@
 
 .star-rating .star:hover,
 .star-rating .star.hover {
-    color: var(--review-star);
+    color: #fbbf24;
     transform: scale(1.1);
 }
 
 .star-rating .star.active {
-    color: var(--review-star);
+    color: #fbbf24;
 }
 
 .rating-text {
     font-size: 0.875rem;
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
     font-weight: 500;
 }
 
-/* Static star display */
-.stars,
-.rating-stars {
+/* ========================================
+   5. Form Elements
+   ======================================== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--gray-700, #374151);
+    font-size: 0.9375rem;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: var(--danger, #dc2626);
+}
+
+.char-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--gray-600, #6b7280);
+    margin-top: 0.375rem;
+}
+
+.error-message {
+    color: var(--danger, #dc2626);
+    font-size: 0.8125rem;
+    margin-top: 0.375rem;
+    min-height: 1.25rem;
+}
+
+.form-actions {
     display: flex;
-    gap: 0.125rem;
-}
-
-.stars .star,
-.rating-stars .star {
-    font-size: 1.125rem;
-    color: var(--review-star-empty);
-    line-height: 1;
-}
-
-.stars .star.active,
-.stars .star.filled,
-.rating-stars .star.active,
-.rating-stars .star.filled {
-    color: var(--review-star);
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light, #e5e7eb);
 }
 
 /* ========================================
@@ -279,8 +179,8 @@
 
 .upload-area {
     position: relative;
-    border: 2px dashed var(--review-border);
-    border-radius: var(--review-radius-sm);
+    border: 2px dashed var(--border-light, #e5e7eb);
+    border-radius: 8px;
     padding: 2rem 1rem;
     text-align: center;
     transition: border-color 0.2s, background-color 0.2s;
@@ -288,12 +188,12 @@
 }
 
 .upload-area:hover {
-    border-color: var(--review-primary);
+    border-color: var(--primary, #3b82f6);
     background-color: rgba(59, 130, 246, 0.02);
 }
 
 .upload-area.dragover {
-    border-color: var(--review-primary);
+    border-color: var(--primary, #3b82f6);
     background-color: rgba(59, 130, 246, 0.05);
 }
 
@@ -307,18 +207,18 @@
 .upload-placeholder svg {
     display: block;
     margin: 0 auto 0.75rem;
-    color: var(--review-text-light);
+    color: var(--gray-400, #9ca3af);
 }
 
 .upload-placeholder p {
     margin: 0.25rem 0;
-    color: var(--review-text);
+    color: var(--gray-700, #374151);
     font-size: 0.9375rem;
 }
 
 .upload-placeholder .small {
     font-size: 0.8125rem;
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 /* Image Previews */
@@ -333,10 +233,10 @@
 .image-preview-item {
     position: relative;
     aspect-ratio: 1;
-    border-radius: var(--review-radius-sm);
+    border-radius: 8px;
     overflow: hidden;
-    border: 2px solid var(--review-border);
-    background: var(--review-bg);
+    border: 2px solid var(--border-light, #e5e7eb);
+    background: var(--gray-50, #f9fafb);
 }
 
 .image-preview-item img {
@@ -366,111 +266,11 @@
 }
 
 .image-preview-remove:hover {
-    background: var(--review-danger);
+    background: var(--danger, #dc2626);
 }
 
 /* ========================================
-   7. Buttons
-   ======================================== */
-.form-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--review-border);
-}
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--review-radius-xs);
-    font-weight: 500;
-    font-size: 0.9375rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn-primary {
-    background: var(--review-primary);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: var(--review-primary-hover);
-}
-
-.btn-secondary {
-    background: #f3f4f6;
-    color: var(--review-text);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: var(--review-border);
-}
-
-.btn-danger {
-    background: var(--review-danger);
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: var(--review-danger-hover);
-}
-
-.btn-icon {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--review-border);
-    border-radius: var(--review-radius-xs);
-    background: white;
-    color: var(--review-text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-icon:hover {
-    background: var(--review-bg);
-    border-color: var(--review-primary);
-    color: var(--review-primary);
-}
-
-.btn-icon.btn-delete:hover {
-    border-color: var(--review-danger);
-    color: var(--review-danger);
-}
-
-.spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ========================================
-   8. Review List (My Reviews)
+   7. Review Card (my-reviews)
    ======================================== */
 .reviews-list {
     display: flex;
@@ -478,19 +278,16 @@
     gap: 1.25rem;
 }
 
-/* ========================================
-   9. Review Card Component
-   ======================================== */
 .review-card {
     background: white;
-    border-radius: var(--review-radius);
+    border-radius: 12px;
     padding: 1.25rem;
-    box-shadow: var(--review-shadow);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.2s;
 }
 
 .review-card:hover {
-    box-shadow: var(--review-shadow-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .review-card-header {
@@ -500,7 +297,7 @@
     gap: 1rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--review-border);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
 }
 
 .product-info {
@@ -514,20 +311,11 @@
     width: 72px;
     height: 72px;
     object-fit: cover;
-    border-radius: var(--review-radius-sm);
+    border-radius: 8px;
     flex-shrink: 0;
 }
 
-.product-details {
-    flex: 1;
-    min-width: 0;
-}
-
 .product-details h3 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -536,19 +324,45 @@
 .store-name {
     margin: 0 0 0.25rem 0;
     font-size: 0.875rem;
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 .review-date {
     margin: 0;
     font-size: 0.8125rem;
-    color: var(--review-text-light);
+    color: var(--gray-400, #9ca3af);
 }
 
 .review-actions {
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: 6px;
+    background: white;
+    color: var(--gray-600, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: var(--gray-50, #f9fafb);
+    border-color: var(--primary, #3b82f6);
+    color: var(--primary, #3b82f6);
+}
+
+.btn-icon.btn-delete:hover {
+    border-color: var(--danger, #dc2626);
+    color: var(--danger, #dc2626);
 }
 
 .review-rating {
@@ -561,12 +375,12 @@
 .rating-value {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
 }
 
 .review-comment {
     margin-bottom: 1rem;
-    color: var(--review-text);
+    color: var(--gray-700, #374151);
     line-height: 1.6;
 }
 
@@ -587,7 +401,7 @@
 
 .review-image {
     aspect-ratio: 1;
-    border-radius: var(--review-radius-sm);
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s;
@@ -609,131 +423,20 @@
     flex-wrap: wrap;
 }
 
-/* Badges */
-.badge {
-    display: inline-block;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge-warning {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.badge-info {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.badge-success {
-    background: #dcfce7;
-    color: #166534;
-}
-
 /* ========================================
-   10. Pagination
-   ======================================== */
-.pagination-container {
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-}
-
-.pagination {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.page-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--review-border);
-    border-radius: var(--review-radius-xs);
-    background: white;
-    color: var(--review-text);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-}
-
-.page-link:hover {
-    background: var(--review-bg);
-    border-color: var(--review-primary);
-    color: var(--review-primary);
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.page-number {
-    min-width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--review-border);
-    border-radius: var(--review-radius-xs);
-    background: white;
-    color: var(--review-text);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-}
-
-.page-number:hover {
-    background: var(--review-bg);
-    border-color: var(--review-primary);
-    color: var(--review-primary);
-}
-
-.page-number.active {
-    background: var(--review-primary);
-    border-color: var(--review-primary);
-    color: white;
-}
-
-.page-ellipsis {
-    min-width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--review-text-light);
-}
-
-.pagination-info {
-    font-size: 0.875rem;
-    color: var(--review-text-muted);
-}
-
-/* ========================================
-   11. Empty State
+   8. Empty State
    ======================================== */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
     background: white;
-    border-radius: var(--review-radius);
-    box-shadow: var(--review-shadow);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .empty-state svg,
 .empty-state .empty-icon {
-    color: var(--review-text-light);
+    color: var(--gray-400, #9ca3af);
     margin-bottom: 1.5rem;
     font-size: 4rem;
 }
@@ -742,12 +445,12 @@
     margin: 0 0 0.75rem 0;
     font-size: 1.375rem;
     font-weight: 600;
-    color: var(--review-text);
+    color: var(--gray-700, #374151);
 }
 
 .empty-state p {
     margin: 0 0 1.5rem 0;
-    color: var(--review-text-muted);
+    color: var(--gray-600, #6b7280);
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
@@ -755,132 +458,7 @@
 }
 
 /* ========================================
-   12. Modals
-   ======================================== */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    backdrop-filter: blur(2px);
-}
-
-.modal.active {
-    display: flex;
-}
-
-/* Image Modal */
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    color: white;
-    font-size: 2.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10000;
-    line-height: 1;
-    transition: color 0.2s;
-}
-
-.modal-close:hover {
-    color: #ccc;
-}
-
-.modal-image {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    border-radius: var(--review-radius-sm);
-}
-
-/* Dialog Modal */
-.modal-dialog {
-    background: white;
-    border-radius: var(--review-radius);
-    max-width: 450px;
-    width: 100%;
-    overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--review-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-}
-
-.modal-header .modal-close {
-    position: static;
-    font-size: 1.5rem;
-    color: var(--review-text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--review-radius-xs);
-    transition: background-color 0.2s;
-}
-
-.modal-header .modal-close:hover {
-    background: var(--review-bg);
-    color: var(--review-text);
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-body p {
-    margin: 0;
-    color: var(--review-text-muted);
-    line-height: 1.5;
-}
-
-.modal-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--review-border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    background: var(--review-bg);
-}
-
-/* ========================================
-   13. Utilities
-   ======================================== */
-.text-muted {
-    color: var(--review-text-muted) !important;
-}
-
-.mb-4 {
-    margin-bottom: 1rem !important;
-}
-
-.small {
-    font-size: 0.8125rem;
-}
-
-/* ========================================
-   14. Responsive Design
+   9. Responsive Design
    ======================================== */
 
 /* Tablet */
@@ -888,11 +466,6 @@
     .review-form-container,
     .my-reviews-container {
         padding: 1.5rem 1rem;
-    }
-
-    .card-header,
-    .card-body {
-        padding: 1.25rem;
     }
 
     .product-preview {
@@ -926,17 +499,6 @@
         justify-content: flex-end;
     }
 
-    .pagination {
-        gap: 0.375rem;
-    }
-
-    .page-numbers {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        margin-top: 0.5rem;
-    }
-
     .star-rating .star {
         font-size: 2.25rem;
     }
@@ -951,11 +513,6 @@
 
     .page-header h1 {
         font-size: 1.5rem;
-    }
-
-    .card-header,
-    .card-body {
-        padding: 1rem;
     }
 
     .product-thumb {
@@ -984,48 +541,16 @@
     .empty-state {
         padding: 3rem 1.5rem;
     }
-
-    .modal-dialog {
-        margin: 0.5rem;
-    }
-
-    .modal-header,
-    .modal-body,
-    .modal-footer {
-        padding: 1rem;
-    }
-
-    .modal-footer {
-        flex-direction: column;
-    }
-
-    .modal-footer .btn {
-        width: 100%;
-    }
-
-    .btn {
-        padding: 0.625rem 1rem;
-        font-size: 0.875rem;
-    }
 }
 
-/* Touch devices - larger tap targets */
+/* Touch devices */
 @media (hover: none) {
     .star-rating .star {
         font-size: 2.5rem;
     }
 
-    .btn {
-        min-height: 44px;
-    }
-
     .btn-icon {
         width: 44px;
         height: 44px;
-    }
-
-    .page-number,
-    .page-link {
-        min-height: 44px;
     }
 }

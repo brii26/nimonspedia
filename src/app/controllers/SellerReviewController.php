@@ -55,9 +55,14 @@ class SellerReviewController extends BaseController
             'pageTitle' => 'Manage Reviews',
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
+                '/js/utils/notification.js',
                 '/js/pages/seller/reviews/index.js'
             ],
             'cssFiles' => [
+                '/css/components.css',
+                '/css/components/modal.css',
+                '/css/components/notification.css',
+                '/css/components/reviews.css',
                 '/css/pages/seller/reviews.css'
             ]
         ]);
@@ -112,6 +117,11 @@ class SellerReviewController extends BaseController
             'store' => $store,
             'pageTitle' => 'Respond to Review',
             'cssFiles' => [
+                '/css/components.css',
+                '/css/components/modal.css',
+                '/css/components/notification.css',
+                '/css/components/reviews.css',
+                '/css/pages/reviews.css',
                 '/css/pages/seller/reviews.css',
                 'https://cdn.quilljs.com/1.3.6/quill.snow.css'
             ],
@@ -119,6 +129,7 @@ class SellerReviewController extends BaseController
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js',
                 '/js/utils/fetchXhr.js',
+                '/js/utils/notification.js',
                 '/js/pages/seller/reviews/respond.js'
             ]
         ]);
@@ -224,6 +235,11 @@ class SellerReviewController extends BaseController
             'store' => $store,
             'pageTitle' => 'Edit Response',
             'cssFiles' => [
+                '/css/components.css',
+                '/css/components/modal.css',
+                '/css/components/notification.css',
+                '/css/components/reviews.css',
+                '/css/pages/reviews.css',
                 '/css/pages/seller/reviews.css',
                 'https://cdn.quilljs.com/1.3.6/quill.snow.css'
             ],
@@ -231,6 +247,7 @@ class SellerReviewController extends BaseController
                 'https://cdn.quilljs.com/1.3.6/quill.js',
                 '/js/utils/quill-setup.js',
                 '/js/utils/fetchXhr.js',
+                '/js/utils/notification.js',
                 '/js/pages/seller/reviews/edit-response.js'
             ]
         ]);
