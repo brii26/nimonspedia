@@ -1,12 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import reviewRepository from '../repositories/reviewRepository.js';
 
-interface AdminUser {
-  user_id: number;
-  role: string;
-  name: string;
-}
-
 interface QueryParams {
   page?: string;
   limit?: string;
@@ -35,12 +29,6 @@ interface UpdateResponseBody {
 
 interface DeleteResponseBody {
   response_id: number;
-}
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: AdminUser;
-  }
 }
 
 /**
@@ -147,7 +135,7 @@ export const hideReview = async (
   try {
     const reviewId = parseInt(request.params.review_id, 10);
     const { reason } = request.body;
-    const adminId = request.user?.user_id;
+    const adminId = request.user?.user_id ? parseInt(request.user.user_id, 10) : undefined;
 
     if (isNaN(reviewId)) {
       return reply.status(400).send({ success: false, message: 'Invalid review ID' });
@@ -213,7 +201,7 @@ export const addAdminResponse = async (
   try {
     const reviewId = parseInt(request.params.review_id, 10);
     const { response_text } = request.body;
-    const adminId = request.user?.user_id;
+    const adminId = request.user?.user_id ? parseInt(request.user.user_id, 10) : undefined;
 
     if (isNaN(reviewId)) {
       return reply.status(400).send({ success: false, message: 'Invalid review ID' });
@@ -260,7 +248,7 @@ export const updateAdminResponse = async (
 ) => {
   try {
     const { response_id, response_text } = request.body;
-    const adminId = request.user?.user_id;
+    const adminId = request.user?.user_id ? parseInt(request.user.user_id, 10) : undefined;
 
     if (!response_id || !response_text || response_text.trim().length === 0) {
       return reply.status(400).send({ success: false, message: 'Response ID and text are required' });
@@ -293,7 +281,7 @@ export const deleteAdminResponse = async (
 ) => {
   try {
     const { response_id } = request.body;
-    const adminId = request.user?.user_id;
+    const adminId = request.user?.user_id ? parseInt(request.user.user_id, 10) : undefined;
 
     if (!response_id) {
       return reply.status(400).send({ success: false, message: 'Response ID is required' });
