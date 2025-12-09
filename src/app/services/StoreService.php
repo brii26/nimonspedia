@@ -44,4 +44,11 @@ class StoreService {
     public function getStoreForUser($userId) {
         return $this->storeRepo->findByUserId($userId);
     }
+
+    /**
+     * Get store by ID (includes user_id/seller_id)
+     */
+    public function getStoreById($storeId) {
+        return $this->storeRepo->getById($storeId);
+    }
 }

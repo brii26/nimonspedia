@@ -54,6 +54,66 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                     <?= SanitizerService::sanitizeRichText($product['description']) ?>
                 </div>
             </div>
+
+            <!-- Reviews Section -->
+            <div class="product-reviews-section">
+                <!-- Hidden input for product ID -->
+                <input type="hidden" id="product-id" value="<?= View::escape($product['product_id']) ?>">
+                
+                <!-- Rating Summary Component -->
+                <?php 
+                $stats = $reviewStats;
+                include __DIR__ . '/../../components/rating-summary.php'; 
+                ?>
+
+                <!-- Reviews List -->
+                <div class="reviews-list-section">
+                    <div class="reviews-list-header">
+                        <h3>Customer Reviews</h3>
+                        <div class="reviews-controls">
+                            <!-- Filter by Rating -->
+                            <div class="rating-filter">
+                                <button class="filter-btn active" data-filter-rating="all">All</button>
+                                <button class="filter-btn" data-filter-rating="5">5 ★</button>
+                                <button class="filter-btn" data-filter-rating="4">4 ★</button>
+                                <button class="filter-btn" data-filter-rating="3">3 ★</button>
+                                <button class="filter-btn" data-filter-rating="2">2 ★</button>
+                                <button class="filter-btn" data-filter-rating="1">1 ★</button>
+                            </div>
+                            
+                            <!-- Sort -->
+                            <select id="review-sort" class="sort-select">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="highest">Highest Rating</option>
+                                <option value="lowest">Lowest Rating</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="reviews-loading" class="reviews-loading" style="display: none;">
+                        <div class="spinner-border"></div>
+                        <p>Loading reviews...</p>
+                    </div>
+
+                    <!-- Reviews Container -->
+                    <div id="reviews-list-container" class="reviews-list-container">
+                        <?php if (!empty($initialReviews)): ?>
+                            <?php foreach ($initialReviews as $review): ?>
+                                <?php include __DIR__ . '/../../components/review-card.php'; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="no-reviews-filtered">
+                                <p>No reviews yet for this product</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="reviews-pagination"></div>
+                </div>
+            </div>
         </main>
 
         <aside class="product-purchase-sidebar">

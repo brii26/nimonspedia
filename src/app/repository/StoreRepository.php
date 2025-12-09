@@ -63,6 +63,18 @@ class StoreRepository extends BaseRepository {
                  WHERE store_id = ?";
         return $this->db->selectOne($sql, [$storeId]);
     }
+
+    /**
+     * Get store by ID with user_id (seller ID)
+     */
+    public function getById($storeId) {
+        $sql = "SELECT store_id, user_id, store_name, store_description, store_logo_path,
+                       balance, created_at, updated_at
+                  FROM stores
+                 WHERE store_id = ?";
+        return $this->db->selectOne($sql, [$storeId]);
+    }
+
 	public function getLogoPath($storeId) {
 		$sql = "SELECT store_logo_path FROM stores WHERE store_id = ?";
 		$row = $this->db->selectOne($sql, [$storeId]);

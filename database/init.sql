@@ -283,12 +283,65 @@ CREATE TABLE user_feature_access (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE reviews (
+    review_id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(order_id),
+    user_id INTEGER REFERENCES users(user_id),
+    product_id INTEGER REFERENCES products(product_id),
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    is_hidden BOOLEAN DEFAULT FALSE,
+    hidden_reason TEXT,
+    hidden_by INTEGER REFERENCES users(user_id),
+    hidden_at TIMESTAMP NULL,
+    UNIQUE(order_id, product_id)
+);
+
+CREATE TABLE review_images (
+    image_id SERIAL PRIMARY KEY,
+    review_id INTEGER REFERENCES reviews(review_id) ON DELETE CASCADE,
+    image_url VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE review_responses (
+    response_id SERIAL PRIMARY KEY,
+    review_id INTEGER REFERENCES reviews(review_id) ON DELETE CASCADE,
+    responder_id INTEGER REFERENCES users(user_id),
+    responder_role VARCHAR(20) CHECK (responder_role IN ('SELLER', 'ADMIN')),
+    response_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    UNIQUE(review_id, responder_role) -- 1 seller reply, 1 admin reply per review
+);
+
 CREATE INDEX idx_auctions_status ON auctions(status);
 CREATE INDEX idx_auctions_product_id ON auctions(product_id);
 CREATE INDEX idx_auction_bids_auction_id ON auction_bids(auction_id);
+
 CREATE INDEX idx_chat_messages_room ON chat_messages(store_id, buyer_id);
 CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
+
 CREATE INDEX idx_push_subscriptions_user ON push_subscriptions(user_id);
+
+CREATE INDEX idx_reviews_product_id ON reviews(product_id);
+CREATE INDEX idx_reviews_is_hidden ON reviews(is_hidden);
+CREATE INDEX idx_review_images_review_id ON review_images(review_id);
+CREATE INDEX idx_reviews_order_id ON reviews(order_id);
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_reviews_deleted_at ON reviews(deleted_at);
+CREATE INDEX idx_review_responses_review_id ON review_responses(review_id);
+CREATE INDEX idx_review_responses_deleted_at ON review_responses(deleted_at);
+
+CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER update_review_responses_updated_at BEFORE UPDATE ON review_responses
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 INSERT INTO user_feature_access (user_id, feature_name, is_enabled, reason) VALUES 
 (NULL, 'auction_enabled', TRUE, NULL),

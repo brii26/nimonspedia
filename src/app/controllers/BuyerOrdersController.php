@@ -5,6 +5,7 @@ class BuyerOrdersController extends BaseController {
     private $cartService;
     private $orderRepository;
     private $authService;
+    private $reviewService;
     
     public function __construct() {
         parent::__construct();
@@ -16,6 +17,7 @@ class BuyerOrdersController extends BaseController {
             $this->cartService
         );
         $this->authService = new AuthService();
+        $this->reviewService = new ReviewService();
     }
     
     /**
@@ -35,23 +37,28 @@ class BuyerOrdersController extends BaseController {
                 $status
             );
             
-            // Data yang akan dikirim ke view (baik full/partial)
+            // If AJAX request, return JSON for infinite scroll
+            if ($this->isAjax()) {
+                $this->json([
+                    'success' => true,
+                    'data' => $ordersData['data'],
+                    'page' => $page,
+                    'has_more' => $ordersData['has_more'] ?? false
+                ]);
+                return;
+            }
+            
+            // Data untuk view
             $viewData = [
                 'orders' => $ordersData['data'],
                 'current_page' => $page,
                 'total_pages' => $ordersData['total_pages'],
-                'currentStatus' => $status, // Diganti dari 'status_filter'
-                'status_filter' => $status  // Jaga-jaga
+                'has_more' => $ordersData['has_more'] ?? false,
+                'currentStatus' => $status,
+                'status_filter' => $status
             ];
 
-            if ($this->isAjax()) {
-                $html = View::component('order-list', $viewData);
-                $this->json(['html' => $html]);
-                return;
-            }
-
             $this->render('pages/orders/index', array_merge($viewData, [
-                // Load CSS DAN JS baru kita
                 'cssFiles' => ['/css/pages/seller/orders.css'],
                 'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
             ]));
@@ -60,7 +67,7 @@ class BuyerOrdersController extends BaseController {
             error_log('Error fetching orders: ' . $e->getMessage());
             
             if ($this->isAjax()) {
-                $this->json(['html' => '<div class="empty-state"><p>Gagal memuat pesanan.</p></div>'], 500);
+                $this->json(['success' => false, 'message' => 'Gagal memuat pesanan.'], 500);
                 return;
             }
             
@@ -68,8 +75,9 @@ class BuyerOrdersController extends BaseController {
                 'orders' => [],
                 'current_page' => 1,
                 'total_pages' => 0,
-                'currentStatus' => $status,
-                'status_filter' => $status,
+                'has_more' => false,
+                'currentStatus' => $status ?? null,
+                'status_filter' => $status ?? null,
                 'error' => 'Failed to load orders',
                 'cssFiles' => ['/css/pages/seller/orders.css'],
                 'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
@@ -96,11 +104,21 @@ class BuyerOrdersController extends BaseController {
                 return;
             }
             
+            // Get reviews for this order (keyed by product_id)
+            $orderReviews = $this->reviewService->getOrderReviews($orderId);
+            
             $this->render('pages/orders/show', [
                 'order' => $order,
-                // Load CSS DAN JS baru kita
-                'cssFiles' => ['/css/pages/seller/orders.css'],
-                'jsFiles' => ['/js/utils/fetchXhr.js', '/js/pages/orders/index.js']
+                'orderReviews' => $orderReviews,
+                'cssFiles' => [
+                    '/css/pages/seller/orders.css',
+                    '/css/pages/orders-detail.css'
+                ],
+                'jsFiles' => [
+                    '/js/utils/fetchXhr.js', 
+                    '/js/pages/orders/index.js',
+                    '/js/pages/orders/show.js'
+                ]
             ]);
             
         } catch (Exception $e) {
@@ -124,8 +142,27 @@ class BuyerOrdersController extends BaseController {
             }
 
             $buyerId = Auth::user()['user_id'];
+            $buyerName = Auth::user()['name'] ?? 'Pembeli';
+            
+            // Get order details before confirming to get store_id
+            $order = $this->buyerOrderService->getBuyerOrderDetails($orderId, $buyerId);
+            
             $ok = $this->orderRepository->confirmReceived($orderId, $buyerId);
             if ($ok) {
+                // Notify seller that order has been received (non-blocking)
+                try {
+                    if ($order && isset($order['store_id'])) {
+                        $storeService = new StoreService();
+                        $store = $storeService->getStoreById($order['store_id']);
+                        if ($store && isset($store['user_id'])) {
+                            NotificationService::notifyOrderReceived($orderId, (int)$store['user_id'], $buyerName);
+                        }
+                    }
+                } catch (Exception $notifError) {
+                    // Log but don't fail the request
+                    error_log('Notification error: ' . $notifError->getMessage());
+                }
+                
                 $this->json(['success' => true, 'message' => 'Pesanan dikonfirmasi diterima.']);
             } else {
                 $this->json([
@@ -136,7 +173,9 @@ class BuyerOrdersController extends BaseController {
 
         } catch (Exception $e) {
             error_log('Error confirming received: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             $this->json(['success' => false, 'message' => 'Terjadi kesalahan saat mengkonfirmasi pesanan.'], 500);
+            return;
         }
     }
     

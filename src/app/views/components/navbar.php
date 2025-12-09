@@ -4,7 +4,7 @@ $currentUser = Auth::user();
 $isLoggedIn = Auth::check();
 $userRole = $currentUser ? $currentUser['role'] : null;
 $storeBalance = $storeBalance ?? 0;
-$userId = $user ? $user['user_id'] : null;
+$userId = $currentUser ? $currentUser['user_id'] : null;
 $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 
 // Get cart count for buyers
@@ -134,6 +134,10 @@ $activePage = $currentPage ?? '';
                                     <a href="/orders" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
                                         <span class="nav-icon">📦</span>
                                         <span class="nav-text">Orders</span>
+                                    </a>
+                                    <a href="/reviews/my-reviews" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
+                                        <span class="nav-icon">⭐</span>
+                                        <span class="nav-text">My Ratings</span>
                                     </a>
                                 <?php endif; ?>
                                         

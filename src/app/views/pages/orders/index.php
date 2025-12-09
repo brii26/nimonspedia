@@ -1,6 +1,7 @@
 <?php
 $currentStatus = $status_filter ?? 'all';
 $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
+$hasMore = $has_more ?? false;
 ?>
 
 <div class="orders-container">
@@ -10,18 +11,36 @@ $statuses = ['all', 'waiting_approval', 'approved', 'on_delivery', 'received', '
         <?php foreach ($statuses as $status): ?>
             <?php $isActive = ($currentStatus === $status) ? 'active' : ''; ?>
             <?php $href = ($status === 'all') ? '/orders' : '/orders?status=' . urlencode($status); ?>
-            <a href="<?= $href ?>" class="tab <?= $isActive ?>"><?= ucfirst(str_replace('_', ' ', $status)) ?></a>
+            <a href="<?= $href ?>" class="tab <?= $isActive ?>" data-status="<?= $status ?>"><?= ucfirst(str_replace('_', ' ', $status)) ?></a>
         <?php endforeach; ?>
     </div>
 
     <div id="order-list-container">
-        <?= View::component('order-list', [
-                'orders' => $orders,
-                'current_page' => $current_page,
-                'total_pages' => $total_pages,
-                'currentStatus' => $currentStatus
-            ]);
-        ?>
+        <div class="order-card-list" id="order-list">
+            <?php if (empty($orders)): ?>
+                <div class="empty-state">
+                    <p>Tidak ada pesanan <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($orders as $order): ?>
+                    <?= View::component('order-card', ['order' => $order]); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Sentinel for infinite scroll -->
+        <?php if (!empty($orders) && $hasMore): ?>
+            <div id="scroll-sentinel" class="scroll-sentinel">
+                <div class="loading-spinner"></div>
+            </div>
+        <?php endif; ?>
     </div>
-
 </div>
+
+<script>
+    window.ordersConfig = {
+        currentStatus: '<?= View::escape($currentStatus) ?>',
+        currentPage: <?= (int)$current_page ?>,
+        hasMore: <?= $hasMore ? 'true' : 'false' ?>
+    };
+</script>

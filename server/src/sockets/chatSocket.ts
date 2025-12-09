@@ -269,7 +269,46 @@ export default (io: Server, socket: AuthenticatedSocket) => {
     }
   });
 
-  // 5. Handle Disconnect
+  socket.on('load_more_messages', async (payload: { storeId: number; buyerId?: number; beforeId: number; limit?: number }) => {
+    try {
+      let { storeId, buyerId, beforeId, limit = 50 } = payload;
+
+      if (user.role === 'BUYER') {
+        buyerId = user.user_id;
+      } else if (user.role === 'SELLER') {
+        const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1 AND store_id = $2', [user.user_id, storeId]);
+        if (storeResult.rows.length === 0) {
+          socket.emit('chat_error', { message: 'Tidak memiliki akses ke store ini' });
+          return;
+        }
+      }
+
+      if (!buyerId) {
+        socket.emit('chat_error', { message: 'buyerId diperlukan' });
+        return;
+      }
+
+      const messages = await chatRepository.getChatHistory(storeId, buyerId!, limit, beforeId);
+      
+      // Emit event khusus agar client tau ini pesan lama
+      socket.emit('more_messages_loaded', { 
+        storeId, 
+        buyerId, 
+        messages,
+        hasMore: messages.length === limit // Flag untuk client tahu masih ada sisa atau tidak
+      });
+
+    } catch (error) {
+      console.error('Load More Error:', error);
+    }
+  });
+
+  // 5. Heartbeat/Ping-Pong untuk keep-alive
+  socket.on('ping', () => {
+    socket.emit('pong');
+  });
+
+  // 6. Handle Disconnect
   socket.on('disconnect', () => {
     console.log(`User ${user.name} disconnected from chat socket`);
   });

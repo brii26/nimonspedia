@@ -27,6 +27,8 @@ export { default as Countdown } from './Countdown.js';
 export { default as Skeleton, SkeletonCard, SkeletonTable } from './Skeleton.js';
 export { default as EmptyState } from './EmptyState.js';
 export { default as SearchInput } from './SearchInput.js';
+export { default as SelectDropdown } from './Select.js';
+export type { SelectOption, SelectDropdownProps } from './Select.js';
 export { default as TypingIndicator } from './TypingIndicator.js';
 export { default as ConnectionStatus } from './ConnectionStatus.js';
 export { default as FileUpload } from './FileUpload.js';

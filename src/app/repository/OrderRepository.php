@@ -76,11 +76,13 @@ class OrderRepository extends BaseRepository {
         }
 
         $total = $this->db->select($countSql, $countParams)[0]['total'];
+        $has_more = ($page * $perPage) < $total;
 
         return [
             'orders' => $orders,
             'total' => $total,
-            'totalPages' => ceil($total / $perPage)
+            'totalPages' => ceil($total / $perPage),
+            'has_more' => $has_more
         ];
     }
 
@@ -208,10 +210,13 @@ class OrderRepository extends BaseRepository {
         $orders = $this->db->select($sql, $params);
         $totalRow = $this->db->selectOne($countSql, $countParams);
         $total = $totalRow['total'] ?? 0;
+        $totalPages = ceil($total / $perPage);
 
         return [
             'data' => $orders,
-            'total_pages' => ceil($total / $perPage)
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'has_more' => $page < $totalPages
         ];
     }
 
@@ -302,7 +307,7 @@ class OrderRepository extends BaseRepository {
                 $orderSql = "
                     INSERT INTO {$this->table} (buyer_id, store_id, total_price, status, shipping_address, created_at)
                     VALUES (?, ?, ?, 'waiting_approval', ?, CURRENT_TIMESTAMP)
-                    RETURNING order_id, created_at, status, total_price
+                    RETURNING order_id, store_id, created_at, status, total_price
                 ";
                 // If shipping address provided use it, otherwise fallback to buyer's stored address
                 $addrToUse = $shippingAddress !== null ? $shippingAddress : $buyer['address'];
