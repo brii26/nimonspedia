@@ -67,7 +67,7 @@
                     <!-- Comment -->
                     <?php if (!empty($review['comment'])): ?>
                         <div class="review-comment">
-                            <p><?= nl2br(View::escape($review['comment'])) ?></p>
+                            <?= SanitizerService::sanitizeRichText($review['comment']) ?>
                         </div>
                     <?php endif; ?>
 

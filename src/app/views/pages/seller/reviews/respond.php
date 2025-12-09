@@ -49,7 +49,7 @@ $reviewDate = $review['created_at'] ?? '';
 
                 <?php if (!empty($comment)): ?>
                     <div class="review-comment">
-                        <p><?= nl2br(View::escape($comment)) ?></p>
+                        <?= SanitizerService::sanitizeRichText($comment) ?>
                     </div>
                 <?php endif; ?>
 

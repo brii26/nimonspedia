@@ -79,7 +79,7 @@ $currentFilter = $filter ?? 'all';
                         </div>
                         
                         <?php if (!empty($review['comment'])): ?>
-                            <p class="review-comment"><?= nl2br(View::escape($review['comment'])) ?></p>
+                            <div class="review-comment"><?= SanitizerService::sanitizeRichText($review['comment']) ?></div>
                         <?php endif; ?>
 
                         <?php if (!empty($review['images'])): ?>
@@ -100,7 +100,7 @@ $currentFilter = $filter ?? 'all';
                                 <strong>Your Response</strong>
                                 <span class="response-date"><?= date('M d, Y', strtotime($review['response']['created_at'])) ?></span>
                             </div>
-                            <p class="response-text"><?= nl2br(View::escape($review['response']['response_text'])) ?></p>
+                            <div class="response-text"><?= SanitizerService::sanitizeRichText($review['response']['response_text']) ?></div>
                             <div class="response-actions">
                                 <a href="/seller/reviews/edit-response?response_id=<?= $review['response']['response_id'] ?>" 
                                    class="btn btn-sm btn-secondary">

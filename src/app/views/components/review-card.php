@@ -42,7 +42,7 @@ $isEdited = isset($review['updated_at']) && $review['updated_at'] !== $review['c
 
     <?php if (!empty($comment)): ?>
         <div class="review-content">
-            <p><?= nl2br(View::escape($comment)) ?></p>
+            <?= SanitizerService::sanitizeRichText($comment) ?>
         </div>
     <?php endif; ?>
 
@@ -68,7 +68,7 @@ $isEdited = isset($review['updated_at']) && $review['updated_at'] !== $review['c
                 <span class="response-date"><?= View::date($response['created_at']) ?></span>
             </div>
             <div class="response-content">
-                <p><?= nl2br(View::escape($response['response_text'])) ?></p>
+                <?= SanitizerService::sanitizeRichText($response['response_text']) ?>
             </div>
         </div>
     <?php endif; ?>
