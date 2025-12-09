@@ -291,6 +291,7 @@ CREATE TABLE reviews (
     rating INTEGER CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
     is_hidden BOOLEAN DEFAULT FALSE,
     hidden_reason TEXT,
@@ -309,12 +310,13 @@ CREATE TABLE review_images (
 CREATE TABLE review_responses (
     response_id SERIAL PRIMARY KEY,
     review_id INTEGER REFERENCES reviews(review_id) ON DELETE CASCADE,
-    user_id INTEGER REFERENCES users(user_id),
-    response_type VARCHAR(20) CHECK (response_type IN ('seller', 'admin')),
-    content TEXT NOT NULL,
+    responder_id INTEGER REFERENCES users(user_id),
+    responder_role VARCHAR(20) CHECK (responder_role IN ('SELLER', 'ADMIN')),
+    response_text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(review_id, response_type) -- 1 seller reply, 1 admin reply per review
+    deleted_at TIMESTAMP NULL,
+    UNIQUE(review_id, responder_role) -- 1 seller reply, 1 admin reply per review
 );
 
 CREATE INDEX idx_auctions_status ON auctions(status);
@@ -333,6 +335,13 @@ CREATE INDEX idx_reviews_order_id ON reviews(order_id);
 CREATE INDEX idx_reviews_user_id ON reviews(user_id);
 CREATE INDEX idx_reviews_deleted_at ON reviews(deleted_at);
 CREATE INDEX idx_review_responses_review_id ON review_responses(review_id);
+CREATE INDEX idx_review_responses_deleted_at ON review_responses(deleted_at);
+
+CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER update_review_responses_updated_at BEFORE UPDATE ON review_responses
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 INSERT INTO user_feature_access (user_id, feature_name, is_enabled, reason) VALUES 
 (NULL, 'auction_enabled', TRUE, NULL),

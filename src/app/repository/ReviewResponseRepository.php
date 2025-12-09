@@ -13,7 +13,7 @@ class ReviewResponseRepository extends BaseRepository
      * Get response(s) for a review
      * 
      * @param int $reviewId
-     * @param string|null $type Filter by type: 'seller' or 'admin'
+     * @param string|null $type Filter by type: 'SELLER' or 'ADMIN'
      * @return array
      */
     public function getByReview($reviewId, $type = null)
@@ -21,16 +21,17 @@ class ReviewResponseRepository extends BaseRepository
         $sql = "
             SELECT 
                 rr.*,
-                u.name as username,
+                u.name as username
             FROM {$this->table} rr
-            LEFT JOIN users u ON rr.user_id = u.user_id
+            LEFT JOIN users u ON rr.responder_id = u.user_id
             WHERE rr.review_id = ?
+                AND rr.deleted_at IS NULL
         ";
         
         $params = [$reviewId];
         
         if ($type !== null) {
-            $sql .= " AND rr.response_type = ?";
+            $sql .= " AND rr.responder_role = ?";
             $params[] = $type;
         }
         
@@ -43,7 +44,7 @@ class ReviewResponseRepository extends BaseRepository
      * Get a specific response by review and type
      * 
      * @param int $reviewId
-     * @param string $type 'seller' or 'admin'
+     * @param string $type 'SELLER' or 'ADMIN'
      * @return array|null
      */
     public function findByReviewAndType($reviewId, $type)
@@ -51,10 +52,11 @@ class ReviewResponseRepository extends BaseRepository
         $sql = "
             SELECT 
                 rr.*,
-                u.name as username,
+                u.name as username
             FROM {$this->table} rr
-            LEFT JOIN users u ON rr.user_id = u.user_id
-            WHERE rr.review_id = ? AND rr.response_type = ?
+            LEFT JOIN users u ON rr.responder_id = u.user_id
+            WHERE rr.review_id = ? AND rr.responder_role = ?
+                AND rr.deleted_at IS NULL
             LIMIT 1
         ";
         
@@ -73,7 +75,8 @@ class ReviewResponseRepository extends BaseRepository
         $sql = "
             SELECT COUNT(*) as total 
             FROM {$this->table}
-            WHERE review_id = ? AND response_type = ?
+            WHERE review_id = ? AND responder_role = ?
+                AND deleted_at IS NULL
         ";
         
         $result = $this->db->selectOne($sql, [$reviewId, $type]);
@@ -89,7 +92,7 @@ class ReviewResponseRepository extends BaseRepository
     public function createResponse($data)
     {
         // Check if already exists
-        if ($this->exists($data['review_id'], $data['response_type'])) {
+        if ($this->exists($data['review_id'], $data['responder_role'])) {
             return false;
         }
 
@@ -111,14 +114,15 @@ class ReviewResponseRepository extends BaseRepository
             SET 
                 response_text = ?,
                 updated_at = NOW()
-            WHERE review_id = ? AND response_type = ?
+            WHERE review_id = ? AND responder_role = ?
+                AND deleted_at IS NULL
         ";
         
         return $this->db->update($sql, [$responseText, $reviewId, $type]) > 0;
     }
 
     /**
-     * Delete a response
+     * Delete a response (hard delete)
      * 
      * @param int $reviewId
      * @param string $type
@@ -128,7 +132,7 @@ class ReviewResponseRepository extends BaseRepository
     {
         $sql = "
             DELETE FROM {$this->table}
-            WHERE review_id = ? AND response_type = ?
+            WHERE review_id = ? AND responder_role = ?
         ";
         
         return $this->db->delete($sql, [$reviewId, $type]) > 0;
@@ -160,11 +164,11 @@ class ReviewResponseRepository extends BaseRepository
     {
         $offset = ($page - 1) * $perPage;
         
-        $whereClause = "rr.user_id = ?";
+        $whereClause = "rr.responder_id = ? AND rr.deleted_at IS NULL";
         $params = [$userId];
         
         if ($type !== null) {
-            $whereClause .= " AND rr.response_type = ?";
+            $whereClause .= " AND rr.responder_role = ?";
             $params[] = $type;
         }
         
@@ -193,7 +197,7 @@ class ReviewResponseRepository extends BaseRepository
         // Count total
         $countSql = "
             SELECT COUNT(*) as total
-            FROM {$this->table}
+            FROM {$this->table} rr
             WHERE {$whereClause}
         ";
         $countParams = array_slice($params, 0, -2); // Remove LIMIT and OFFSET

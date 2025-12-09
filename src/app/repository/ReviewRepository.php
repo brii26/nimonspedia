@@ -397,7 +397,6 @@ class ReviewRepository extends BaseRepository
             SELECT 
                 r.*,
                 u.name as username,
-                u.full_name,
                 p.product_name,
                 p.product_image,
                 p.store_id,
