@@ -388,18 +388,13 @@ class ReviewController extends BaseController
             
             $result = $this->reviewService->getUserReviews($userId, $page, $perPage);
             
-            // If AJAX request, return JSON
+            // If AJAX request, return JSON for infinite scroll
             if ($this->isAjax()) {
                 $this->json([
                     'success' => true,
                     'data' => $result['data'],
-                    'pagination' => [
-                        'current_page' => $result['current_page'],
-                        'per_page' => $result['per_page'],
-                        'total' => $result['total'],
-                        'total_pages' => $result['total_pages'],
-                        'has_more' => $result['has_more']
-                    ]
+                    'page' => $page,
+                    'has_more' => $result['has_more'] ?? false
                 ]);
                 return;
             }

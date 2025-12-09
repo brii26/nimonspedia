@@ -208,10 +208,13 @@ class OrderRepository extends BaseRepository {
         $orders = $this->db->select($sql, $params);
         $totalRow = $this->db->selectOne($countSql, $countParams);
         $total = $totalRow['total'] ?? 0;
+        $totalPages = ceil($total / $perPage);
 
         return [
             'data' => $orders,
-            'total_pages' => ceil($total / $perPage)
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'has_more' => $page < $totalPages
         ];
     }
 
