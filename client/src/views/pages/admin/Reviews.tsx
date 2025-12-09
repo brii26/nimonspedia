@@ -405,18 +405,21 @@ const Reviews: React.FC = () => {
               value={statusFilter}
               onChange={(val) => setStatusFilter(val)}
               placeholder="Status"
+              variant="fixed"
             />
             <SelectDropdown
               options={responseOptions}
               value={responseFilter}
               onChange={(val) => setResponseFilter(val)}
               placeholder="Response"
+              variant="fixed"
             />
             <SelectDropdown
               options={ratingOptions}
               value={ratingFilter}
               onChange={(val) => setRatingFilter(val)}
               placeholder="Rating"
+              variant="fixed"
             />
           </div>
         </CardBody>
@@ -605,7 +608,7 @@ const Reviews: React.FC = () => {
 
               {/* Hidden Status */}
               {selectedReview.is_hidden && (
-                <Alert type="warning">
+                <Alert variant="warning">
                   <strong>Hidden:</strong> {selectedReview.hidden_reason}
                   <br />
                   <span className="text-sm">
