@@ -76,11 +76,13 @@ class OrderRepository extends BaseRepository {
         }
 
         $total = $this->db->select($countSql, $countParams)[0]['total'];
+        $has_more = ($page * $perPage) < $total;
 
         return [
             'orders' => $orders,
             'total' => $total,
-            'totalPages' => ceil($total / $perPage)
+            'totalPages' => ceil($total / $perPage),
+            'has_more' => $has_more
         ];
     }
 

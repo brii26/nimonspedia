@@ -2,14 +2,17 @@
 	$statuses = ['waiting_approval', 'approved', 'on_delivery', 'received', 'rejected'];
 	$currentStatus = $currentStatus ?? null;
 	$search = $search ?? '';
+	$orders = $ordersData['orders'] ?? [];
+	$hasMore = $hasMore ?? false;
 ?>
 
 <div class="orders-container">
     <div class="status-tabs">
-        <a href="/seller/orders" class="tab <?php echo !$currentStatus ? 'active' : ''; ?>">All</a>
+        <a href="/seller/orders" class="tab <?php echo !$currentStatus ? 'active' : ''; ?>" data-status="">All</a>
         <?php foreach ($statuses as $status): ?>
             <a href="/seller/orders?status=<?php echo $status; ?>" 
-               class="tab <?php echo $currentStatus === $status ? 'active' : ''; ?>">
+               class="tab <?php echo $currentStatus === $status ? 'active' : ''; ?>"
+               data-status="<?php echo $status; ?>">
                 <?php echo ucwords(str_replace('_', ' ', $status)); ?>
             </a>
         <?php endforeach; ?>
@@ -26,16 +29,32 @@
         <button type="submit">Search</button>
     </form>
 	
-    <div id="seller-order-list-container">
-        <?= View::component('seller-order-list', [
-                'ordersData' => $ordersData,
-                'currentStatus' => $currentStatus,
-                'currentPage' => $currentPage ?? 1,
-                'totalPages' => $totalPages ?? 1
-            ]);
-        ?>
+    <div id="seller-order-list-container" class="order-card-list">
+        <?php if (empty($orders)): ?>
+            <div class="empty-state">
+                <p>Tidak ada pesanan <?= $currentStatus ? "dengan status '" . str_replace('_', ' ', $currentStatus) . "'" : '' ?>.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($orders as $order): ?>
+                <?= View::component('seller-order-card', ['order' => $order]); ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <!-- Infinite Scroll Sentinel -->
+    <div id="scroll-sentinel" class="scroll-sentinel <?= !$hasMore ? 'hidden' : '' ?>">
+        <div class="loading-spinner"></div>
     </div>
 </div>
+
+<script>
+window.sellerOrdersConfig = {
+    currentStatus: <?= json_encode($currentStatus) ?>,
+    currentSearch: <?= json_encode($search) ?>,
+    currentPage: <?= (int)($currentPage ?? 1) ?>,
+    hasMore: <?= $hasMore ? 'true' : 'false' ?>
+};
+</script>
 
 <!-- Reject Popup-->
 <div id="reject-popup" class="orders-popup" style="display: none;">
