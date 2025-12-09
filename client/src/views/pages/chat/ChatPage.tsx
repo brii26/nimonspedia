@@ -62,6 +62,7 @@ const ChatPage = () => {
   const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
   const [autoSelectRoomId, setAutoSelectRoomId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isChatDisabled, setIsChatDisabled] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Refs
@@ -159,6 +160,16 @@ const ChatPage = () => {
     handleNewMessage
   );
 
+  useEffect(() => {
+    // Jika pesan error mengandung kata kunci "nonaktif" atau "disabled"
+    if (socketError && (socketError.toLowerCase().includes('nonaktif') || socketError.toLowerCase().includes('disabled'))) {
+      setIsChatDisabled(true);
+    } else {
+      // Reset jika error hilang (misal connect ulang) atau error jenis lain
+      setIsChatDisabled(false);
+    }
+  }, [socketError]);
+  
   // --- Effects ---
   useEffect(() => {
     if (socket && user && isConnected) {
@@ -463,7 +474,7 @@ const ChatPage = () => {
                      variant="ghost" 
                      className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
                      onClick={() => fileInputRef.current?.click()}
-                     disabled={!isConnected || isUploading}
+                     disabled={!isConnected || isUploading || isChatDisabled}
                    >
                      <img src="/assets/icons/image.svg" alt="Upload" className={`w-6 h-6 ${isUploading ? 'animate-pulse' : ''}`} />
                    </Button>
@@ -478,7 +489,7 @@ const ChatPage = () => {
                    <Button 
                       type="submit" 
                       className={`rounded-full p-2 px-4 ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400'}`}
-                      disabled={!inputMessage.trim() || !isConnected}
+                      disabled={!inputMessage.trim() || !isConnected || isChatDisabled}
                    >
                       <img src="/assets/icons/send.svg" alt="Send" className="w-5 h-5" />
                    </Button>
@@ -514,7 +525,7 @@ const ChatPage = () => {
                 />
             </div>
           )}
-          
+
         </div>
       </Card>
     </div>
