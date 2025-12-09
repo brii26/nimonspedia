@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('responseForm');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
-    const notificationContainer = document.querySelector('.notification-container');
 
     // Initialize Quill editor for response
     const quill = createEditor('#response-editor', 'response_text');
@@ -51,10 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('response_text', responseHtml);
 
                 // Submit
-                const response = await fetchXhr('/seller/reviews/respond', {
+                const res = await fetchXhr('/seller/reviews/respond', {
                     method: 'POST',
                     body: formData
                 });
+
+                const response = await res.json();
 
                 if (response.success) {
                     // Show success message
@@ -111,22 +112,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNotification(message, type) {
-        // Create notification element if container exists
-        if (!notificationContainer) {
-            alert(message);
+        // Use global showNotification from notification.js if available
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(message, type);
             return;
+        }
+
+        // Fallback: create inline notification
+        let container = document.getElementById('notificationContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notificationContainer';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+            document.body.appendChild(container);
         }
 
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+            background: ${type === 'success' ? '#10b981' : '#ef4444'};
+            color: white;
+        `;
         notification.textContent = message;
         
-        notificationContainer.innerHTML = '';
-        notificationContainer.appendChild(notification);
+        container.innerHTML = '';
+        container.appendChild(notification);
 
         // Auto dismiss after 5 seconds
         setTimeout(() => {
-            notification.remove();
+            notification.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
         }, 5000);
     }
 });
