@@ -45,6 +45,7 @@ function App() {
           </Route>
           
           <Route path="chat" element={<ChatPage />} />
+          <Route path="payment/status" element={<PaymentStatus />} />
         </Route>
 
         {/* --- FALLBACK --- */}
