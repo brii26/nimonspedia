@@ -76,7 +76,37 @@ export const handleWebhook = async (
     }
 };
 
+export const checkStatus = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+) => {
+    // 1. Get externalId from params
+    const { externalId } = request.params as { externalId: string };
+
+    if (!externalId) {
+        return reply.status(400).send({ success: false, message: 'External ID is required' });
+    }
+
+    try {
+        // 2. Call Service
+        const transaction = await paymentService.getTransactionStatus(externalId);
+
+        // 3. Return Status
+        return reply.send({
+            success: true,
+            data: transaction
+        });
+    } catch (error: any) {
+        if (error.message === 'Transaction not found') {
+            return reply.status(404).send({ success: false, message: 'Transaction not found' });
+        }
+        request.log.error(error);
+        return reply.status(500).send({ success: false, message: 'Failed to check status' });
+    }
+};
+
 export default {
     initiatePayment,
-    handleWebhook
+    handleWebhook,
+    checkStatus
 };

@@ -19,4 +19,9 @@ export default async function paymentRoutes(
             checkFeatureFlag({ featureName: 'checkout_enabled', checkUser: true })
         ]
     }, paymentController.initiatePayment);
+
+    // 3. Check Payment Status Route (Protected)
+    fastify.get('/status/:externalId', {
+        preHandler: [requireAuth]
+    }, paymentController.checkStatus);
 }

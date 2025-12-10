@@ -227,4 +227,15 @@ export class PaymentService {
             return;
         }
     }
+
+    /**
+     * Retrieves the status of a payment transaction by its external ID.
+     */
+    async getTransactionStatus(externalId: string): Promise<PaymentTransaction> {
+        const transaction = await paymentRepository.findByExternalId(externalId);
+        if (!transaction) {
+            throw new Error('Transaction not found');
+        }
+        return transaction;
+    }
 }
