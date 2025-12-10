@@ -36,12 +36,17 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await loginAdmin(formData.email, formData.password);
-      navigate('/admin/dashboard');
+      const result = await loginAdmin(formData.email, formData.password);
+      
+      if (result.success) {
+        navigate('/admin/dashboard');
+      } else {
+        setError(result.message || 'Login failed. Please check your credentials.');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
-        : 'Login failed. Please check your credentials.';
+        : 'An unexpected error occurred.';
       setError(errorMessage);
     } finally {
       setLoading(false);

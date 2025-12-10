@@ -11,6 +11,7 @@ import chatRoutes from './src/routes/chatRoutes.js';
 import uploadRoutes from './src/routes/uploadRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import internalRoutes from './src/routes/internalRoutes.js';
+import paymentRoutes from './src/routes/paymentRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
@@ -61,7 +62,7 @@ fastify.register(multipart, {
     }
 });
 fastify.register(uploadRoutes, { prefix: '/' });
-
+fastify.register(paymentRoutes, { prefix: '/payment' });
 // 4. Root Route
 fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
   return { status: 'ok', message: 'Nimonspedia Node.js Server is Running...' };

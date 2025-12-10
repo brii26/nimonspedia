@@ -343,6 +343,35 @@ CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
 CREATE TRIGGER update_review_responses_updated_at BEFORE UPDATE ON review_responses
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- ==========================================
+-- BONUS: PAYMENT GATEWAY
+-- ==========================================
+
+CREATE TYPE payment_status AS ENUM ('pending', 'success', 'failed', 'expired');
+CREATE TYPE payment_type AS ENUM ('topup', 'order_payment');
+
+CREATE TABLE payment_transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount BIGINT NOT NULL CHECK (amount > 0),
+    payment_type payment_type NOT NULL,
+    order_id INT, -- Nullable, FK to orders for direct payments
+    status payment_status DEFAULT 'pending',
+    external_id VARCHAR(255) UNIQUE, -- Critical for Idempotency
+    snap_token VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_payment_transactions_user_id ON payment_transactions(user_id);
+CREATE INDEX idx_payment_transactions_status ON payment_transactions(status);
+CREATE INDEX idx_payment_transactions_external_id ON payment_transactions(external_id);
+
+CREATE TRIGGER update_payment_transactions_updated_at BEFORE UPDATE ON payment_transactions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 INSERT INTO user_feature_access (user_id, feature_name, is_enabled, reason) VALUES 
 (NULL, 'auction_enabled', TRUE, NULL),
 (NULL, 'chat_enabled', TRUE, NULL),
