@@ -38,7 +38,8 @@ export const initiatePayment = async (
             amount,
             paymentType,
             orderId,
-            description
+            description,
+            clientBaseUrl: request.headers.origin || request.headers.referer // Capture client origin
         };
 
         // 4. Call Service

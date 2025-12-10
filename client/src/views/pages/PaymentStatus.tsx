@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import Card, { CardHeader, CardTitle, CardBody } from '../components/ui/Card.js'; // Fixed import: Added CardBody
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import Card, { CardHeader, CardTitle, CardBody } from '../components/ui/Card.js';
 import Button from '../components/ui/Button.js';
 import Spinner from '../components/ui/Spinner.js';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface PaymentTransaction {
     transaction_id: number;
+    user_id: number;
     amount: string;
     status: 'pending' | 'success' | 'failed' | 'expired';
     payment_type: 'topup' | 'order_payment';
@@ -14,15 +16,19 @@ interface PaymentTransaction {
 
 const PaymentStatus = () => {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const { user, loading: authLoading, isAuthenticated } = useAuth();
     const externalId = searchParams.get('external_id');
     
     const [status, setStatus] = useState<'loading' | 'success' | 'failed' | 'expired'>('loading');
     const [transaction, setTransaction] = useState<PaymentTransaction | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
+        if (authLoading) return; // Wait for auth to load
+
         if (!externalId) {
-            setError('Invalid Payment URL: Missing External ID');
+            setErrorMessage('Invalid Payment URL: Missing External ID');
             setStatus('failed');
             return;
         }
@@ -39,36 +45,54 @@ const PaymentStatus = () => {
                 const response = await fetch(`/api/node/payment/status/${externalId}`);
                 
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        console.log('Transaction not found yet, continuing to poll...');
+                    if (response.status === 401 || response.status === 403) {
+                        console.error("Access Denied: Not logged in or unauthorized to view this transaction.");
+                        setErrorMessage("You are not authorized to view this payment status or your session has expired.");
+                        setStatus('failed');
+                        window.location.href = '/';
                         return;
                     }
-                    throw new Error('Failed to fetch payment status');
+                    if (response.status === 404) {
+                        console.log('Transaction not found yet (404), continuing to poll...');
+                        return;
+                    }
+                    throw new Error(`Failed to fetch payment status: ${response.statusText}`);
                 }
 
                 const result = await response.json();
                 if (result.success && result.data) {
                     const tx = result.data as PaymentTransaction;
+                    
+                    // Security Check: Ensure transaction belongs to logged-in user
+                    // user.id from AuthContext might be string or number, tx.user_id is number
+                    if (!user || Number(user.id) !== tx.user_id) {
+                         console.error(`Transaction owner mismatch. Current User ID: ${user?.id}, Transaction User ID: ${tx.user_id}`);
+                         setErrorMessage("This payment status does not belong to your account.");
+                         setStatus('failed');
+                         window.location.href = '/'; // Hard redirect for security mismatch
+                         return;
+                    }
+
                     setTransaction(tx);
 
                     if (tx.status === 'success') {
                         setStatus('success');
-                        if (intervalId) clearInterval(intervalId);
+                        if (intervalId) clearInterval(intervalId); // Stop polling
                     } else if (tx.status === 'failed') {
                         setStatus('failed');
-                        if (intervalId) clearInterval(intervalId);
+                        if (intervalId) clearInterval(intervalId); // Stop polling
                     } else if (tx.status === 'expired') {
                         setStatus('expired');
-                        if (intervalId) clearInterval(intervalId);
+                        if (intervalId) clearInterval(intervalId); // Stop polling
                     }
                 } else {
-                    setError(result.message || 'An unknown error occurred.');
+                    setErrorMessage(result.message || 'An unknown error occurred.');
                     setStatus('failed');
                     if (intervalId) clearInterval(intervalId);
                 }
             } catch (err: any) {
                 console.error('Error checking status:', err);
-                setError(err.message || 'Network error.');
+                setErrorMessage(err.message || 'Network error occurred while checking status.');
                 setStatus('failed');
                 if (intervalId) clearInterval(intervalId);
             }
@@ -80,7 +104,7 @@ const PaymentStatus = () => {
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [externalId, status]);
+    }, [externalId, status, user, authLoading, navigate]); 
 
     const handleContinue = () => {
         if (transaction?.payment_type === 'order_payment' && transaction.order_id) {
@@ -89,6 +113,19 @@ const PaymentStatus = () => {
             window.location.href = '/profile';
         }
     };
+
+    if (authLoading) {
+         return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <Spinner size="lg" />
+            </div>
+         );
+    }
+    
+    if (!isAuthenticated && !externalId) {
+        window.location.href = '/';
+        return null;
+    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -128,9 +165,9 @@ const PaymentStatus = () => {
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">Payment {status === 'expired' ? 'Expired' : 'Failed'}</h3>
                             <p className="text-gray-600 mb-6">
-                                {error || "We couldn't process your payment. Please try again."}
+                                {errorMessage || "We couldn't process your payment. Please try again."}
                             </p>
-                            <Button onClick={handleContinue} variant="ghost" className="w-full"> {/* Changed variant to "ghost" */}
+                            <Button onClick={handleContinue} variant="ghost" className="w-full">
                                 Return to Dashboard
                             </Button>
                         </div>

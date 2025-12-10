@@ -108,9 +108,8 @@ export class PaymentService {
             // Custom field for internal data (user_id, paymentType, order_id)
             custom_field1: JSON.stringify({ userId: dto.userId, paymentType: dto.paymentType, orderId: dto.orderId }),
             callbacks: {
-                finish: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}`
-                // error: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}&status=error`,
-                // back: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}&status=back`,
+                // Use dynamic clientBaseUrl if provided, otherwise fallback to env
+                finish: `${dto.clientBaseUrl || process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}`
             }
         };
 

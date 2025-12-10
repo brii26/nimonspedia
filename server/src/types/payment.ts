@@ -32,6 +32,7 @@ export interface InitiatePaymentDTO {
     paymentType: PaymentType;
     orderId?: number; // Optional; required if `paymentType` is 'order_payment'.
     description?: string; // Optional; payment description for gateway.
+    clientBaseUrl?: string; // Optional; the base URL of the client initiating the request.
 }
 
 /**
