@@ -1,5 +1,5 @@
-import pool from '../config/database';
-import { PaymentStatus, PaymentTransaction, PaymentType } from '../types/payment';
+import pool from '../config/database.js';
+import { PaymentStatus, PaymentTransaction, PaymentType } from '../types/payment.js';
 
 export class PaymentRepository {
     /**

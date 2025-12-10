@@ -1,15 +1,15 @@
 import midtransClient from 'midtrans-client';
-import { PaymentRepository } from '../repositories/paymentRepository';
+import { PaymentRepository } from '../repositories/paymentRepository.js'; // Fixed import
 import { 
     InitiatePaymentDTO, 
     InitiatePaymentResult, 
     MidtransNotification, 
     PaymentType,
     PaymentTransaction
-} from '../types/payment';
+} from '../types/payment.js'; // Fixed import
 import crypto from 'crypto';
 import 'dotenv/config';
-import notificationService from './notificationService'; // Import Notification Service
+import notificationService from './notificationService.js'; // Fixed import
 
 const paymentRepository = new PaymentRepository();
 
