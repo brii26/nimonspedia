@@ -62,6 +62,9 @@ services:
       - VAPID_SUBJECT=${VAPID_SUBJECT}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - CLIENT_URL=http://localhost:${NGINX_PORT}
+      - MIDTRANS_SERVER_KEY=${MIDTRANS_SERVER_KEY}
+      - MIDTRANS_CLIENT_KEY=${MIDTRANS_CLIENT_KEY}
+      - MIDTRANS_IS_PRODUCTION=${MIDTRANS_IS_PRODUCTION}
     networks:
       - nimonspedia-network
 

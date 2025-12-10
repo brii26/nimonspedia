@@ -12,7 +12,7 @@ interface InitiatePaymentBody {
 }
 
 export const initiatePayment = async (
-    request: FastifyRequest<{ Body: InitiatePaymentBody }>,
+    request: FastifyRequest,
     reply: FastifyReply
 ) => {
     // 1. Get authenticated user from request (attached by requireAuth middleware)
@@ -21,7 +21,7 @@ export const initiatePayment = async (
         return reply.status(401).send({ success: false, message: 'Unauthorized' });
     }
 
-    const { amount, paymentType, orderId, description } = request.body;
+    const { amount, paymentType, orderId, description } = request.body as InitiatePaymentBody;
 
     // 2. Validate input
     if (!amount || amount <= 0) {

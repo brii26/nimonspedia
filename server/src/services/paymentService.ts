@@ -191,7 +191,7 @@ export class PaymentService {
                 // For now, we'll keep it as 'pending' in our system until manually accepted/denied.
                 console.warn(`Transaction ${notification.order_id} is in 'challenge' state. No balance update.`);
                 return; 
-            } else if (transaction.status !== 'success') { // Ensure not already success
+            } else { 
                 // Call atomic complete success transaction
                 await paymentRepository.completeSuccessTransaction(
                     transaction.transaction_id,
