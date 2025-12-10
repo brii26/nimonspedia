@@ -12,6 +12,7 @@ import AdminLogin from './views/pages/admin/Login.js';
 import AdminDashboard from './views/pages/admin/Dashboard.js';
 import AdminReviews from './views/pages/admin/Reviews.js';
 import ChatPage from './views/pages/chat/ChatPage.js'; // Impor ChatPage yang benar
+import PaymentStatus from './views/pages/PaymentStatus.js';
 
 import { 
   AuctionList, 
@@ -45,6 +46,7 @@ function App() {
           </Route>
           
           <Route path="chat" element={<ChatPage />} />
+          <Route path="payment/status" element={<PaymentStatus />} />
         </Route>
 
         {/* --- FALLBACK --- */}

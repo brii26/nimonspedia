@@ -54,7 +54,7 @@ class Auth {
     public static function user() {
         if (!self::check()) return null;
         
-        return [
+        $user = [
             'user_id' => $_SESSION['user_id'],
             'role' => $_SESSION['role'],
             'name' => $_SESSION['name'],
@@ -62,6 +62,22 @@ class Auth {
             'balance' => $_SESSION['balance'] ?? 0,
             'address' => $_SESSION['address'] ?? 0
         ];
+
+        // Fetch fresh balance from DB to handle async updates (e.g. Node.js TopUp)
+        try {
+            $db = Database::getInstance();
+            $res = $db->selectOne("SELECT balance FROM users WHERE user_id = ?", [$_SESSION['user_id']]);
+            
+            if ($res) {
+                $user['balance'] = $res['balance'];
+                $_SESSION['balance'] = $res['balance']; // Sync session
+            }
+        } catch (Exception $e) {
+            // Fallback to session data if DB fails, silence error to not break UI
+            error_log("Auth::user balance sync failed: " . $e->getMessage());
+        }
+        
+        return $user;
     }
     
     /**

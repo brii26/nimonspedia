@@ -208,36 +208,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitTopUpAjax = () => {
             if (submitButton) App.showLoading(submitButton, 'Processing...');
             
-            const formData = new FormData(topUpForm);
-            formData.append('csrf_token', topUpForm.querySelector('input[name="csrf_token"]').value);
+            // Mengambil value amount
+            const amount = parseInt(amountInput.value, 10);
 
-            fetchXhr('/balance/topup', {
+            // Menggunakan fetch standard ke Node.js API
+            fetch('/api/node/payment/initiate', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    paymentType: 'topup'
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">Balance updated successfully! New balance: Rp ' 
-                    + new Intl.NumberFormat('id-ID').format(data.new_balance) + '</div>';
-
-                    const navBalance = document.querySelector('.balance-amount');
-                    const sidebarBalance = document.querySelector('#sidebar-balance-amount');
-                    const formBalance = document.querySelector('#balance-display');
-                    if (navBalance && sidebarBalance && formBalance && data.new_balance) {
-                        const content = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.new_balance);
-                        navBalance.textContent = content;
-                        sidebarBalance.textContent = content;
-                        formBalance.value = content;
-                    }
-                    topUpForm.reset();
+                if (data.success && data.data && data.data.redirectUrl) {
+                    resultDiv.innerHTML = '<div class="alert alert-success">Redirecting to payment gateway...</div>';
+                    // Redirect ke Midtrans Snap
+                    window.location.href = data.data.redirectUrl;
                 } else {
-                    resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+                    resultDiv.innerHTML = '<div class="alert alert-error">' + (data.message || 'Failed to initiate payment') + '</div>';
+                    reset(submitButton, resultDiv);
                 } 
-                reset(submitButton, resultDiv);
             })
             .catch(error => {
-                resultDiv.innerHTML = '<div class="alert alert-error">An error occurred : ' + error + '</div>';
+                console.error('Payment Error:', error);
+                resultDiv.innerHTML = '<div class="alert alert-error">An error occurred connecting to payment gateway.</div>';
                 reset(submitButton, resultDiv);
             });
         };

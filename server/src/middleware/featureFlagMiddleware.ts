@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import featureFlagRepository from '../repositories/featureFlagRepository';
+import featureFlagRepository from '../repositories/featureFlagRepository.js';
 
 interface FeatureFlagOptions {
   featureName: string;
