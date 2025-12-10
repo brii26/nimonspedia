@@ -19,9 +19,8 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   id, title, image, price, status, startTime, endsAt, bidCount = 0 
 }) => {
   const navigate = useNavigate();
-  
   const targetTime = status === 'scheduled' ? startTime : endsAt;
-  const { timeLeft, isEnded } = useAuctionTimer(targetTime, status, id);
+  const { displayTime, isEnded } = useAuctionTimer(targetTime, status, id);
   const finalImageUrl = getProductImageUrl(image);
 
   const getBadgeVariant = () => {
@@ -74,7 +73,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                {status === 'scheduled' ? 'Starts in:' : 'Ends in:'}
              </span>
              <span className={`font-mono font-medium ${isEnded ? 'text-red-500' : 'text-blue-600'}`}>
-               {timeLeft}
+               {displayTime}
              </span>
            </div>
 

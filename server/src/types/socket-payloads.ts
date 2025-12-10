@@ -145,8 +145,10 @@ export interface AuctionListResponse {
 export interface NewBidUpdatePayload {
   auctionId: number;
   bidderName: string;
+  bidderId?: number;
   amount: number;
   timestamp: string;
+  newEndTime?: number;
 }
 
 // Broadcast timer update (per detik)

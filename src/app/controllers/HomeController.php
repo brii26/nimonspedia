@@ -16,6 +16,8 @@ class HomeController extends BaseController {
 
 
     public function index() {
+        Auth::refreshBalance();
+        
         $user = Auth::user();
 
         if ($user && $user['role'] === 'SELLER') {

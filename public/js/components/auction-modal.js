@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const row = document.createElement('tr');
                     const bidCount = parseInt(auction.bid_count || 0);
                     
-                    let viewBtn = `<a href="/auction/live/${auction.auction_id}" class="btn btn-sm btn-primary">View</a>`;
+                    let viewBtn = `<a href="/auction/${auction.auction_id}" class="btn btn-sm btn-primary">View</a>`;
                     let statusContent = '';
 
                     if (bidCount === 0 && auction.status !== 'closed') {

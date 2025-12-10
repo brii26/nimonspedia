@@ -39,6 +39,14 @@ class UserRepository extends BaseRepository {
     }
     
     /**
+     * Get user balance from database
+     */
+    public function getBalance($userId) {
+        $user = $this->find($userId);
+        return $user ? (float)($user['balance'] ?? 0) : 0;
+    }
+
+    /**
      * Update user balance (for buyers)
      */
     public function updateBalance($userId, $newBalance) {

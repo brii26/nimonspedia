@@ -37,9 +37,11 @@ class AuctionRepository {
         a.*,
         u.name as winner_name,
         p.product_name,
+        p.description,
         p.store_id,
         p.main_image_path AS image,
-        s.user_id AS owner_id
+        s.user_id AS owner_id,
+        s.store_name
       FROM auctions a
       LEFT JOIN users u ON a.winner_id = u.user_id
       LEFT JOIN products p ON a.product_id = p.product_id
@@ -48,6 +50,25 @@ class AuctionRepository {
     `, [auctionId]);
     
     return result.rows[0] || null;
+  }
+
+  // Get Bid History for Auction
+  async getBidHistory(auctionId: number, limit: number = 10): Promise<any[]> {
+    const result = await pool.query(`
+      SELECT 
+        ab.bid_id,
+        ab.bidder_id,
+        u.name as bidder_name,
+        ab.bid_amount as amount,
+        ab.bid_time as time
+      FROM auction_bids ab
+      JOIN users u ON ab.bidder_id = u.user_id
+      WHERE ab.auction_id = $1
+      ORDER BY ab.bid_time DESC
+      LIMIT $2
+    `, [auctionId, limit]);
+    
+    return result.rows;
   }
 
   // Place Bid
@@ -251,6 +272,28 @@ class AuctionRepository {
 	console.log(result.rows[0]);
     
     return result.rows[0] || null;
+  }
+
+  // Get previous highest bidder (second highest bid) for refunding
+  async getPreviousBidder(auctionId: number): Promise<{ bidder_id: number; bid_amount: number } | null> {
+    const result = await pool.query(`
+      SELECT bidder_id, bid_amount
+      FROM auction_bids
+      WHERE auction_id = $1
+      ORDER BY bid_amount DESC
+      LIMIT 1 OFFSET 1
+    `, [auctionId]);
+    
+    return result.rows[0] || null;
+  }
+
+  // Find scheduled auctions that should be activated (start_time has passed)
+  async findScheduledToActivate(): Promise<Auction[]> {
+    const result = await pool.query(`
+      SELECT * FROM auctions 
+      WHERE status = 'scheduled' AND start_time <= NOW()
+    `);
+    return result.rows;
   }
 }
 
