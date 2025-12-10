@@ -103,18 +103,14 @@ export class PaymentService {
             }] : undefined,
             // Fetch user details from DB here for customer_details
             customer_details: {
-                // Example: user_id is already in custom_field1, but Midtrans expects these
-                // first_name: user.name,
-                // email: user.email,
-                // phone: user.phone,
+
             },
             // Custom field for internal data (user_id, paymentType, order_id)
             custom_field1: JSON.stringify({ userId: dto.userId, paymentType: dto.paymentType, orderId: dto.orderId }),
             callbacks: {
-                // This will redirect user back to your site after payment (success/failure)
-                finish: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payments/status?external_id=${externalId}`
-                // error: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payments/status?external_id=${externalId}&status=error`,
-                // back: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payments/status?external_id=${externalId}&status=back`,
+                finish: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}`
+                // error: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}&status=error`,
+                // back: `${process.env.CLIENT_URL || 'http://localhost:8080'}/payment/status?external_id=${externalId}&status=back`,
             }
         };
 
@@ -125,7 +121,6 @@ export class PaymentService {
             const redirectUrl = transaction.redirect_url;
 
             // 4. Save to Database
-            // Convert amount to string for storage precision
             const createdTx = await paymentRepository.createTransaction(
                 dto.userId,
                 dto.amount,
@@ -196,7 +191,7 @@ export class PaymentService {
                 await paymentRepository.completeSuccessTransaction(
                     transaction.transaction_id,
                     transaction.user_id,
-                    parseInt(transaction.amount), // Convert string amount back to number for arithmetic
+                    parseInt(transaction.amount),
                     transaction.payment_type,
                     transaction.order_id
                 );
@@ -206,7 +201,7 @@ export class PaymentService {
         } 
         // B. Failed or Expired transaction statuses
         else if (midtransTransactionStatus === 'cancel' || midtransTransactionStatus === 'deny' || midtransTransactionStatus === 'expire') {
-            if (transaction.status !== 'failed' && transaction.status !== 'expired') { // Prevent double updates for failed/expired
+            if (transaction.status !== 'failed' && transaction.status !== 'expired') {
                 let newStatus: 'failed' | 'expired' = 'failed';
                 if (midtransTransactionStatus === 'expire') newStatus = 'expired';
                 
