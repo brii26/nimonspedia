@@ -56,25 +56,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 auctions.forEach(auction => {
                     const row = document.createElement('tr');
                     const bidCount = parseInt(auction.bid_count || 0);
-                    
                     let viewBtn = `<a href="/auction/${auction.auction_id}" class="btn btn-sm btn-primary">View</a>`;
-                    let statusContent = '';
-
-                    if (bidCount === 0 && auction.status !== 'closed') {
-                        statusContent = `<button type="button" class="btn btn-sm btn-danger btn-cancel-auction" data-id="${auction.auction_id}">Cancel</button>`;
-                    } else if (bidCount > 0) {
-                        statusContent = `<span class="monitor-text-active">Running (${bidCount} Bids)</span>`;
-                    } else {
-                        statusContent = `<span class="monitor-text-closed">Ended</span>`;
+                    
+                    let statusBadge = '';
+                    if (auction.status === 'scheduled') {
+                        statusBadge = `<span class="status-badge scheduled">Scheduled</span>`;
+                    } else if (auction.status === 'active') {
+                        statusBadge = `<span class="status-badge active">Active</span>`;
+                    } else if (auction.status === 'ended') {
+                        statusBadge = `<span class="status-badge ended">Ended</span>`;
+                    } else if (auction.status === 'cancelled') {
+                        statusBadge = `<span class="status-badge cancelled">Cancelled</span>`;
                     }
-
-                    const actionHtml = `<div class="monitor-action-group">${viewBtn}${statusContent}</div>`;
+                    let cancelBtn = '';
+                    if (bidCount === 0 && auction.status !== 'ended' && auction.status !== 'cancelled') {
+                        cancelBtn = `<button type="button" class="btn btn-sm btn-danger btn-cancel-auction" data-id="${auction.auction_id}">Cancel</button>`;
+                    }
 
                     row.innerHTML = `
                         <td>${formatDateTime(auction.start_time)}</td>
                         <td>${auction.quantity}</td>
-                        <td><span class="status-badge ${auction.status}">${auction.status}</span></td>
-                        <td>${actionHtml}</td>
+                        <td>${statusBadge}</td>
+                        <td><div class="monitor-action-group">${viewBtn} ${cancelBtn}</div></td>
                     `;
                     if (tbody) tbody.appendChild(row);
                 });

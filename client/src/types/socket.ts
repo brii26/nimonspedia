@@ -95,13 +95,15 @@ export interface AuctionListItem extends AuctionData {
   image: string;       
   store_name: string;
   bid_count?: number;
+  winner_name?: string | null;
 }
 
 // Payload for Requesting the List
 export interface GetAuctionListPayload {
   page: number;
   limit: number;
-  filter: 'active' | 'scheduled'; 
+  filter: 'active' | 'scheduled' | 'ended';
+  search?: string
 }
 
 // Response for the List

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo} from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import socketClient from '../../../services/socketClient.js';
 import { useAuctionTimer } from '../../../hooks/useAuctionTimer.js';
@@ -43,6 +43,7 @@ const AuctionDetail = () => {
   const [bidAmount, setBidAmount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(true);
   const [bidHistory, setBidHistory] = useState<BidHistoryItem[]>([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -63,8 +64,7 @@ const AuctionDetail = () => {
   }, [auction]);
 
   const { timeLeft, displayTime, isEnded } = useAuctionTimer(targetTime, auction?.status || '', auctionIdNum, serverTimeLeft);
-  
-  const isSeller = auth?.user?.id === auction?.owner_id;
+  const isSeller = auth?.user?.id != null && auction?.owner_id != null && String(auth.user.id) === String(auction.owner_id);
 
   useEffect(() => {
     if (auth?.user?.balance !== undefined) {
@@ -75,15 +75,49 @@ const AuctionDetail = () => {
   useEffect(() => {
     if (!id) return;
 
-    if (!socketClient.isConnected()) {
-        try { socketClient.connect(); } catch(e) { console.error(e); }
+    const auctionId = parseInt(id);
+    
+    // Join auction room
+    const joinAuction = () => {
+        console.log('[AuctionDetail] Emitting join_auction for:', auctionId);
+        socketClient.emit('join_auction', { auctionId });
+    };
+
+    // Connect and join
+    if (socketClient.isConnected()) {
+        joinAuction();
+    } else {
+        try { 
+            socketClient.connect();
+            const socket = socketClient.getSocket();
+            if (socket) {
+                socket.once('connect', () => {
+                    console.log('[AuctionDetail] Socket connected, now joining auction');
+                    joinAuction();
+                });
+            }
+        } catch(e) { 
+            console.error('[AuctionDetail] Socket connection error:', e); 
+            setError('Failed to connect to auction server');
+            setLoading(false);
+        }
     }
 
-    const auctionId = parseInt(id);
-    socketClient.emit('join_auction', { auctionId });
+    // Timeout fallback 
+    const joinTimeout = setTimeout(() => {
+        if (loadingRef.current) {
+            console.error('[AuctionDetail] Join auction timeout - no response from server');
+            setError('Connection timeout. Please refresh the page.');
+            setLoading(false);
+            loadingRef.current = false;
+        }
+    }, 10000);
 
     // Listeners
     const handleJoined = (payload: any) => {
+        clearTimeout(joinTimeout);
+        console.log('[AuctionDetail] Received auction_joined:', payload);
+        loadingRef.current = false;
         const auctionData = payload.auction;
         
         if (payload.timeLeft !== undefined) {
@@ -160,6 +194,8 @@ const AuctionDetail = () => {
     };
 
     const handleError = (payload: any) => {
+        clearTimeout(joinTimeout);
+        console.error('[AuctionDetail] Error:', payload);
         setError(payload.message);
         setLoading(false);
     };
@@ -172,6 +208,7 @@ const AuctionDetail = () => {
     socketClient.on('bid_error', handleError);
 
     return () => {
+        clearTimeout(joinTimeout);
         socketClient.emit('leave_auction', { auctionId });
         socketClient.off('auction_joined', handleJoined);
         socketClient.off('new_bid', handleNewBid);
@@ -181,15 +218,6 @@ const AuctionDetail = () => {
         socketClient.off('bid_error', handleError);
     };
   }, [id]);
-
-  // Helper
-  const addBidIncrement = (multiplier: number) => {
-      if (!auction) return;
-      const currentHighest = auction.current_price;
-      const increment = auction.min_increment;
-      const base = Math.max(currentHighest, auction.starting_price);
-      setBidAmount(base + (increment * multiplier));
-  };
 
   const handlePlaceBid = async () => {
     if (!auction || !id) return;
@@ -268,7 +296,9 @@ const AuctionDetail = () => {
   if (!auction) return (
     <div className="container mx-auto px-4 py-8 text-center">
       <h2 className="text-2xl font-bold text-gray-800">Auction Not Found</h2>
-      <Button variant="ghost" onClick={() => navigate('/auction')} className="mt-4">Back to List</Button>
+      <Button variant="ghost" onClick={() => navigate(isSeller ? '/seller/products' : '/auction')} className="mt-4">
+        {isSeller ? 'Back to Products' : 'Back to List'}
+      </Button>
     </div>
   );
 
@@ -293,9 +323,18 @@ const AuctionDetail = () => {
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-white border-b sticky top-0 z-20">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <button onClick={() => navigate('/auction')} className="text-gray-500 hover:text-[#667eea] flex items-center gap-2 text-sm font-medium transition-colors">
+            <button 
+              onClick={() => {
+                if (isSeller) {
+                  window.location.href = '/seller/products';
+                } else {
+                  navigate('/auction');
+                }
+              }} 
+              className="text-gray-500 hover:text-[#667eea] flex items-center gap-2 text-sm font-medium transition-colors"
+            >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Auctions
+                {isSeller ? 'Back to Products' : 'Back to Auctions'}
             </button>
             <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Status</span>
@@ -317,9 +356,11 @@ const AuctionDetail = () => {
                             className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500 ease-out"
                             onError={(e) => { (e.target as HTMLImageElement).src = '/assets/images/default-product.svg'; }}
                         />
-                        {isSeller && (
-                            <div className="absolute top-4 left-4 bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md">
-                                You own this item
+                        {auction.status === 'ended' && (
+                            <div className={`absolute top-4 left-4 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md ${
+                                auction.winner_name ? 'bg-green-600/90' : 'bg-gray-600/90'
+                            }`}>
+                                {auction.winner_name ? 'Sold' : 'No Bids'}
                             </div>
                         )}
                     </div>
@@ -455,19 +496,6 @@ const AuctionDetail = () => {
                             {/* Bidding Controls */}
                             {auction.status === 'active' && !isSeller ? (
                                 <div className="space-y-4">
-                                    {/* Quick Bid Chips */}
-                                    <div className="flex gap-2 justify-between">
-                                        {[1, 2, 5].map(mul => (
-                                            <button 
-                                                key={mul}
-                                                onClick={() => addBidIncrement(mul)}
-                                                className="flex-1 py-1.5 text-xs font-medium text-[#667eea] bg-[#eef0ff] hover:bg-[#e0e4ff] rounded-lg transition-colors border border-transparent hover:border-[#c3cbfa]"
-                                            >
-                                                +{mul}x Inc
-                                            </button>
-                                        ))}
-                                    </div>
-
                                     {/* Manual Input */}
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -508,19 +536,29 @@ const AuctionDetail = () => {
                                 </div>
                             ) : (
                                 <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                    {isSeller ? (
-                                        <p className="text-gray-500 font-medium">You are the seller of this item.</p>
-                                    ) : auction.status === 'scheduled' ? (
+                                    {auction.status === 'scheduled' ? (
                                         <div>
-                                            <p className="text-gray-900 font-bold mb-1">Coming Soon</p>
+                                            <p className="text-gray-900 font-bold mb-1">Upcoming</p>
                                             <p className="text-xs text-gray-500">Bidding opens when timer hits zero.</p>
+                                        </div>
+                                    ) : auction.status === 'ended' ? (
+                                        <div>
+                                            <p className="text-gray-900 font-bold mb-1">Auction Closed</p>
+                                            {auction.winner_name ? (
+                                                <p className="text-sm text-green-600 font-medium">Winner: {auction.winner_name}</p>
+                                            ) : (
+                                                <p className="text-sm text-gray-500">No bids were placed</p>
+                                            )}
+                                        </div>
+                                    ) : isSeller ? (
+                                        <div>
+                                            <p className="text-gray-900 font-bold mb-1">Your Auction</p>
+                                            <p className="text-xs text-gray-500">You cannot bid on your own item.</p>
                                         </div>
                                     ) : (
                                         <div>
-                                            <p className="text-gray-900 font-bold mb-1">Auction Closed</p>
-                                            {auction.winner_name && (
-                                                <p className="text-sm text-green-600 font-medium">Winner: {auction.winner_name}</p>
-                                            )}
+                                            <p className="text-gray-900 font-bold mb-1">Auction In Progress</p>
+                                            <p className="text-xs text-gray-500">Login to place a bid.</p>
                                         </div>
                                     )}
                                 </div>
@@ -550,9 +588,9 @@ const AuctionDetail = () => {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-gray-900">How it works</h4>
+                                <h4 className="text-sm font-bold text-gray-900">15 Sec</h4>
                                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                                    Bids placed within the last 15 seconds will reset the timer to 15 seconds. Highest bidder at timeout wins.
+                                    Good Luck , and hev funn!!!
                                 </p>
                             </div>
                         </div>

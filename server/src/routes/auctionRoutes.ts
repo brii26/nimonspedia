@@ -7,19 +7,23 @@ export default async function auctionRoutes(
   options: FastifyPluginOptions
 ): Promise<void> {
 
-  // POST /auctions/place-bid
-  // Place a bid on an auction
+  fastify.get('/list', async (request: FastifyRequest, reply: FastifyReply) => {
+    return auctionController.getAuctionList(request, reply);
+  });
+
   fastify.post('/place-bid', {
     preHandler: requireAuth
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     return auctionController.placeBid(request, reply);
   });
 
-  // GET /auctions/user/balance
-  // Get current user's balance
   fastify.get('/user/balance', {
     preHandler: requireAuth
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     return auctionController.getUserBalance(request, reply);
+  });
+
+  fastify.get('/timers', async (request: FastifyRequest, reply: FastifyReply) => {
+    return auctionController.getTimers(request, reply);
   });
 }

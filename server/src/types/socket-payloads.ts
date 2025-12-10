@@ -28,7 +28,8 @@ export interface AuctionBase {
 
 // Data untuk List (Grid View)
 export interface AuctionListItem extends AuctionBase {
-  bid_count?: number; 
+  bid_count?: number;
+  winner_name?: string | null;
 }
 
 // Data untuk Detail Room (Full View)
@@ -155,6 +156,7 @@ export interface NewBidUpdatePayload {
 export interface TimerUpdatePayload {
   auctionId: number;
   timeLeft: number;
+  displayTimeLeft?: number;
 }
 
 // Broadcast lelang selesai

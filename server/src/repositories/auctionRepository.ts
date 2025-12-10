@@ -132,7 +132,7 @@ class AuctionRepository {
   // Extend Auction
   async extendAuction(auctionId: number, newEndTime: Date): Promise<QueryResult> {
     return await pool.query(`
-      UPDATE auctions SET end_time = $1, updated_at = NOW() WHERE auction_id = $2
+      UPDATE auctions SET end_time = $1 WHERE auction_id = $2
     `, [newEndTime, auctionId]);
   }
 
@@ -184,6 +184,18 @@ class AuctionRepository {
             subtotal: finalPrice
           }], client);
         }
+      } else {
+        const auctionInfo = await client.query(`
+          SELECT product_id, quantity FROM auctions WHERE auction_id = $1
+        `, [auctionId]);
+        
+        if (auctionInfo.rows.length > 0) {
+          const { product_id, quantity } = auctionInfo.rows[0];
+          await client.query(`
+            UPDATE products SET stock = stock + $1 WHERE product_id = $2
+          `, [quantity, product_id]);
+          console.log(`Restored ${quantity} stock to product ${product_id} - auction ${auctionId} had no bids`);
+        }
       }
 
       await client.query('COMMIT');
@@ -198,24 +210,45 @@ class AuctionRepository {
   }
 
   // Get Auctions List (Paginated)
-  async getAuctionsPaginated(page: number, limit: number, filter: 'active' | 'scheduled'): Promise<{ data: AuctionListItem[], total: number }> {
+  async getAuctionsPaginated(page: number, limit: number, filter: 'active' | 'scheduled' | 'ended', search: string = ''): Promise<{ data: AuctionListItem[], total: number }> {
       const offset = (page - 1) * limit;
   
       let statusFilter = '';
+      let orderBy = 'ORDER BY a.start_time ASC';
+      
       if (filter === 'active') {
           statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
       } else if (filter === 'scheduled') { 
           statusFilter = "WHERE a.status = 'scheduled'"; 
+      } else if (filter === 'ended') {
+          statusFilter = "WHERE a.status = 'ended'";
+          orderBy = 'ORDER BY a.end_time DESC';
       } else {
           statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
       }
+      
+      // Add search filter 
+      let searchFilter = '';
+      const queryParams: (string | number)[] = [limit, offset];
+      
+      if (search) {
+          searchFilter = ` AND (LOWER(p.product_name) LIKE LOWER($3) OR LOWER(s.store_name) LIKE LOWER($3))`;
+          queryParams.push(`%${search}%`);
+      }
   
-      // Query Count
-      const countQuery = await pool.query(`SELECT COUNT(*) FROM auctions a ${statusFilter}`);
+      // Query Count with search
+      const countQuery = search 
+          ? await pool.query(`
+              SELECT COUNT(*) FROM auctions a
+              JOIN products p ON a.product_id = p.product_id
+              JOIN stores s ON p.store_id = s.store_id
+              ${statusFilter}${searchFilter}
+            `, [`%${search}%`])
+          : await pool.query(`SELECT COUNT(*) FROM auctions a ${statusFilter}`);
       const total = parseInt(countQuery.rows[0].count);
   
-      // Query Data
-      const result = await pool.query(`
+      // Query Data with search
+      const dataQuery = `
           SELECT 
               a.auction_id as id,
               a.product_id,
@@ -225,17 +258,24 @@ class AuctionRepository {
               a.start_time,
               a.end_time,
               a.status,
+              a.winner_id,
               p.product_name AS title,
               p.main_image_path AS image,
               s.store_name,
+              u.name AS winner_name,
               (SELECT COUNT(*) FROM auction_bids ab WHERE ab.auction_id = a.auction_id) as bid_count
           FROM auctions a
           JOIN products p ON a.product_id = p.product_id
           JOIN stores s ON p.store_id = s.store_id
-          ${statusFilter}
-          ORDER BY a.start_time ASC
+          LEFT JOIN users u ON a.winner_id = u.user_id
+          ${statusFilter}${searchFilter}
+          ${orderBy}
           LIMIT $1 OFFSET $2
-      `, [limit, offset]);
+      `;
+      
+      const result = search
+          ? await pool.query(dataQuery.replace('$3', '$3'), [limit, offset, `%${search}%`])
+          : await pool.query(dataQuery.replace(searchFilter, ''), [limit, offset]);
   
 	const data: AuctionListItem[] = result.rows.map((row: QueryResult['rows'][0]) => ({
 		id: row.id as number,
@@ -249,7 +289,8 @@ class AuctionRepository {
 		start_time: row.start_time as string,
 		end_time: row.end_time as string | null,
 		status: row.status as 'scheduled' | 'active' | 'ended' | 'cancelled', 
-		bid_count: parseInt(row.bid_count as string || '0')
+		bid_count: parseInt(row.bid_count as string || '0'),
+		winner_name: row.winner_name as string | null
 	}));
   
       return { data, total };

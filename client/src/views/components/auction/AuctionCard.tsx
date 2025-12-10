@@ -13,14 +13,16 @@ interface AuctionCardProps {
   startTime: string;
   endsAt: string;
   bidCount?: number;
+  winnerName?: string | null | undefined;
+  serverDisplayTime?: number | undefined; 
 }
 
 const AuctionCard: React.FC<AuctionCardProps> = ({ 
-  id, title, image, price, status, startTime, endsAt, bidCount = 0 
+  id, title, image, price, status, startTime, endsAt, bidCount = 0, winnerName, serverDisplayTime 
 }) => {
   const navigate = useNavigate();
   const targetTime = status === 'scheduled' ? startTime : endsAt;
-  const { displayTime, isEnded } = useAuctionTimer(targetTime, status, id);
+  const { displayTime, isEnded } = useAuctionTimer(targetTime, status, undefined, serverDisplayTime);
   const finalImageUrl = getProductImageUrl(image);
 
   const getBadgeVariant = () => {
@@ -68,21 +70,40 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
         </div>
 
         <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-sm">
-           <div className="flex flex-col">
-             <span className="text-xs text-gray-500">
-               {status === 'scheduled' ? 'Starts in:' : 'Ends in:'}
-             </span>
-             <span className={`font-mono font-medium ${isEnded ? 'text-red-500' : 'text-blue-600'}`}>
-               {displayTime}
-             </span>
-           </div>
+           {status === 'ended' ? (
+             <>
+               <div className="flex flex-col">
+                 <span className="text-xs text-gray-500">Winner</span>
+                 <span className="font-medium text-gray-700">
+                   {winnerName || 'No bids'}
+                 </span>
+               </div>
+               <div className="flex flex-col items-end">
+                 <span className="text-xs text-gray-500">Final Price</span>
+                 <span className="font-medium text-green-600">
+                   {bidCount > 0 ? `Rp ${price.toLocaleString('id-ID')}` : '-'}
+                 </span>
+               </div>
+             </>
+           ) : (
+             <>
+               <div className="flex flex-col">
+                 <span className="text-xs text-gray-500">
+                   {status === 'scheduled' ? 'Starts in:' : 'Ends in:'}
+                 </span>
+                 <span className={`font-mono font-medium ${isEnded ? 'text-red-500' : 'text-blue-600'}`}>
+                   {displayTime}
+                 </span>
+               </div>
 
-           <div className="flex flex-col items-end">
-             <span className="text-xs text-gray-500">Bidders</span>
-             <span className="font-medium text-gray-700">
-               {bidCount} <span className="text-xs text-gray-400">bids</span>
-             </span>
-           </div>
+               <div className="flex flex-col items-end">
+                 <span className="text-xs text-gray-500">Bidders</span>
+                 <span className="font-medium text-gray-700">
+                   {bidCount} <span className="text-xs text-gray-400">bids</span>
+                 </span>
+               </div>
+             </>
+           )}
         </div>
       </div>
     </div>
