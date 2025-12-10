@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply } from 'fastify';
 import { requireAuth } from '../middleware/authMiddleware.js';
+import { checkFeatureFlag } from '../middleware/featureFlagMiddleware.js';
 import chatRepo from '../repositories/chatRepository.js';
 
 interface GetMessagesParams {
@@ -15,9 +16,11 @@ export default async function chatRoutes(
   options: FastifyPluginOptions
 ): Promise<void> {
 
+  const chatFlagOptions = { featureName: 'chat_enabled', checkUser: true };
+
   // GET Rooms
   fastify.get('/rooms', {
-    preHandler: requireAuth
+    preHandler: [requireAuth, checkFeatureFlag(chatFlagOptions)]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const user = request.user!;
@@ -29,9 +32,9 @@ export default async function chatRoutes(
     }
   });
 
-  // GET Messages (PERBAIKAN UTAMA: Parse String ID)
+  // GET Messages
   fastify.get<{ Params: GetMessagesParams }>('/messages/:roomId', {
-    preHandler: requireAuth
+    preHandler: [requireAuth, checkFeatureFlag(chatFlagOptions)]
   }, async (request, reply) => {
     try {
       const { roomId } = request.params;
@@ -60,7 +63,7 @@ export default async function chatRoutes(
 
   // POST Initiate - Create chat room and return room data
   fastify.post<{ Body: InitiateChatBody }>('/initiate', {
-    preHandler: requireAuth
+    preHandler: [requireAuth, checkFeatureFlag(chatFlagOptions)]
   }, async (request, reply) => {
     try {
       const user = request.user!;

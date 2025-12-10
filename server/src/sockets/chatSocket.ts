@@ -5,6 +5,27 @@ import featureFlagRepository from '../repositories/featureFlagRepository.js';
 import { SendMessagePayload, TypingPayload } from '../types/socket-payloads.js';
 import { AuthenticatedSocket } from '../types/socket.js';
 
+
+const isChatEnabled = async (userId: number): Promise<{ allowed: boolean; reason?: string }> => {
+  const featureName = 'chat_enabled';
+  
+  // 1. Cek Global Flag
+  const globalFlag = await featureFlagRepository.getGlobalFlag(featureName);
+  // Asumsi: Jika global flag record tidak ada/null, default behavior biasanya FALSE (Maintenance) atau TRUE tergantung default DB.
+  // Jika mengikuti middleware Anda sebelumnya: "if (!globalFlags) return 503".
+  if (globalFlag && !globalFlag.is_enabled) {
+    return { allowed: false, reason: globalFlag.reason || 'System Maintenance' };
+  }
+
+  // 2. Cek User Flag
+  const userFlag = await featureFlagRepository.getUserFlag(userId, featureName);
+  if (userFlag && !userFlag.is_enabled) {
+    return { allowed: false, reason: userFlag.reason || 'Feature disabled for your account' };
+  }
+
+  return { allowed: true };
+};
+
 export default (io: Server, socket: AuthenticatedSocket) => {
   const user = socket.user;
 
@@ -15,6 +36,11 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   // 2. Handle Event Join Chat Room
   socket.on('join_chat', async (payload: { storeId: number; buyerId?: number }) => {
     try {
+      const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
+        socket.emit('chat_error', { message: `Fitur Chat nonaktif: ${access.reason}` });
+        return;
+      }
       let storeId = payload.storeId;
       let buyerId = payload.buyerId;
 
@@ -70,10 +96,10 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   }) => {
     try {
       // 1. Cek Feature Flag (Tetap dipertahankan)
-      const flagAccess = await featureFlagRepository.getUserFlag(user.user_id, 'chat_enabled');
-      if (flagAccess && flagAccess.is_enabled === false) {
+      const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
         socket.emit('chat_error', { 
-          message: `Fitur Chat nonaktif: ${flagAccess.reason || 'Maintenance'}` 
+          message: `Gagal kirim. Fitur Chat nonaktif: ${access.reason}` 
         });
         return;
       }
@@ -204,7 +230,13 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
   // 4. Handle Get Chat History
   socket.on('get_chat_history', async (payload: { storeId: number; buyerId?: number; limit?: number }) => {
+    const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
+        socket.emit('chat_error', { message: 'Fitur Chat sedang dinonaktifkan.' });
+        return;
+      }
     try {
+      
       let { storeId, buyerId, limit = 50 } = payload;
 
       // Validate access
