@@ -141,6 +141,20 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                             }
                         ?>
                     </div>
+
+                    <?php if (Auth::check() && $user && $user['role'] === 'BUYER'): ?>
+                        <div style="margin-top: 1rem;">
+                            <?php
+                            echo View::component('chat-button', [
+                                'storeId' => $product['store_id'],
+                                'storeName' => $product['store_name'],
+                                'variant' => 'outline',
+                                'size' => 'md',
+                                'fullWidth' => true
+                            ]);
+                            ?>
+                        </div>
+                    <?php endif; ?>
                     
                     <hr class="card-divider">
 

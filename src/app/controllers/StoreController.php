@@ -87,4 +87,18 @@ class StoreController extends BaseController {
             ],
         ]);
     }
+
+    // API endpoint untuk mendapatkan stores dalam JSON (untuk chat new chat modal)
+    public function api() {
+        $search = $this->getQuery('search', '');
+        $page = (int)$this->getQuery('page', 1);
+        $limit = (int)$this->getQuery('limit', 20);
+        
+        $stores = $this->storeRepository->searchStores($search, $page, $limit);
+        
+        $this->json([
+            'success' => true,
+            'data' => $stores
+        ]);
+    }
 }

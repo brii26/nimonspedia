@@ -81,6 +81,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav className={`bg-white border-b border-gray-200 shadow-sm ${className}`} {...props}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
+          {/* Mobile Menu Toggle */}
           <button 
             className="md:hidden flex flex-col gap-1 p-2 rounded hover:bg-gray-100 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -92,20 +93,28 @@ const Navbar: React.FC<NavbarProps> = ({
             <span className={`block w-6 h-0.5 bg-gray-600 transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
           </button>
 
+          {/* Brand */}
           <div className="flex items-center">
             {brand}
           </div>
 
-          <div className={`fixed md:relative top-16 md:top-0 left-0 md:left-auto right-0 md:right-auto bg-white md:bg-transparent border-b md:border-0 border-gray-200 shadow-md md:shadow-none transition-transform duration-200 ${
-            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          {/* Desktop: Navigation + User Section in one line */}
+          <div className="hidden md:flex md:items-center md:flex-1 md:justify-between md:ml-8">
+            {children}
+          </div>
+
+          {/* Mobile Menu */}
+          <div className={`fixed md:hidden top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-md transition-transform duration-200 z-40 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}>
             {children}
           </div>
         </div>
       </div>
 
+      {/* Mobile Overlay */}
       <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 md:hidden transition-opacity duration-200 ${
+        className={`fixed inset-0 bg-black bg-opacity-50 md:hidden transition-opacity duration-200 z-30 ${
           isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         }`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -161,7 +170,7 @@ export const NavLink: React.FC<NavbarLinkProps> = ({
 
 export const NavbarUser: React.FC<NavbarMenuProps> = ({ children, className = '' }) => {
   return (
-    <div className={`flex items-center gap-3 ml-auto ${className}`}>
+    <div className={`flex flex-col md:flex-row items-start md:items-center gap-3 p-4 md:p-0 border-t md:border-t-0 border-gray-200 mt-4 md:mt-0 pt-4 md:pt-0 ${className}`}>
       {children}
     </div>
   );

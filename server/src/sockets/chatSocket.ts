@@ -4,17 +4,57 @@ import chatRepository from '../repositories/chatRepository.js';
 import featureFlagRepository from '../repositories/featureFlagRepository.js';
 import { SendMessagePayload, TypingPayload } from '../types/socket-payloads.js';
 import { AuthenticatedSocket } from '../types/socket.js';
+import validator from 'validator';
+import escapeHtml from 'escape-html';
+
+
+const isChatEnabled = async (userId: number): Promise<{ allowed: boolean; reason?: string }> => {
+  const featureName = 'chat_enabled';
+  
+  // 1. Cek Global Flag
+  const globalFlag = await featureFlagRepository.getGlobalFlag(featureName);
+  // Asumsi: Jika global flag record tidak ada/null, default behavior biasanya FALSE (Maintenance) atau TRUE tergantung default DB.
+  // Jika mengikuti middleware Anda sebelumnya: "if (!globalFlags) return 503".
+  if (globalFlag && !globalFlag.is_enabled) {
+    return { allowed: false, reason: globalFlag.reason || 'System Maintenance' };
+  }
+
+  // 2. Cek User Flag
+  const userFlag = await featureFlagRepository.getUserFlag(userId, featureName);
+  if (userFlag && !userFlag.is_enabled) {
+    return { allowed: false, reason: userFlag.reason || 'Feature disabled for your account' };
+  }
+
+  return { allowed: true };
+};
 
 export default (io: Server, socket: AuthenticatedSocket) => {
   const user = socket.user;
+
+  // Auto-join user's personal notification room
+  const userRoom = `user_${user.user_id}`;
+  socket.join(userRoom);
+  console.log(`User ${user.name} joined notification room: ${userRoom}`);
 
   // 1. Setup Room Logic
   // Chat rooms berbasis store-buyer: "chat_{storeId}_{buyerId}"
   // User bisa join multiple rooms tergantung role dan chat yang aktif
 
+  // Handle explicit join_user_channel if needed (legacy support)
+  socket.on('join_user_channel', (payload: { user_id: number }) => {
+    const room = `user_${payload.user_id}`;
+    socket.join(room);
+    console.log(`User explicitly joined room: ${room}`);
+  });
+
   // 2. Handle Event Join Chat Room
   socket.on('join_chat', async (payload: { storeId: number; buyerId?: number }) => {
     try {
+      const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
+        socket.emit('chat_error', { message: `Fitur Chat nonaktif: ${access.reason}` });
+        return;
+      }
       let storeId = payload.storeId;
       let buyerId = payload.buyerId;
 
@@ -54,6 +94,19 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
       console.log(`User ${user.name} joined chat room: ${chatRoom}`);
 
+      // Mark messages as read AFTER joining
+      await chatRepository.markAsRead(storeId, buyerId, user.user_id);
+      
+      // Broadcast read status to ALL in room (including self)
+      io.to(chatRoom).emit('messages_read', {
+        storeId,
+        buyerId,
+        readBy: user.user_id,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`[Read Receipt] Broadcasted to room ${chatRoom} - read by user ${user.user_id}`);
+
     } catch (error) {
       console.error('Join Chat Error:', error);
       socket.emit('chat_error', { message: 'Gagal join chat room' });
@@ -70,10 +123,10 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   }) => {
     try {
       // 1. Cek Feature Flag (Tetap dipertahankan)
-      const flagAccess = await featureFlagRepository.getUserFlag(user.user_id, 'chat_enabled');
-      if (flagAccess && flagAccess.is_enabled === false) {
-        socket.emit('error_message', { 
-          message: `Fitur Chat nonaktif: ${flagAccess.reason || 'Maintenance'}` 
+      const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
+        socket.emit('chat_error', { 
+          message: `Gagal kirim. Fitur Chat nonaktif: ${access.reason}` 
         });
         return;
       }
@@ -89,7 +142,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         buyerId = user.user_id;
         
         if (!storeId) {
-             socket.emit('error_message', { message: 'Target Store ID diperlukan' });
+             socket.emit('chat_error', { message: 'Target Store ID diperlukan' });
              return;
         }
 
@@ -99,7 +152,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         // - buyerId diambil dari payload (siapa customer yang dibalas)
         const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
         if (storeResult.rows.length === 0) {
-          socket.emit('error_message', { message: 'Anda tidak memiliki toko' });
+          socket.emit('chat_error', { message: 'Anda tidak memiliki toko' });
           return;
         }
         
@@ -107,20 +160,35 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         storeId = storeResult.rows[0].store_id;
 
         if (!buyerId) {
-            socket.emit('error_message', { message: 'Target Buyer ID diperlukan' });
+            socket.emit('chat_error', { message: 'Target Buyer ID diperlukan' });
             return;
         }
       } else {
-        socket.emit('error_message', { message: 'Role tidak valid' });
+        socket.emit('chat_error', { message: 'Role tidak valid' });
         return;
       }
 
-      // 3. Validasi Konten (Sama seperti sebelumnya)
+      // 3. Validasi & Sanitasi Konten
       const msgType = payload.type || 'text';
       let msgContent = payload.message;
       let productId = payload.productId || null;
 
-      if (msgType === 'text' && (!msgContent || !msgContent.trim())) return;
+      // Validasi panjang pesan (max 5000 karakter)
+      if (msgType === 'text') {
+        if (!msgContent || !msgContent.trim()) return;
+        if (msgContent.length > 5000) {
+          socket.emit('chat_error', { message: 'Pesan terlalu panjang (max 5000 karakter)' });
+          return;
+        }
+        // Sanitize HTML untuk prevent XSS
+        msgContent = escapeHtml(msgContent.trim());
+      }
+
+      // Validasi untuk item_preview
+      if (msgType === 'item_preview' && !productId) {
+        socket.emit('chat_error', { message: 'Product ID required for item preview' });
+        return;
+      }
 
       // 4. Simpan ke Database
       const savedMessage = await chatRepository.saveMessage(
@@ -143,9 +211,48 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
 
+      // 7. Send Push Notification to receiver (only if not in chat room)
+      const receiverId = savedMessage.sender_id === buyerId ? 
+        (await pool.query('SELECT user_id FROM stores WHERE store_id = $1', [storeId])).rows[0]?.user_id :
+        buyerId;
+      
+      if (receiverId) {
+        try {
+          const senderName = user.name || 'Someone';
+          const messagePreview = msgType === 'text' ? 
+            (msgContent.length > 100 ? msgContent.substring(0, 100) + '...' : msgContent) :
+            msgType === 'image' ? '📷 Image' : '🏷️ Product Preview';
+          
+          // Check if receiver is in the chat room
+          const socketsInRoom = await io.in(chatRoom).fetchSockets();
+          const receiverInRoom = socketsInRoom.some(s => (s as any).user?.user_id === receiverId);
+          
+          console.log(`[Notification] Receiver ${receiverId} in room ${chatRoom}:`, receiverInRoom);
+          
+          // Only send notification if receiver is NOT in the room
+          if (!receiverInRoom) {
+            io.to(`user_${receiverId}`).emit('new_chat_notification', {
+              title: `New message from ${senderName}`,
+              body: messagePreview,
+              data: {
+                type: 'chat',
+                storeId,
+                buyerId,
+                url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
+              }
+            });
+            console.log(`[Notification] Sent to user_${receiverId}`);
+          } else {
+            console.log(`[Notification] Skipped - receiver is in chat room`);
+          }
+        } catch (notifError) {
+          console.error('Push notification error:', notifError);
+        }
+      }
+
     } catch (error) {
       console.error('Chat Error:', error);
-      socket.emit('error_message', { message: 'Gagal mengirim pesan.' });
+      socket.emit('chat_error', { message: 'Gagal mengirim pesan.' });
     }
   });
 
@@ -202,9 +309,49 @@ export default (io: Server, socket: AuthenticatedSocket) => {
     }
   });
 
+  // Handle mark messages as read (manual trigger)
+  socket.on('mark_as_read', async (payload: { storeId: number; buyerId?: number }) => {
+    try {
+      let { storeId, buyerId } = payload;
+
+      if (user.role === 'BUYER') {
+        buyerId = user.user_id;
+      } else if (user.role === 'SELLER') {
+        const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
+        if (storeResult.rows.length === 0) return;
+        storeId = storeResult.rows[0].store_id;
+      }
+
+      if (storeId && buyerId) {
+        const chatRoom = `chat_${storeId}_${buyerId}`;
+        
+        // Mark as read in database
+        await chatRepository.markAsRead(storeId, buyerId, user.user_id);
+        
+        // Broadcast to all in room
+        io.to(chatRoom).emit('messages_read', {
+          storeId,
+          buyerId,
+          readBy: user.user_id,
+          timestamp: new Date().toISOString()
+        });
+        
+        console.log(`[Manual Read Receipt] User ${user.user_id} marked messages as read in ${chatRoom}`);
+      }
+    } catch (error) {
+      console.error('Mark as read error:', error);
+    }
+  });
+
   // 4. Handle Get Chat History
   socket.on('get_chat_history', async (payload: { storeId: number; buyerId?: number; limit?: number }) => {
+    const access = await isChatEnabled(user.user_id);
+      if (!access.allowed) {
+        socket.emit('chat_error', { message: 'Fitur Chat sedang dinonaktifkan.' });
+        return;
+      }
     try {
+      
       let { storeId, buyerId, limit = 50 } = payload;
 
       // Validate access
@@ -235,13 +382,42 @@ export default (io: Server, socket: AuthenticatedSocket) => {
     }
   });
 
-  // 5. Heartbeat/Ping-Pong untuk keep-alive
-  socket.on('ping', () => {
-    socket.emit('pong');
-  });
+  socket.on('load_more_messages', async (payload: { storeId: number; buyerId?: number; beforeId: number; limit?: number }) => {
+    const access = await isChatEnabled(user.user_id);
+    if (!access.allowed) {
+        socket.emit('chat_error', { message: 'Fitur Chat sedang dinonaktifkan.' });
+        return;
+    }
 
-  // 6. Handle Disconnect
-  socket.on('disconnect', () => {
-    console.log(`User ${user.name} disconnected from chat socket`);
+    try {
+      let { storeId, buyerId, beforeId, limit = 50 } = payload;
+
+      if (user.role === 'BUYER') {
+        buyerId = user.user_id;
+      } else if (user.role === 'SELLER') {
+        const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1 AND store_id = $2', [user.user_id, storeId]);
+        if (storeResult.rows.length === 0) {
+          socket.emit('chat_error', { message: 'Tidak memiliki akses ke store ini' });
+          return;
+        }
+      }
+
+      if (!buyerId) {
+        socket.emit('chat_error', { message: 'buyerId diperlukan' });
+        return;
+      }
+
+      const messages = await chatRepository.getChatHistory(storeId, buyerId!, limit, beforeId);
+      
+      socket.emit('more_messages_loaded', { 
+        storeId, 
+        buyerId, 
+        messages,
+        hasMore: messages.length === limit 
+      });
+
+    } catch (error) {
+      console.error('Load More Error:', error);
+    }
   });
 };

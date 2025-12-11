@@ -96,8 +96,8 @@ class ChatRepository {
 
   // Get chat history between store and buyer
   // Updated to include product details for item previews
-  async getChatHistory(storeId: number, buyerId: number, limit: number = 50): Promise<ChatMessageDB[]> {
-    const query = `
+  async getChatHistory(storeId: number, buyerId: number, limit: number = 50, beforeId?: number): Promise<ChatMessageDB[]> {
+    let query = `
       SELECT 
         cm.*,
         p.product_name,
@@ -106,10 +106,22 @@ class ChatRepository {
       FROM chat_messages cm
       LEFT JOIN products p ON cm.product_id = p.product_id
       WHERE cm.store_id = $1 AND cm.buyer_id = $2
-      ORDER BY cm.created_at DESC
-      LIMIT $3
     `;
-    const res = await pool.query(query, [storeId, buyerId, limit]);
+
+    const params: any[] = [storeId, buyerId];
+
+    if (beforeId) {
+      query += ` AND cm.message_id < $3`;
+      params.push(beforeId);
+    }
+
+    query += ` ORDER BY cm.created_at DESC`;
+    
+    const paramIndex = beforeId ? 4 : 3;
+    query += ` LIMIT $${paramIndex}`;
+    params.push(limit);
+
+    const res = await pool.query(query, params);
     return res.rows.reverse(); // Return in chronological order
   }
 
@@ -139,6 +151,38 @@ class ChatRepository {
     `;
     const res = await pool.query(query, [userId]);
     return res.rows;
+  }
+
+  // Initiate Chat Room - Create room and fetch with all details
+  async initiateChatRoom(storeId: number, buyerId: number): Promise<any> {
+    const client = await pool.connect();
+    try {
+      // 1. Upsert chat room
+      const upsertQuery = `
+        INSERT INTO chat_rooms (store_id, buyer_id, created_at, updated_at)
+        VALUES ($1, $2, NOW(), NOW())
+        ON CONFLICT (store_id, buyer_id) DO NOTHING
+      `;
+      await client.query(upsertQuery, [storeId, buyerId]);
+
+      // 2. Fetch complete room data with store and buyer info
+      const fetchQuery = `
+        SELECT 
+          cr.*,
+          s.store_name,
+          s.store_logo_path,
+          u.name as buyer_name,
+          u.email as buyer_email
+        FROM chat_rooms cr
+        JOIN stores s ON cr.store_id = s.store_id
+        JOIN users u ON cr.buyer_id = u.user_id
+        WHERE cr.store_id = $1 AND cr.buyer_id = $2
+      `;
+      const res = await client.query(fetchQuery, [storeId, buyerId]);
+      return res.rows[0];
+    } finally {
+      client.release();
+    }
   }
 
   // Mark messages as read

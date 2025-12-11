@@ -34,6 +34,25 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                         </div>
                     </div>
                 </div>
+
+                <?php if (Auth::check()): ?>
+                    <?php 
+                    $user = Auth::user();
+                    if ($user && $user['role'] === 'BUYER'): 
+                    ?>
+                        <div style="margin-top: 1.5rem;">
+                            <?php
+                            echo View::component('chat-button', [
+                                'storeId' => $store['store_id'],
+                                'storeName' => $store['store_name'],
+                                'variant' => 'primary',
+                                'size' => 'md',
+                                'fullWidth' => false
+                            ]);
+                            ?>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
         </section>
 

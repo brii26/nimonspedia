@@ -72,6 +72,8 @@ services:
       - MIDTRANS_IS_PRODUCTION=${MIDTRANS_IS_PRODUCTION}
     networks:
       - nimonspedia-network
+    volumes:
+     - ./storage:/app/public/uploads
 
   redis:
     image: redis:alpine

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../services/FeatureFlagService.php';
 // Get current user from session
 $currentUser = Auth::user();
 $isLoggedIn = Auth::check();
@@ -6,7 +7,8 @@ $userRole = $currentUser ? $currentUser['role'] : null;
 $storeBalance = $storeBalance ?? 0;
 $userId = $currentUser ? $currentUser['user_id'] : null;
 $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
-
+$chatAccess = FeatureFlagService::checkAccess($userId, 'chat_enabled');
+$isChatEnabled = $chatAccess['allowed'];
 // Get cart count for buyers
 $productRepo = new ProductRepository();
 $cartItemRepo = new CartItemRepository();
@@ -95,8 +97,24 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">📋</span>
                             <span class="nav-text">Orders</span>
                         </a>
+                        
                     <?php endif; ?>
                 </div>
+                <?php if ($isLoggedIn && ($userRole === 'BUYER' || $userRole === 'SELLER')): ?>
+                        
+                        <a href="/auctions" class="nav-link <?= $activePage === 'auctions' ? 'active' : '' ?>">
+                            <span class="nav-icon">🔨</span>
+                            <span class="nav-text">Lelang</span>
+                        </a>
+
+                        <?php if ($chatAccess['allowed']): ?>
+                            <a href="/chat" class="nav-link <?= $activePage === 'chat' ? 'active' : '' ?>">
+                                <span class="nav-icon">💬</span>
+                                <span class="nav-text">Chat</span>
+                            </a>
+                        <?php endif; ?>
+
+                    <?php endif; ?>
                 
                 <?php if ($isLoggedIn): ?>
                     <div class="navbar-user">

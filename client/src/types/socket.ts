@@ -40,6 +40,10 @@ export interface ChatMessage {
   product_id?: number;
   is_read: boolean;
   created_at: string;
+  // Product fields for item_preview type
+  product_name?: string;
+  product_price?: number;
+  product_image?: string;
 }
 
 export interface ChatRoom {
