@@ -37,6 +37,31 @@ class ProductController extends BaseController {
         return;
     }
 
+    // API endpoint untuk mendapatkan products dalam JSON (untuk chat item preview)
+    // Kalo mau refactor, ini hapus aja
+    public function api() {
+        $options = [
+            'page'       => (int)$this->getQuery('page', 1),
+            'perPage'    => (int)$this->getQuery('limit', 20),
+            'searchTerm' => $this->getQuery('search'),
+            'categoryId' => $this->getQuery('category'),
+            'minPrice'   => $this->getQuery('min_price'),
+            'maxPrice'   => $this->getQuery('max_price'),
+        ];
+
+        $productsData = $this->productService->getAllProducts($options);
+        
+        $this->json([
+            'success' => true,
+            'data' => $productsData['data'] ?? [],
+            'pagination' => [
+                'current_page' => $productsData['current_page'] ?? 1,
+                'total_pages' => $productsData['total_pages'] ?? 0,
+                'total_items' => $productsData['total'] ?? 0
+            ]
+        ]);
+    }
+
     public function show() {
         $productId = $this->getQuery('id');
         if (!$productId) {

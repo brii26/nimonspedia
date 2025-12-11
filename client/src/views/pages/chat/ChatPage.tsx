@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext.js';
 import api from '../../../services/api/axios.js';
 import { useChatSocket } from '../../../hooks/useChatSocket.js'; 
@@ -75,6 +76,18 @@ const ChatPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const productSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load products when modal opens
+  useEffect(() => {
+    if (showProductModal) {
+      // Load all products initially
+      searchProductsForPreview('');
+    } else {
+      // Clear products when modal closes
+      setSearchProducts([]);
+      setProductSearch('');
+    }
+  }, [showProductModal]);
+
   // --- Callback Update Sidebar ---
   const handleNewMessage = useCallback((msg: any) => {
     setRooms((prevRooms: ChatRoom[]) => {
@@ -138,45 +151,48 @@ const ChatPage = () => {
     }
   };
 
-  const searchProductsForPreview = async (query: string) => {
-    if (query.length < 2) {
-      setSearchProducts([]);
-      return;
-    }
-    
+  const searchProductsForPreview = async (query: string = '') => {
     // Clear previous timeout
     if (productSearchTimeoutRef.current) {
       clearTimeout(productSearchTimeoutRef.current);
     }
     
-    // Debounce search
+    // Debounce search (only if user is typing)
+    const delay = query.length > 0 ? 300 : 0;
+    
     productSearchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingProducts(true);
       try {
-        // Use PHP endpoint directly without /api prefix
-        const res = await api.get(`/products?search=${encodeURIComponent(query)}&page=1&limit=5`);
-        console.log('Product search response:', res.data);
+        // Use /api/products endpoint for JSON response
+        const searchParam = query ? `search=${encodeURIComponent(query)}&` : '';
+        const limit = query ? 10 : 20;
+        const url = `/api/products?${searchParam}page=1&limit=${limit}`;
+        
+        console.log('[Product Search] Fetching from:', url);
+        const res = await axios.get(url);
+        console.log('[Product Search] Response:', res.data);
+        
+        // Parse response from PHP backend
+        let products = [];
         
         if (res.data?.success && res.data?.data) {
-          // Handle object response with products array
-          const products = res.data.data.products || [];
-          console.log('Products found:', products);
-          setSearchProducts(products);
+          // Expected format: { success: true, data: [...] }
+          products = res.data.data;
         } else if (Array.isArray(res.data)) {
-          // Direct array response
-          console.log('Products found (array):', res.data);
-          setSearchProducts(res.data);
-        } else {
-          console.log('No products found in response');
-          setSearchProducts([]);
+          products = res.data;
         }
-      } catch (err) {
-        console.error("Product search error:", err);
+        
+        console.log('[Product Search] Products found:', products.length);
+        setSearchProducts(products);
+        
+      } catch (err: any) {
+        console.error("[Product Search] Error:", err);
+        console.error("[Product Search] Response:", err.response?.data);
         setSearchProducts([]);
       } finally {
         setIsSearchingProducts(false);
       }
-    }, 300);
+    }, delay);
   };
 
   const handleSendProductPreview = (product: any) => {
@@ -508,7 +524,7 @@ const ChatPage = () => {
                                 )}
                                 {msg.product_id && (
                                   <a 
-                                    href={`/products/${msg.product_id}`}
+                                    href={`/product?id=${msg.product_id}`}
                                     className="inline-block mt-2 text-xs text-blue-600 hover:underline"
                                   >
                                     Lihat Produk →
@@ -643,10 +659,10 @@ const ChatPage = () => {
                               </div>
                             </div>
                           ))
-                        ) : productSearch.length >= 2 ? (
-                          <p className="text-sm text-gray-500 text-center py-4">Produk tidak ditemukan</p>
                         ) : (
-                          <p className="text-sm text-gray-500 text-center py-4">Cari produk untuk memulai</p>
+                          <p className="text-sm text-gray-500 text-center py-4">
+                            {productSearch ? 'Produk tidak ditemukan' : 'Tidak ada produk tersedia'}
+                          </p>
                         )}
                       </div>
 
