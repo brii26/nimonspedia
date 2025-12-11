@@ -13,6 +13,7 @@ interface Admin {
 
 interface User {
   id: string | number;
+  user_id?: string | number; // Added to match PHP backend response
   name: string;
   role: 'BUYER' | 'SELLER';
   email?: string;
@@ -73,7 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const response = await api.get('/auth/user'); 
       if (response.data.success && response.data.user) {
-        setUser(response.data.user);
+        const userData = response.data.user;
+        // Map user_id to id for consistency if needed, or keep both
+        setUser({
+            ...userData,
+            id: userData.user_id || userData.id // Ensure id is populated
+        });
         return true;
       }
       return false;

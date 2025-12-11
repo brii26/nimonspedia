@@ -151,7 +151,7 @@
                             <div class="form-group">
                                 <label for="amount">Amount</label>
                                 <input type="number" id="amount" name="amount" 
-                                        min="10000" step="10000" 
+                                        min="10000"
                                         placeholder="Minimum Rp 10.000" 
                                         required aria-describedby="amount-help">
                                 <small id="amount-help">Minimum amount is Rp 10.000</small>
