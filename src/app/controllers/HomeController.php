@@ -79,19 +79,7 @@ class HomeController extends BaseController {
         $productsData = $this->productService->getAllProducts($filters);
         $categories = $this->categoryService->getAllCategories();
         
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-                  
         $actionUrl = '/';
-
-        if ($isAjax) {
-            $html = View::component('product-list', [
-                'productsData' => $productsData,
-                'filters' => $filters,
-                'actionUrl' => $actionUrl
-            ]);
-            $this->json(['html' => $html]);
-            return;
-        }
 
         $this->render('pages/products/index', [
             'productsData' => $productsData,
@@ -102,7 +90,7 @@ class HomeController extends BaseController {
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
                 '/js/pages/products/index.js',
-                '/js/components/product-filter.js',
+                '/js/components/public-filter.js',
             ],
             'cssFiles'=> [
                 'css/components/modal.css',

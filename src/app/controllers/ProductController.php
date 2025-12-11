@@ -12,32 +12,64 @@ class ProductController extends BaseController {
     }
 
     public function index() {
+        // Parse Price Range Logic
+        $priceRange = $this->getQuery('priceRange');
+        $minPrice = null;
+        $maxPrice = null;
+        if ($priceRange && str_contains($priceRange, '-')) {
+            list($min, $max) = explode('-', $priceRange);
+            $minPrice = ($min !== '') ? (int)$min : null;
+            $maxPrice = ($max !== '') ? (int)$max : null;
+        } else {
+            // Fallback to direct min/max query params if provided
+            $minPrice = $this->getQuery('min_price');
+            $maxPrice = $this->getQuery('max_price');
+        }
+
+        // Handle perPage logic
+        $perPageParam = $this->getQuery('perPage', '8');
+        $perPage = 8; // Default
+
+        if ($perPageParam === 'all') {
+            $perPage = -1; // Unlimited
+        } else {
+            $perPage = (int)$perPageParam;
+            $allowedPerPage = [4, 8, 12, 20];
+            if (!in_array($perPage, $allowedPerPage)) {
+                $perPage = 8;
+            }
+        }
+
         $options = [
             'page'       => (int)$this->getQuery('page', 1),
-            'perPage'    => 8,
-            'searchTerm' => $this->getQuery('search'),
-            'categoryId' => $this->getQuery('category'),
-            'minPrice'   => $this->getQuery('min_price'),
-            'maxPrice'   => $this->getQuery('max_price'),
+            'perPage'    => $perPage,
+            'searchTerm' => $this->getQuery('searchTerm') ?? $this->getQuery('search'), // Support both
+            'categoryId' => $this->getQuery('categoryId') ?? $this->getQuery('category'), // Support both
+            'minPrice'   => $minPrice,
+            'maxPrice'   => $maxPrice,
+            'priceRange' => $priceRange // Optional pass-through
         ];
 
         $productService = new ProductService();
         $productsData = $productService->getAllProducts($options);
-        $this->render('pages/products/index', [
-            'productsData' => $productsData,
-            'pageTitle' => 'Browse Products',
-            'filters' => $options, // Pass the filter options to the view
-            'jsFiles' => [
-                '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js',
-                '/js/components/product-filter.js',
-            ],
-            'cssFiles'=> [
-                'css/components/modal.css',
-                'css/components/product-filter.css'
+
+        // Get Auth & Feature Flags for Frontend Rendering
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $user = Auth::user();
+        $userId = $user ? $user['user_id'] : null;
+        $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
+        
+        $response = array_merge($productsData, [
+            'meta' => [
+                'is_logged_in' => Auth::check(),
+                'checkout_enabled' => $checkoutAccess['allowed'],
+                'csrf_token' => $_SESSION['csrf_token'] ?? ''
             ]
         ]);
-        return;
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
     }
 
     public function show() {

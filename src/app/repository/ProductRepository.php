@@ -43,8 +43,17 @@ class ProductRepository extends BaseRepository {
      */
 	public function searchAndFilter($options = []) {
 		$page    = max(1, (int)($options['page'] ?? 1));
-		$perPage = max(1, (int)($options['perPage'] ?? 12));
-		$offset  = ($page - 1) * $perPage;
+        
+        // Check for "unlimited" signal (-1)
+        $rawPerPage = (int)($options['perPage'] ?? 12);
+        if ($rawPerPage === -1) {
+            $perPage = -1;
+            $offset = 0;
+        } else {
+            $perPage = max(1, $rawPerPage);
+            $offset  = ($page - 1) * $perPage;
+        }
+
         $includeCategories = !empty($options['includeCategories']);
 	
 		[$whereSql, $filterParams] = $this->buildFilterConditions($options);
@@ -87,7 +96,7 @@ class ProductRepository extends BaseRepository {
 			'current_page' => $page,
 			'per_page' => $perPage,
 			'total' => (int)$total,
-			'total_pages' => $total ? (int)ceil($total / $perPage) : 0,
+			'total_pages' => ($total && $perPage > 0) ? (int)ceil($total / $perPage) : 1,
 		];
 	}
 	
@@ -172,6 +181,12 @@ class ProductRepository extends BaseRepository {
      */
 	
 	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '', $includeCategories = false) {
+        // Condition for Limit Clause
+        $limitClause = "";
+        if ($limit > 0) {
+            $limitClause = "LIMIT {$limit} OFFSET {$offset}";
+        }
+
 		if ($includeCategories) {
             // Legacy behavior for Seller Dashboard (needs category_names)
             // Note: This uses the heavier JOIN + GROUP BY approach
@@ -185,7 +200,7 @@ class ProductRepository extends BaseRepository {
                     FROM products p
                     {$whereSql}
                     " . ($orderSql ?: "") . "
-                    LIMIT {$limit} OFFSET {$offset}
+                    {$limitClause}
                 ) AS subset
                 JOIN products p ON subset.product_id = p.product_id
                 JOIN stores s ON p.store_id = s.store_id
@@ -210,7 +225,7 @@ class ProductRepository extends BaseRepository {
                     FROM products p
                     {$whereSql}
                     " . ($orderSql ?: "") . "
-                    LIMIT {$limit} OFFSET {$offset}
+                    {$limitClause}
                 ) AS subset
                 JOIN products p ON subset.product_id = p.product_id
                 JOIN stores s ON p.store_id = s.store_id

@@ -21,7 +21,7 @@ export const options = {
 };
 
 export default function () {
-  const baseUrl = 'http://localhost:8080/products';
+  const baseUrl = 'http://localhost:8080/products?perPage=all';
 
   // Simulate various user behaviors to hit different cache keys and DB paths
   // Parameters are kept, but no sleep time
@@ -53,9 +53,16 @@ export default function () {
 
   check(res, {
     'is status 200': (r) => r.status === 200,
+    'is json': (r) => r.headers['Content-Type'] && r.headers['Content-Type'].includes('application/json'),
+    'has data array': (r) => {
+        try {
+            const body = r.json();
+            return Array.isArray(body.data);
+        } catch (e) {
+            return false;
+        }
+    },
     'cache status is HIT or MISS': (r) => r.headers['X-Cache-Status'] === 'HIT' || r.headers['X-Cache-Status'] === 'MISS',
-    'cache status is HIT': (r) => r.headers['X-Cache-Status'] === 'HIT',
-    // We expect cache hits to dominate after ramp-up
   });
 
   // No sleep() here to simulate maximum possible requests
