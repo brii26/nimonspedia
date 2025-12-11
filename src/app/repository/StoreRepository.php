@@ -86,5 +86,28 @@ class StoreRepository extends BaseRepository {
         $row = $this->db->selectOne($sql, [$storeId]);
         return $row ? (int)$row['balance'] : 0;
     }
+
+    /**
+     * Search stores by name with pagination
+     */
+    public function searchStores($search = '', $page = 1, $limit = 20) {
+        $offset = ($page - 1) * $limit;
+        $params = [];
+        
+        $sql = "SELECT store_id, store_name, store_description, store_logo_path, created_at
+                FROM stores
+                WHERE 1=1";
+        
+        if (!empty($search)) {
+            $sql .= " AND store_name ILIKE ?";
+            $params[] = '%' . $search . '%';
+        }
+        
+        $sql .= " ORDER BY store_name ASC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        
+        return $this->db->select($sql, $params);
+    }
 	
 }

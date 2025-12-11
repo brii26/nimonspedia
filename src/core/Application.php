@@ -75,10 +75,11 @@ class Application {
         $this->router->post('/balance/topup', 'AuthController@topUp');
         
         // Product discovery routes
-        $this->router->get('/api/products', 'ProductController@api'); // API endpoint untuk JSON: Kalo mau refactor, ini hapus aja
+        $this->router->get('/api/products', 'ProductController@api'); // API endpoint untuk JSON
         $this->router->get('/products', 'ProductController@index');
         $this->router->get('/product', 'ProductController@show');
 
+        $this->router->get('/api/stores', 'StoreController@api'); // API endpoint untuk stores list
         $this->router->get('/store', 'StoreController@show');
         
         // Cart routes 

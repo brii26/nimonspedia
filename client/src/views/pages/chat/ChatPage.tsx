@@ -69,6 +69,10 @@ const ChatPage = () => {
   const [productSearch, setProductSearch] = useState('');
   const [searchProducts, setSearchProducts] = useState<any[]>([]);
   const [isSearchingProducts, setIsSearchingProducts] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [storeSearch, setStoreSearch] = useState('');
+  const [stores, setStores] = useState<any[]>([]);
+  const [isLoadingStores, setIsLoadingStores] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -87,6 +91,16 @@ const ChatPage = () => {
       setProductSearch('');
     }
   }, [showProductModal]);
+
+  // Load stores when new chat modal opens
+  useEffect(() => {
+    if (showNewChatModal) {
+      fetchStores('');
+    } else {
+      setStores([]);
+      setStoreSearch('');
+    }
+  }, [showNewChatModal]);
 
   // --- Callback Update Sidebar ---
   const handleNewMessage = useCallback((msg: any) => {
@@ -148,6 +162,60 @@ const ChatPage = () => {
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const fetchStores = async (query: string = '') => {
+    setIsLoadingStores(true);
+    try {
+      const searchParam = query ? `search=${encodeURIComponent(query)}&` : '';
+      const res = await axios.get(`/api/stores?${searchParam}page=1&limit=20`);
+      
+      if (res.data?.success && res.data?.data) {
+        setStores(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        setStores(res.data);
+      } else {
+        setStores([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch stores:', err);
+      setStores([]);
+    } finally {
+      setIsLoadingStores(false);
+    }
+  };
+
+  const handleStartNewChat = async (storeId: number) => {
+    try {
+      const res = await api.post('/chat/initiate', { storeId });
+      if (res.data.success) {
+        const roomData = res.data.data;
+        const roomId = roomData.room_id || `chat_${roomData.store_id}_${roomData.buyer_id}`;
+        
+        const newRoom: ChatRoom = {
+          room_id: roomId,
+          store_id: Number(roomData.store_id),
+          buyer_id: Number(roomData.buyer_id),
+          store_name: roomData.store_name,
+          buyer_name: roomData.buyer_name || user!.name,
+          store_image: roomData.store_logo_path,
+          buyer_image: roomData.buyer_image || '',
+          last_message: '',
+          last_message_time: new Date().toISOString(),
+          unread_count: 0
+        };
+
+        setRooms((prev) => {
+          if (prev.find(r => r.room_id === roomId)) return prev;
+          return [newRoom, ...prev];
+        });
+        setActiveRoom(newRoom);
+        setShowNewChatModal(false);
+        setStoreSearch('');
+      }
+    } catch (err) {
+      console.error('Failed to initiate chat:', err);
     }
   };
 
@@ -404,7 +472,25 @@ const ChatPage = () => {
 
           <div className="flex-1 overflow-y-auto">
             {filteredRooms.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Tidak ada pesan</div>
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-4xl">💬</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Belum ada percakapan</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  {user?.role === 'BUYER' 
+                    ? 'Mulai chat dengan toko untuk bertanya tentang produk'
+                    : 'Menunggu pembeli menghubungi Anda'}
+                </p>
+                {user?.role === 'BUYER' && (
+                  <Button 
+                    onClick={() => setShowNewChatModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+                  >
+                    Chat Baru
+                  </Button>
+                )}
+              </div>
             ) : (
               filteredRooms.map((room) => {
                 const { name, image } = getOpponentInfo(room);
@@ -474,9 +560,27 @@ const ChatPage = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50" onScroll={handleScroll}>
-                {isLoadingMore && <div className="text-center text-xs text-gray-400 py-2">Memuat pesan lama...</div>}
+                {isLoadingMore && (
+                  <div className="flex justify-center py-2">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                    </div>
+                  </div>
+                )}
                 {isLoading ? (
-                   <div className="flex justify-center py-10"><span className="loader">Loading chat...</span></div>
+                   <div className="space-y-4">
+                     {/* Loading Skeleton */}
+                     {[1, 2, 3, 4, 5].map((i) => (
+                       <div key={i} className={`flex w-full ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                         <div className={`max-w-[75%] px-4 py-3 rounded-2xl ${i % 2 === 0 ? 'bg-blue-100' : 'bg-gray-200'} animate-pulse`}>
+                           <div className="h-4 bg-gray-300 rounded w-48 mb-2"></div>
+                           <div className="h-3 bg-gray-300 rounded w-24"></div>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
                 ) : (
                   messages.map((msg, idx) => {
                     // Logic perbandingan ID yang lebih kuat
@@ -710,6 +814,83 @@ const ChatPage = () => {
 
         </div>
       </Card>
+
+      {/* New Chat Modal */}
+      {showNewChatModal && user?.role === 'BUYER' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Mulai Chat Baru</h3>
+              <button 
+                onClick={() => setShowNewChatModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            
+            <Input 
+              placeholder="Cari toko..."
+              value={storeSearch}
+              onChange={(e) => {
+                setStoreSearch(e.target.value);
+                fetchStores(e.target.value);
+              }}
+              className="mb-4"
+            />
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {isLoadingStores ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="text-sm text-gray-500 mt-2">Memuat toko...</p>
+                </div>
+              ) : stores.length > 0 ? (
+                stores.map((store) => (
+                  <div 
+                    key={store.store_id}
+                    onClick={() => handleStartNewChat(store.store_id)}
+                    className="flex items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                  >
+                    {store.store_logo_path && (
+                      <img 
+                        src={`/storage/${store.store_logo_path}`}
+                        alt={store.store_name}
+                        className="w-12 h-12 object-cover rounded-full mr-3"
+                        onError={(e) => {
+                          e.currentTarget.src = '/storage/store_logos/default-store.svg';
+                        }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{store.store_name}</p>
+                      {store.store_description && (
+                        <p className="text-xs text-gray-500 truncate">
+                          {store.store_description.replace(/<[^>]*>/g, '').substring(0, 50)}...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-500">
+                    {storeSearch ? 'Toko tidak ditemukan' : 'Tidak ada toko tersedia'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Button 
+              onClick={() => setShowNewChatModal(false)}
+              variant="secondary"
+              className="w-full mt-4"
+            >
+              Tutup
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
