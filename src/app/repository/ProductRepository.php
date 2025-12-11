@@ -46,6 +46,19 @@ class ProductRepository extends BaseRepository {
 		$perPage = max(1, (int)($options['perPage'] ?? 12));
 		$offset  = ($page - 1) * $perPage;
         $includeCategories = !empty($options['includeCategories']);
+
+        // Cache Logic (Only for Public Listing)
+        $cacheKey = null;
+        if (!$includeCategories) {
+            // Ensure Cache class is loaded (if not autoloaded)
+            if (class_exists('Cache')) {
+                $cacheKey = 'products_v1:' . md5(json_encode($options));
+                $cached = Cache::get($cacheKey);
+                if ($cached) {
+                    return $cached;
+                }
+            }
+        }
 	
 		[$whereSql, $filterParams] = $this->buildFilterConditions($options);
 	
@@ -82,13 +95,19 @@ class ProductRepository extends BaseRepository {
         }
 		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
 	
-		return [
+		$result = [
 			'data' => $records,
 			'current_page' => $page,
 			'per_page' => $perPage,
 			'total' => (int)$total,
 			'total_pages' => $total ? (int)ceil($total / $perPage) : 0,
 		];
+
+        if ($cacheKey && class_exists('Cache')) {
+            Cache::set($cacheKey, $result, 30);
+        }
+
+        return $result;
 	}
 	
 
