@@ -85,21 +85,26 @@ class ProductRepository extends BaseRepository {
 	
 		$total = $this->countFilteredProducts($whereSql, $filterParams);
 
-		$allParams = array_merge($filterParams, $sortParams);
-        if (!empty($sortParams)) {
-            $allParams = array_merge($allParams, $sortParams);
+        // Merge params for final query
+        $allParams = array_merge($filterParams, $sortParams);
+        
+        // Optimasi: Jika perPage = -1 (Unlimited), SKIP COUNT Query.
+        if ($perPage === -1) {
+            $records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
+            $total = count($records);
+        } else {
+            $total = $this->countFilteredProducts($whereSql, $filterParams);
+            $records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
         }
-		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
 	
 		return [
-			'data' => $records,
-			'current_page' => $page,
-			'per_page' => $perPage,
-			'total' => (int)$total,
-			'total_pages' => ($total && $perPage > 0) ? (int)ceil($total / $perPage) : 1,
-		];
-	}
-	
+					'data' => $records,
+					'current_page' => $page,
+					'per_page' => $perPage,
+					'total' => (int)$total,
+					'total_pages' => ($total && $perPage > 0) ? (int)ceil($total / $perPage) : 1,
+				];
+			}	
 
     /**
      * [Private Helper] Constructs the WHERE clause and parameter array for filtering.
