@@ -69,7 +69,8 @@ class SellerController extends BaseController {
 			'perPage' => in_array($perPage, [4, 8, 12, 20], true) ? $perPage : 8,
 			'sortBy' => in_array($sortBy, ['name', 'price', 'stock'], true) ? $sortBy : null,
 			'sortDir' => $sortDir === 'DESC' ? 'DESC' : 'ASC',
-			'stock' => $stock
+			'stock' => $stock,
+            'includeCategories' => true
 		];
 	
 		$productsData = $this->productService->getAllProducts($options);

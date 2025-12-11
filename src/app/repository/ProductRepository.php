@@ -45,6 +45,7 @@ class ProductRepository extends BaseRepository {
 		$page    = max(1, (int)($options['page'] ?? 1));
 		$perPage = max(1, (int)($options['perPage'] ?? 12));
 		$offset  = ($page - 1) * $perPage;
+        $includeCategories = !empty($options['includeCategories']);
 	
 		[$whereSql, $filterParams] = $this->buildFilterConditions($options);
 	
@@ -79,7 +80,7 @@ class ProductRepository extends BaseRepository {
         if (!empty($sortParams)) {
             $allParams = array_merge($allParams, $sortParams);
         }
-		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql);
+		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
 	
 		return [
 			'data' => $records,
@@ -170,27 +171,52 @@ class ProductRepository extends BaseRepository {
      * @return array A list of product records.
      */
 	
-	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '') {
-		$sql = "
-			SELECT 
-				p.product_id, 
-				p.product_name, 
-				p.price, 
-				p.stock, 
-				p.main_image_path, 
-				p.store_id,
-				s.store_name
-			FROM (
-				SELECT p.product_id
-				FROM products p
-				{$whereSql}
-				" . ($orderSql ?: "") . "
-				LIMIT {$limit} OFFSET {$offset}
-			) AS subset
-			JOIN products p ON subset.product_id = p.product_id
-			JOIN stores s ON p.store_id = s.store_id
-			" . ($orderSql ?: "") . "
-		";
+	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '', $includeCategories = false) {
+		if ($includeCategories) {
+            // Legacy behavior for Seller Dashboard (needs category_names)
+            // Note: This uses the heavier JOIN + GROUP BY approach
+            $sql = "
+                SELECT 
+                    p.*, 
+                    s.store_name,
+                    COALESCE(string_agg(DISTINCT c.name, '|||'), '') AS category_names
+                FROM (
+                    SELECT p.product_id
+                    FROM products p
+                    {$whereSql}
+                    " . ($orderSql ?: "") . "
+                    LIMIT {$limit} OFFSET {$offset}
+                ) AS subset
+                JOIN products p ON subset.product_id = p.product_id
+                JOIN stores s ON p.store_id = s.store_id
+                LEFT JOIN category_items ci ON p.product_id = ci.product_id
+                LEFT JOIN categories c ON ci.category_id = c.category_id
+                GROUP BY p.product_id, s.store_name
+                " . ($orderSql ?: "") . "
+            ";
+        } else {
+            // Optimized behavior for Public Listing (no categories needed)
+            $sql = "
+                SELECT 
+                    p.product_id, 
+                    p.product_name, 
+                    p.price, 
+                    p.stock, 
+                    p.main_image_path, 
+                    p.store_id,
+                    s.store_name
+                FROM (
+                    SELECT p.product_id
+                    FROM products p
+                    {$whereSql}
+                    " . ($orderSql ?: "") . "
+                    LIMIT {$limit} OFFSET {$offset}
+                ) AS subset
+                JOIN products p ON subset.product_id = p.product_id
+                JOIN stores s ON p.store_id = s.store_id
+                " . ($orderSql ?: "") . "
+            ";
+        }
 		return $this->db->select($sql, $params);
 	}
 	

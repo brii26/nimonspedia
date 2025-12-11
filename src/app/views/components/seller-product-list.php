@@ -16,12 +16,22 @@
               $stockText = "Low Stock: $stock";
             }
             
-            $path = $product['main_image_path'] ?? 'product_images/default-product.svg';
-            $imageUrl = '/storage/' . View::escape($path);
+            $mainImagePath = $product['main_image_path'] ?? 'product_images/default-product.svg';
+            $previewPath = $mainImagePath;
+            
+            if ($mainImagePath !== 'product_images/default-product.svg') {
+                $pathParts = pathinfo($mainImagePath);
+                if (isset($pathParts['extension'])) {
+                    $previewPath = $pathParts['dirname'] . '/' . $pathParts['filename'] . '_preview.' . $pathParts['extension'];
+                }
+            }
           ?>
 
           <div class="card-image">
-            <img src="<?= $imageUrl ?>" alt="<?= View::escape($product['product_name']) ?>">
+            <img src="<?= '/storage/' . View::escape($previewPath) ?>" 
+                 alt="<?= View::escape($product['product_name']) ?>"
+                 loading="lazy"
+                 onerror="this.onerror=null;this.src='<?= '/storage/' . View::escape($mainImagePath) ?>';">
             <span class="stock-badge <?= $stockClass ?>"><?= $stockText ?></span>
           </div>
 
