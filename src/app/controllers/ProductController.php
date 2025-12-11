@@ -26,12 +26,15 @@ class ProductController extends BaseController {
         $this->render('pages/products/index', [
             'productsData' => $productsData,
             'pageTitle' => 'Browse Products',
+            'filters' => $options, // Pass the filter options to the view
             'jsFiles' => [
                 '/js/utils/fetchXhr.js',
-                '/js/pages/products/index.js'
+                '/js/pages/products/index.js',
+                '/js/components/product-filter.js',
             ],
-            'cssFiles' => [
-                '/css/pages/products-index.css'
+            'cssFiles'=> [
+                'css/components/modal.css',
+                'css/components/product-filter.css'
             ]
         ]);
         return;

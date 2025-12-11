@@ -16,6 +16,11 @@ class Router {
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         error_log("Router: {$method} {$path}");
+
+        // Treat HEAD as GET
+        if ($method === 'HEAD') {
+            $method = 'GET';
+        }
         
         if (isset($this->routes[$method][$path])) {
             $handler = $this->routes[$method][$path];
