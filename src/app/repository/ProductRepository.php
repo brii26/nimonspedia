@@ -76,6 +76,9 @@ class ProductRepository extends BaseRepository {
 		$total = $this->countFilteredProducts($whereSql, $filterParams);
 
 		$allParams = array_merge($filterParams, $sortParams);
+        if (!empty($sortParams)) {
+            $allParams = array_merge($allParams, $sortParams);
+        }
 		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql);
 	
 		return [
@@ -149,9 +152,8 @@ class ProductRepository extends BaseRepository {
      */
     private function countFilteredProducts($whereSql, $params) {
         $sql = "
-            SELECT COUNT(DISTINCT p.product_id) as total
+            SELECT COUNT(*) as total
             FROM products p
-            LEFT JOIN category_items ci ON p.product_id = ci.product_id
             {$whereSql}
         ";
         $result = $this->db->selectOne($sql, $params);
@@ -171,17 +173,23 @@ class ProductRepository extends BaseRepository {
 	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '') {
 		$sql = "
 			SELECT 
-				p.*, 
-				s.store_name,
-				COALESCE(string_agg(DISTINCT c.name, '|||'), '') AS category_names
-			FROM products p
+				p.product_id, 
+				p.product_name, 
+				p.price, 
+				p.stock, 
+				p.main_image_path, 
+				p.store_id,
+				s.store_name
+			FROM (
+				SELECT p.product_id
+				FROM products p
+				{$whereSql}
+				" . ($orderSql ?: "") . "
+				LIMIT {$limit} OFFSET {$offset}
+			) AS subset
+			JOIN products p ON subset.product_id = p.product_id
 			JOIN stores s ON p.store_id = s.store_id
-			LEFT JOIN category_items ci ON p.product_id = ci.product_id
-			LEFT JOIN categories c ON ci.category_id = c.category_id
-			{$whereSql}
-			GROUP BY p.product_id, s.store_name
 			" . ($orderSql ?: "") . "
-			LIMIT {$limit} OFFSET {$offset}
 		";
 		return $this->db->select($sql, $params);
 	}
