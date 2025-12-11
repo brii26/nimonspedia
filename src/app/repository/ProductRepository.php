@@ -43,8 +43,18 @@ class ProductRepository extends BaseRepository {
      */
 	public function searchAndFilter($options = []) {
 		$page    = max(1, (int)($options['page'] ?? 1));
-		$perPage = max(1, (int)($options['perPage'] ?? 12));
-		$offset  = ($page - 1) * $perPage;
+        
+        // Check for "unlimited" signal (-1)
+        $rawPerPage = (int)($options['perPage'] ?? 12);
+        if ($rawPerPage === -1) {
+            $perPage = -1;
+            $offset = 0;
+        } else {
+            $perPage = max(1, $rawPerPage);
+            $offset  = ($page - 1) * $perPage;
+        }
+
+        $includeCategories = !empty($options['includeCategories']);
 	
 		[$whereSql, $filterParams] = $this->buildFilterConditions($options);
 	
@@ -75,18 +85,26 @@ class ProductRepository extends BaseRepository {
 	
 		$total = $this->countFilteredProducts($whereSql, $filterParams);
 
-		$allParams = array_merge($filterParams, $sortParams);
-		$records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql);
+        // Merge params for final query
+        $allParams = array_merge($filterParams, $sortParams);
+        
+        // Optimasi: Jika perPage = -1 (Unlimited), SKIP COUNT Query.
+        if ($perPage === -1) {
+            $records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
+            $total = count($records);
+        } else {
+            $total = $this->countFilteredProducts($whereSql, $filterParams);
+            $records = $this->getFilteredProductsPage($whereSql, $allParams, $perPage, $offset, $orderSql, $includeCategories);
+        }
 	
 		return [
-			'data' => $records,
-			'current_page' => $page,
-			'per_page' => $perPage,
-			'total' => (int)$total,
-			'total_pages' => $total ? (int)ceil($total / $perPage) : 0,
-		];
-	}
-	
+					'data' => $records,
+					'current_page' => $page,
+					'per_page' => $perPage,
+					'total' => (int)$total,
+					'total_pages' => ($total && $perPage > 0) ? (int)ceil($total / $perPage) : 1,
+				];
+			}	
 
     /**
      * [Private Helper] Constructs the WHERE clause and parameter array for filtering.
@@ -149,9 +167,8 @@ class ProductRepository extends BaseRepository {
      */
     private function countFilteredProducts($whereSql, $params) {
         $sql = "
-            SELECT COUNT(DISTINCT p.product_id) as total
+            SELECT COUNT(*) as total
             FROM products p
-            LEFT JOIN category_items ci ON p.product_id = ci.product_id
             {$whereSql}
         ";
         $result = $this->db->selectOne($sql, $params);
@@ -168,21 +185,58 @@ class ProductRepository extends BaseRepository {
      * @return array A list of product records.
      */
 	
-	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '') {
-		$sql = "
-			SELECT 
-				p.*, 
-				s.store_name,
-				COALESCE(string_agg(DISTINCT c.name, '|||'), '') AS category_names
-			FROM products p
-			JOIN stores s ON p.store_id = s.store_id
-			LEFT JOIN category_items ci ON p.product_id = ci.product_id
-			LEFT JOIN categories c ON ci.category_id = c.category_id
-			{$whereSql}
-			GROUP BY p.product_id, s.store_name
-			" . ($orderSql ?: "") . "
-			LIMIT {$limit} OFFSET {$offset}
-		";
+	private function getFilteredProductsPage($whereSql, $params, $limit, $offset, $orderSql = '', $includeCategories = false) {
+        // Condition for Limit Clause
+        $limitClause = "";
+        if ($limit > 0) {
+            $limitClause = "LIMIT {$limit} OFFSET {$offset}";
+        }
+
+		if ($includeCategories) {
+            // Legacy behavior for Seller Dashboard (needs category_names)
+            // Note: This uses the heavier JOIN + GROUP BY approach
+            $sql = "
+                SELECT 
+                    p.*, 
+                    s.store_name,
+                    COALESCE(string_agg(DISTINCT c.name, '|||'), '') AS category_names
+                FROM (
+                    SELECT p.product_id
+                    FROM products p
+                    {$whereSql}
+                    " . ($orderSql ?: "") . "
+                    {$limitClause}
+                ) AS subset
+                JOIN products p ON subset.product_id = p.product_id
+                JOIN stores s ON p.store_id = s.store_id
+                LEFT JOIN category_items ci ON p.product_id = ci.product_id
+                LEFT JOIN categories c ON ci.category_id = c.category_id
+                GROUP BY p.product_id, s.store_name
+                " . ($orderSql ?: "") . "
+            ";
+        } else {
+            // Optimized behavior for Public Listing (no categories needed)
+            $sql = "
+                SELECT 
+                    p.product_id, 
+                    p.product_name, 
+                    p.price, 
+                    p.stock, 
+                    p.main_image_path, 
+                    p.store_id,
+                    s.store_name
+                FROM (
+                    SELECT p.product_id
+                    FROM products p
+                    {$whereSql}
+                    " . ($orderSql ?: "") . "
+                    {$limitClause}
+                ) AS subset
+                JOIN products p ON subset.product_id = p.product_id
+                JOIN stores s ON p.store_id = s.store_id
+                " . ($orderSql ?: "") . "
+            ";
+        }
 		return $this->db->select($sql, $params);
 	}
 	

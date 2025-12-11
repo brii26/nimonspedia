@@ -7,14 +7,16 @@ RUN apk update && apk add --no-cache \
     supervisor \
     libpng-dev \
     libjpeg-turbo-dev \
+    libwebp-dev \
     freetype-dev \
     postgresql-dev \
     libpng \
     libjpeg-turbo \
+    libwebp \
     freetype \
     postgresql-client \
     libpq \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd pdo pdo_pgsql \
     && pecl install redis \
     && docker-php-ext-enable redis \
@@ -23,6 +25,7 @@ RUN apk update && apk add --no-cache \
         ${PHPIZE_DEPS} \
         libpng-dev \
         libjpeg-turbo-dev \
+        libwebp-dev \
         freetype-dev \
         postgresql-dev
 

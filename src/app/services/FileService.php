@@ -42,7 +42,9 @@ class FileService
             'maxWidth' => 1920,
             'maxHeight' => 1080,
             'quality' => 80,
-            'generatePreview' => false,
+            'generatePreview' => true,
+            'previewWidth' => 300,
+            'previewHeight' => 300,
         ],
         'review_image' => [
             'maxWidth' => 1200,

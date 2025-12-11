@@ -10,7 +10,28 @@ class ProductService {
     }
 
     public function getAllProducts($options) {
-        return $this->productRepository->searchAndFilter($options);
+        $includeCategories = !empty($options['includeCategories']);
+        
+        // Cache Logic (Only for Public Listing)
+        $cacheKey = null;
+        if (!$includeCategories && class_exists('Cache')) {
+            $cacheKey = 'products_v1:' . md5(json_encode($options));
+            $cached = Cache::get($cacheKey);
+            if ($cached) {
+                if (!headers_sent()) { header('X-Cache-Status: HIT'); }
+                return $cached;
+            }
+        }
+        
+        if (!$includeCategories && !headers_sent()) { header('X-Cache-Status: MISS'); }
+
+        $result = $this->productRepository->searchAndFilter($options);
+        
+        if ($cacheKey && class_exists('Cache')) {
+            Cache::set($cacheKey, $result, 30);
+        }
+        
+        return $result;
     }
     
     public function getProductById($productId) {
