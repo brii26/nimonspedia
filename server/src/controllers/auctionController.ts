@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import pool from '../config/database.js';
 import userRepository from '../repositories/userRepository.js';
+import auctionRepository from '../repositories/auctionRepository.js';
 import { getAllAuctionTimerStates } from '../sockets/auctionSocket.js';
 
 class AuctionController {
@@ -55,21 +56,17 @@ class AuctionController {
         return reply.status(400).send({ success: false, message: 'Insufficient balance' });
       }
 
-      // Get auction details from database
-      const auctionResult = await client.query(
-        'SELECT auction_id, current_price, min_increment, winner_id FROM auctions WHERE auction_id = $1 FOR UPDATE',
-        [auction_id]
-      );
+      // Get auction details from repository
+      const auction = await auctionRepository.getAuctionForBiddingWithClient(client, auction_id);
 
-      if (auctionResult.rows.length === 0) {
+      if (!auction) {
         await client.query('ROLLBACK');
         console.log('[PlaceBid] ERROR: Auction not found for auction_id:', auction_id);
         return reply.status(404).send({ success: false, message: 'Auction not found' });
       }
 
-      const auction = auctionResult.rows[0];
       const previousWinnerId = auction.winner_id;
-      const previousBidAmount = parseFloat(auction.current_price) || 0;
+      const previousBidAmount = parseFloat(String(auction.current_price)) || 0;
 
       if (previousWinnerId) {
         console.log('[PlaceBid] Refunding previous bidder userId:', previousWinnerId, 'amount:', previousBidAmount);
@@ -81,19 +78,11 @@ class AuctionController {
       const newBalance = parseFloat(String(updatedUser?.balance)) || 0;
       console.log('[PlaceBid] Balance updated via userRepository: new=', newBalance);
 
-      // Insert new bid
-      const bidInsertResult = await client.query(
-        'INSERT INTO auction_bids (auction_id, bidder_id, bid_amount, bid_time) VALUES ($1, $2, $3, NOW()) RETURNING bid_id',
-        [auction_id, userId, bid_amount]
-      );
+      // Insert new bid via repository
+      const bidId = await auctionRepository.insertBidWithClient(client, auction_id, userId, bid_amount);
 
-      const bidId = bidInsertResult.rows[0].bid_id;
-
-      // Update auction
-      await client.query(
-        'UPDATE auctions SET current_price = $1, winner_id = $2 WHERE auction_id = $3',
-        [bid_amount, userId, auction_id]
-      );
+      // Update auction via repository
+      await auctionRepository.updateAuctionBidWithClient(client, auction_id, bid_amount, userId);
 
       await client.query('COMMIT');
 
@@ -135,17 +124,7 @@ class AuctionController {
         return reply.status(401).send({ success: false, message: 'Not authenticated' });
       }
 
-      const result = await pool.query(
-        'SELECT balance FROM users WHERE user_id = $1',
-        [userId]
-      );
-
-      if (result.rows.length === 0) {
-        console.log('[GetBalance] ERROR: User not found for user_id:', userId);
-        return reply.status(404).send({ success: false, message: 'User not found' });
-      }
-
-      const balance = parseFloat(result.rows[0].balance) || 0;
+      const balance = await userRepository.getBalance(String(userId));
       console.log('[GetBalance] SUCCESS: balance=', balance);
 
       return reply.send({
@@ -171,123 +150,21 @@ class AuctionController {
 
       const pageNum = parseInt(page) || 1;
       const limitNum = parseInt(limit) || 8;
-      const offset = (pageNum - 1) * limitNum;
       const searchTerm = search.trim();
+      const filterType = (filter === 'active' || filter === 'scheduled' || filter === 'ended') ? filter : 'active';
 
-      let statusFilter = '';
-      let orderBy = 'ORDER BY a.start_time ASC';
+      // Use repository method
+      const { data, total } = await auctionRepository.getAuctionsPaginated(pageNum, limitNum, filterType, searchTerm);
 
-      if (filter === 'active') {
-        statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
-      } else if (filter === 'scheduled') {
-        statusFilter = "WHERE a.status = 'scheduled'";
-      } else if (filter === 'ended') {
-        statusFilter = "WHERE a.status = 'ended'";
-        orderBy = 'ORDER BY a.end_time DESC';
-      } else {
-        statusFilter = "WHERE a.status = 'active' AND a.end_time > NOW()";
-      }
-
-      // Build search filter
-      let searchFilter = '';
-
-      if (searchTerm) {
-        searchFilter = ` AND (LOWER(p.product_name) LIKE LOWER($1) OR LOWER(s.store_name) LIKE LOWER($1))`;
-      }
-
-      // Count query
-      const countQuery = `
-        SELECT COUNT(*) FROM auctions a
-        JOIN products p ON a.product_id = p.product_id
-        JOIN stores s ON p.store_id = s.store_id
-        ${statusFilter}${searchFilter}
-      `;
-
-      const countResult = searchTerm
-        ? await pool.query(countQuery, [`%${searchTerm}%`])
-        : await pool.query(countQuery.replace(searchFilter, ''));
-      const total = parseInt(countResult.rows[0].count);
-
-      // Data query 
-      let dataQuery: string;
-      let dataParams: any[];
-
-      if (searchTerm) {
-        dataQuery = `
-          SELECT 
-            a.auction_id as id,
-            a.product_id,
-            a.starting_price,
-            a.current_price,
-            a.min_increment,
-            a.start_time,
-            a.end_time,
-            a.status,
-            a.winner_id,
-            p.product_name AS title,
-            p.main_image_path AS image,
-            s.store_name,
-            u.name AS winner_name,
-            (SELECT COUNT(*) FROM auction_bids ab WHERE ab.auction_id = a.auction_id) as bid_count
-          FROM auctions a
-          JOIN products p ON a.product_id = p.product_id
-          JOIN stores s ON p.store_id = s.store_id
-          LEFT JOIN users u ON a.winner_id = u.user_id
-          ${statusFilter} AND (LOWER(p.product_name) LIKE LOWER($1) OR LOWER(s.store_name) LIKE LOWER($1))
-          ${orderBy}
-          LIMIT $2 OFFSET $3
-        `;
-        dataParams = [`%${searchTerm}%`, limitNum, offset];
-      } else {
-        dataQuery = `
-          SELECT 
-            a.auction_id as id,
-            a.product_id,
-            a.starting_price,
-            a.current_price,
-            a.min_increment,
-            a.start_time,
-            a.end_time,
-            a.status,
-            a.winner_id,
-            p.product_name AS title,
-            p.main_image_path AS image,
-            s.store_name,
-            u.name AS winner_name,
-            (SELECT COUNT(*) FROM auction_bids ab WHERE ab.auction_id = a.auction_id) as bid_count
-          FROM auctions a
-          JOIN products p ON a.product_id = p.product_id
-          JOIN stores s ON p.store_id = s.store_id
-          LEFT JOIN users u ON a.winner_id = u.user_id
-          ${statusFilter}
-          ${orderBy}
-          LIMIT $1 OFFSET $2
-        `;
-        dataParams = [limitNum, offset];
-      }
-
-      const dataResult = await pool.query(dataQuery, dataParams);
-
-      const data = dataResult.rows.map((row: any) => ({
-        id: row.id,
-        product_id: row.product_id,
-        product_name: row.title,
-        title: row.title,
-        image: row.image,
-        store_name: row.store_name,
-        starting_price: parseFloat(row.starting_price),
-        current_price: row.current_price ? parseFloat(row.current_price) : parseFloat(row.starting_price),
-        min_increment: parseFloat(row.min_increment),
-        start_time: row.start_time,
-        end_time: row.end_time,
-        status: row.status,
-        bid_count: parseInt(row.bid_count || '0'),
-        winner_name: row.winner_name
+      // Map to include title field for backwards compatibility
+      const mappedData = data.map(item => ({
+        ...item,
+        title: item.product_name
       }));
 
       return reply.send({
         success: true,
-        data,
+        data: mappedData,
         total,
         page: pageNum,
         totalPages: Math.ceil(total / limitNum)
@@ -306,13 +183,9 @@ class AuctionController {
       const timers: Record<number, { timeLeft: number; displayTimeLeft: number }> = {};
       
       const timerStates = getAllAuctionTimerStates();
-      const result = await pool.query(`
-        SELECT auction_id, end_time, status
-        FROM auctions
-        WHERE status = 'active' AND end_time > NOW()
-      `);
+      const activeAuctions = await auctionRepository.getActiveAuctionsForTimers();
 
-      for (const row of result.rows) {
+      for (const row of activeAuctions) {
         const auctionId = row.auction_id;
         
         const inMemoryState = timerStates.get(auctionId);

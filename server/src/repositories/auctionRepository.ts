@@ -22,12 +22,6 @@ interface Auction {
   image?: string | null;
 }
 
-interface BidResult {
-  success: boolean;
-  message?: string;
-  bid_id?: number;
-}
-
 class AuctionRepository {
   
   // Get Auction By ID (Detail Page)
@@ -69,64 +63,6 @@ class AuctionRepository {
     `, [auctionId, limit]);
     
     return result.rows;
-  }
-
-  // Place Bid
-  async placeBid(auctionId: number, userId: number, amount: number): Promise<BidResult> {
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-
-      const auctionResult = await client.query(`
-        SELECT * FROM auctions 
-        WHERE auction_id = $1 AND status = 'active' AND start_time <= NOW()
-        AND (end_time IS NULL OR end_time > NOW()) FOR UPDATE
-      `, [auctionId]);
-
-      if (auctionResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return { success: false, message: 'Auction tidak aktif atau sudah berakhir' };
-      }
-
-      const auction = auctionResult.rows[0];
-      const minimumBid = Number(auction.current_price) + Number(auction.min_increment);
-      
-      if (amount < minimumBid) {
-        await client.query('ROLLBACK');
-        return { success: false, message: `Bid minimum Rp ${minimumBid.toLocaleString('id-ID')}` };
-      }
-
-      const userResult = await client.query('SELECT balance FROM users WHERE user_id = $1', [userId]);
-      if (userResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return { success: false, message: 'User tidak ditemukan' };
-      }
-
-      if (Number(userResult.rows[0].balance) < amount) {
-        await client.query('ROLLBACK');
-        return { success: false, message: 'Saldo tidak mencukupi' };
-      }
-
-      const bidResult = await client.query(`
-        INSERT INTO auction_bids (auction_id, bidder_id, bid_amount, bid_time)
-        VALUES ($1, $2, $3, NOW())
-        RETURNING bid_id
-      `, [auctionId, userId, amount]);
-
-      await client.query(`
-        UPDATE auctions SET current_price = $1 WHERE auction_id = $2
-      `, [amount, auctionId]);
-
-      await client.query('COMMIT');
-      return { success: true, message: 'Bid berhasil', bid_id: bidResult.rows[0].bid_id };
-
-    } catch (error) {
-      await client.query('ROLLBACK');
-      console.error('Place bid error:', error);
-      return { success: false, message: 'Gagal memasang bid' };
-    } finally {
-      client.release();
-    }
   }
 
   // Extend Auction
@@ -315,19 +251,6 @@ class AuctionRepository {
     return result.rows[0] || null;
   }
 
-  // Get previous highest bidder (second highest bid) for refunding
-  async getPreviousBidder(auctionId: number): Promise<{ bidder_id: number; bid_amount: number } | null> {
-    const result = await pool.query(`
-      SELECT bidder_id, bid_amount
-      FROM auction_bids
-      WHERE auction_id = $1
-      ORDER BY bid_amount DESC
-      LIMIT 1 OFFSET 1
-    `, [auctionId]);
-    
-    return result.rows[0] || null;
-  }
-
   // Find scheduled auctions that should be activated (start_time has passed)
   async findScheduledToActivate(): Promise<Auction[]> {
     const result = await pool.query(`
@@ -335,6 +258,47 @@ class AuctionRepository {
       WHERE status = 'scheduled' AND start_time <= NOW()
     `);
     return result.rows;
+  }
+
+  // Get active auctions for timer display
+  async getActiveAuctionsForTimers(): Promise<{ auction_id: number; end_time: string; status: string }[]> {
+    const result = await pool.query(`
+      SELECT auction_id, end_time, status
+      FROM auctions
+      WHERE status = 'active' AND end_time > NOW()
+    `);
+    return result.rows;
+  }
+
+  // Get auction for bidding with FOR UPDATE lock
+  async getAuctionForBiddingWithClient(client: any, auctionId: number): Promise<{
+    auction_id: number;
+    current_price: number;
+    min_increment: number;
+    winner_id: number | null;
+  } | null> {
+    const result = await client.query(
+      'SELECT auction_id, current_price, min_increment, winner_id FROM auctions WHERE auction_id = $1 FOR UPDATE',
+      [auctionId]
+    );
+    return result.rows[0] || null;
+  }
+
+  // Insert new bid
+  async insertBidWithClient(client: any, auctionId: number, userId: number, bidAmount: number): Promise<number> {
+    const result = await client.query(
+      'INSERT INTO auction_bids (auction_id, bidder_id, bid_amount, bid_time) VALUES ($1, $2, $3, NOW()) RETURNING bid_id',
+      [auctionId, userId, bidAmount]
+    );
+    return result.rows[0].bid_id;
+  }
+
+  // Update auction current price and winner
+  async updateAuctionBidWithClient(client: any, auctionId: number, newPrice: number, winnerId: number): Promise<void> {
+    await client.query(
+      'UPDATE auctions SET current_price = $1, winner_id = $2 WHERE auction_id = $3',
+      [newPrice, winnerId, auctionId]
+    );
   }
 }
 
