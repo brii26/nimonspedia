@@ -19,6 +19,7 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - NODE_INTERNAL_URL=${NODE_INTERNAL_URL}
+      - TZ=Asia/Jakarta
     networks:
       - nimonspedia-network
 
@@ -32,6 +33,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Jakarta
+      PGTZ: Asia/Jakarta
+    command: postgres -c 'timezone=Asia/Jakarta'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
@@ -49,6 +53,7 @@ services:
       - db
       - redis
     environment:
+      - TZ=Asia/Jakarta
       - DB_HOST=${POSTGRES_HOST}
       - DB_USER=${POSTGRES_USER}
       - DB_PASS=${POSTGRES_PASSWORD}

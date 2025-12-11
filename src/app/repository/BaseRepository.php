@@ -154,4 +154,26 @@ abstract class BaseRepository {
             'has_more' => ($page * $perPage) < $total
         ];
     }
+
+    /**
+     * Begin database transaction
+     */
+    public function beginTransaction() {
+        return $this->db->beginTransaction();
+    }
+
+    /**
+     * Commit database transaction
+     */
+    public function commit() {
+        return $this->db->commit();
+    }
+
+    /**
+     * Rollback database transaction
+     */
+    public function rollBack() {
+        return $this->db->rollBack();
+    }
 }
+

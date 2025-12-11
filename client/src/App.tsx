@@ -11,12 +11,11 @@ import ProtectedRoute from './services/routes/ProtectedRoute.js';
 import AdminLogin from './views/pages/admin/Login.js';
 import AdminDashboard from './views/pages/admin/Dashboard.js';
 import AdminReviews from './views/pages/admin/Reviews.js';
-import ChatPage from './views/pages/chat/ChatPage.js'; // Impor ChatPage yang benar
-import PaymentStatus from './views/pages/PaymentStatus.js';
+import ChatPage from './views/pages/chat/ChatPage.js';
+import AuctionList from './views/pages/auction/AuctionList.js'
+import AuctionDetail from './views/pages/auction/AuctionDetail.js'
 
 import { 
-  AuctionList, 
-  AuctionDetail,
   NotFound 
 } from './views/pages/Placeholders.js'; 
 

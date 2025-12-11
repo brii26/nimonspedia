@@ -7,11 +7,12 @@ import { Server as SocketIOServer } from 'socket.io';
 
 import adminRoutes from './src/routes/adminRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
+import auctionRoutes from './src/routes/auctionRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import internalRoutes from './src/routes/internalRoutes.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import { socketAuth } from './src/middleware/authMiddleware.js';
-import registerAuctionHandlers, { recoverActiveAuctions } from './src/sockets/auctionSocket.js';
+import registerAuctionHandlers, { recoverActiveAuctions, startScheduledAuctionChecker } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
 import { AuthenticatedSocket } from './src/types/socket.js';
 
@@ -49,6 +50,7 @@ fastify.register(socketio, {
 // 3. Register Routes (Prefixing lebih gampang di Fastify)
 fastify.register(adminRoutes, { prefix: '/admin' });
 fastify.register(authRoutes, { prefix: '/auth' });
+fastify.register(auctionRoutes, { prefix: '/auctions' });
 fastify.register(notificationRoutes, { prefix: '/notifications' });
 fastify.register(internalRoutes, { prefix: '/internal' });
 fastify.register(paymentRoutes, { prefix: '/payment' });
@@ -76,6 +78,7 @@ const start = async (): Promise<void> => {
     });
 
     recoverActiveAuctions(fastify.io);
+    startScheduledAuctionChecker(fastify.io);
     
     const PORT = parseInt(process.env.PORT || '3000');
     await fastify.listen({ port: PORT, host: '0.0.0.0' });

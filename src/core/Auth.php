@@ -33,6 +33,17 @@ class Auth {
             }
         }
     }
+
+    /**
+     * Refresh balance from database - call this on page load to sync balance
+     */
+    public static function refreshBalance() {
+        if (!self::check()) return;
+        
+        $userRepo = new UserRepository();
+        $balance = $userRepo->getBalance($_SESSION['user_id']);
+        $_SESSION['balance'] = $balance;
+    }
     
     /**
      * Logout user and destroy session

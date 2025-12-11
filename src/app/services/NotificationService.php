@@ -94,6 +94,54 @@ class NotificationService {
         ]);
     }
 
+    public static function sendAuctionNotification(
+        string $type, 
+        int $auctionId, 
+        int $recipientId, 
+        array $auctionData = []
+    ): bool {
+        self::init();
+
+        $payload = [
+            'type' => $type,
+            'auction_id' => $auctionId,
+            'recipient_id' => $recipientId,
+            'auction_data' => $auctionData
+        ];
+
+        return self::callNodeApi('/internal/notify/auction', $payload);
+    }
+
+    /**
+     * Notify buyer that they were outbid
+     */
+    public static function notifyAuctionOutbid(int $auctionId, int $bidderId, string $productName, int $newBidAmount): bool {
+        return self::sendAuctionNotification('auction_outbid', $auctionId, $bidderId, [
+            'product_name' => $productName,
+            'new_bid_amount' => $newBidAmount
+        ]);
+    }
+
+    /**
+     * Notify buyer that they won the auction
+     */
+    public static function notifyAuctionWon(int $auctionId, int $bidderId, string $productName, int $finalPrice): bool {
+        return self::sendAuctionNotification('auction_won', $auctionId, $bidderId, [
+            'product_name' => $productName,
+            'final_price' => $finalPrice
+        ]);
+    }
+
+    /**
+     * Notify bidders that auction is ending soon (5 minutes remaining)
+     */
+    public static function notifyAuctionEndingSoon(int $auctionId, int $bidderId, string $productName, string $endTime): bool {
+        return self::sendAuctionNotification('auction_ending_soon', $auctionId, $bidderId, [
+            'product_name' => $productName,
+            'end_time' => $endTime
+        ]);
+    }
+
     /**
      * Call Node.js API endpoint
      * 

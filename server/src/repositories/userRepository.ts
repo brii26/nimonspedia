@@ -1,6 +1,6 @@
 import pool from '../config/database.js';
 import bcrypt from 'bcryptjs';
-import { QueryResult } from 'pg';
+import { QueryResult, PoolClient } from 'pg';
 
 // Type definitions
 interface User {
@@ -34,6 +34,54 @@ class UserRepository {
   async findByEmail(email: string): Promise<User | undefined> {
     const query = 'SELECT * FROM users WHERE email = $1';
     const result: QueryResult<User> = await pool.query(query, [email]);
+    return result.rows[0];
+  }
+
+  async findById(userId: string): Promise<User | undefined> {
+    const query = 'SELECT * FROM users WHERE user_id = $1';
+    const result: QueryResult<User> = await pool.query(query, [userId]);
+    return result.rows[0];
+  }
+
+  async getBalance(userId: string): Promise<number> {
+    const query = 'SELECT balance FROM users WHERE user_id = $1';
+    const result: QueryResult<{ balance: number }> = await pool.query(query, [userId]);
+    return result.rows[0]?.balance || 0;
+  }
+
+  async updateBalance(userId: string, newBalance: number): Promise<User | undefined> {
+    const query = 'UPDATE users SET balance = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *';
+    const result: QueryResult<User> = await pool.query(query, [newBalance, userId]);
+    return result.rows[0];
+  }
+
+  // Update balance with transaction client (for use in transactions)
+  async updateBalanceWithClient(client: PoolClient, userId: number, newBalance: number): Promise<User | undefined> {
+    const query = 'UPDATE users SET balance = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *';
+    const result: QueryResult<User> = await client.query(query, [newBalance, userId]);
+    return result.rows[0];
+  }
+
+  // Add to balance (for refunds) with transaction client
+  async addBalanceWithClient(client: PoolClient, userId: number, amount: number): Promise<User | undefined> {
+    const query = 'UPDATE users SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2 RETURNING *';
+    const result: QueryResult<User> = await client.query(query, [amount, userId]);
+    console.log(`[UserRepo] Added ${amount} to user ${userId}, new balance: ${result.rows[0]?.balance}`);
+    return result.rows[0];
+  }
+
+  // Deduct from balance with transaction client
+  async deductBalanceWithClient(client: PoolClient, userId: number, amount: number): Promise<User | undefined> {
+    const query = 'UPDATE users SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2 RETURNING *';
+    const result: QueryResult<User> = await client.query(query, [amount, userId]);
+    console.log(`[UserRepo] Deducted ${amount} from user ${userId}, new balance: ${result.rows[0]?.balance}`);
+    return result.rows[0];
+  }
+
+  // Get user with lock for transaction
+  async getUserForUpdateWithClient(client: PoolClient, userId: number): Promise<User | undefined> {
+    const query = 'SELECT * FROM users WHERE user_id = $1 FOR UPDATE';
+    const result: QueryResult<User> = await client.query(query, [userId]);
     return result.rows[0];
   }
 

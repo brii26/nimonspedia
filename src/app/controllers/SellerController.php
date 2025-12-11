@@ -121,11 +121,13 @@ class SellerController extends BaseController {
 			'pageTitle' => 'Your Products',
 			'cssFiles'  => [
 				'/css/pages/dashboard.css',
-				'/css/pages/seller/products/index.css'
+				'/css/pages/seller/products/index.css',
+				'/css/components/auction-modal.css'
 			],
 			'jsFiles' => [
 				'/js/utils/fetchXhr.js',
-				'/js/pages/seller/products/index.js'
+				'/js/pages/seller/products/index.js',
+				'/js/components/auction-modal.js'
 			]
 		]);
 	}

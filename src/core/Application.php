@@ -138,6 +138,11 @@ class Application {
 		$this->router->post('/seller/reviews/delete-response', 'SellerReviewController@deleteResponse');
 
         $this->router->get('/seller/reports/sales', 'ReportController@exportSales');
+
+        // Auction routes
+		$this->router->post('/seller/auctions/create', 'AuctionController@create'); 
+        $this->router->get('/seller/auctions/list', 'AuctionController@list');
+		$this->router->post('/seller/auctions/cancel', 'AuctionController@cancel'); 
         
     }
     
