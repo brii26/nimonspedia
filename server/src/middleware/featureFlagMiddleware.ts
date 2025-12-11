@@ -12,10 +12,10 @@ export const checkFeatureFlag = (options: FeatureFlagOptions) => {
 
     try {
       // 1. Cek Global Flag
-      const globalFlags = await featureFlagRepository.getGlobalFlag(featureName);
+      const globalFlag = await featureFlagRepository.getGlobalFlag(featureName);
 
-      // Jika tidak ditemukan, defaultnya bisa TRUE atau FALSE (tergantung kebijakan, disini default FALSE aman)
-      if (!globalFlags) {
+      // Global flag harus ada dan enabled
+      if (!globalFlag || !globalFlag.is_enabled) {
         return reply.status(503).send({
           success: false,
           message: `Feature '${featureName}' is currently under maintenance.`
@@ -27,11 +27,12 @@ export const checkFeatureFlag = (options: FeatureFlagOptions) => {
         const userId = (req as any).user.user_id;
         const userFlag = await featureFlagRepository.getUserFlag(userId, featureName);
 
-        if (!userFlag) {
-            return reply.status(503).send({
+        // Hanya block jika user flag ADA dan DISABLED
+        if (userFlag && !userFlag.is_enabled) {
+          return reply.status(503).send({
             success: false,
-            message: `Feature '${featureName}' is currently not available to ${(req as any).user.name}.`
-            });
+            message: `Feature '${featureName}' is currently not available to ${(req as any).user.name}. ${userFlag.reason ? `Reason: ${userFlag.reason}` : ''}`
+          });
         }
       }
 
