@@ -417,6 +417,32 @@ const ChatPage = () => {
                                   onClick={() => setSelectedImage(msg.content)} 
                                 />
                             </div>
+                        ) : msg.message_type === 'item_preview' ? (
+                            <div className="bg-white rounded-lg p-3 max-w-[250px] border border-gray-200">
+                                {(msg as any).product_image && (
+                                  <img 
+                                    src={(msg as any).product_image} 
+                                    alt="Product" 
+                                    className="w-full h-32 object-cover rounded-md mb-2"
+                                  />
+                                )}
+                                <h4 className="font-semibold text-gray-800 text-sm mb-1">
+                                  {(msg as any).product_name || 'Product Preview'}
+                                </h4>
+                                {(msg as any).product_price && (
+                                  <p className="text-blue-600 font-bold text-sm">
+                                    Rp {Number((msg as any).product_price).toLocaleString('id-ID')}
+                                  </p>
+                                )}
+                                {msg.product_id && (
+                                  <a 
+                                    href={`/products/${msg.product_id}`}
+                                    className="inline-block mt-2 text-xs text-blue-600 hover:underline"
+                                  >
+                                    Lihat Produk →
+                                  </a>
+                                )}
+                            </div>
                         ) : (
                             <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                               {msg.content}
@@ -429,9 +455,9 @@ const ChatPage = () => {
                              {isMe && (
                                 <span>
                                    {msg.is_read ? (
-                                      <img src="/assets/icons/check-read.svg" alt="Read" className="w-3 h-3" />
+                                      <span className="text-blue-300">✓✓</span>
                                    ) : (
-                                      <img src="/assets/icons/check.svg" alt="Sent" className="w-3 h-3" />
+                                      <span className="text-blue-200">✓</span>
                                    )}
                                 </span>
                              )}

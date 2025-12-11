@@ -4,6 +4,8 @@ import chatRepository from '../repositories/chatRepository.js';
 import featureFlagRepository from '../repositories/featureFlagRepository.js';
 import { SendMessagePayload, TypingPayload } from '../types/socket-payloads.js';
 import { AuthenticatedSocket } from '../types/socket.js';
+import validator from 'validator';
+import escapeHtml from 'escape-html';
 
 
 const isChatEnabled = async (userId: number): Promise<{ allowed: boolean; reason?: string }> => {
@@ -70,6 +72,16 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       await chatRepository.ensureChatRoom(storeId, buyerId);
 
       const messages = await chatRepository.getChatHistory(storeId, buyerId, 50);
+      
+      // Mark messages as read when joining
+      await chatRepository.markAsRead(storeId, buyerId, user.user_id);
+      
+      // Broadcast read status to other user
+      socket.to(chatRoom).emit('messages_read', {
+        storeId,
+        buyerId,
+        readBy: user.user_id
+      });
       
       socket.emit('chat_joined', { 
         storeId, 
@@ -141,12 +153,27 @@ export default (io: Server, socket: AuthenticatedSocket) => {
         return;
       }
 
-      // 3. Validasi Konten (Sama seperti sebelumnya)
+      // 3. Validasi & Sanitasi Konten
       const msgType = payload.type || 'text';
       let msgContent = payload.message;
       let productId = payload.productId || null;
 
-      if (msgType === 'text' && (!msgContent || !msgContent.trim())) return;
+      // Validasi panjang pesan (max 5000 karakter)
+      if (msgType === 'text') {
+        if (!msgContent || !msgContent.trim()) return;
+        if (msgContent.length > 5000) {
+          socket.emit('chat_error', { message: 'Pesan terlalu panjang (max 5000 karakter)' });
+          return;
+        }
+        // Sanitize HTML untuk prevent XSS
+        msgContent = escapeHtml(msgContent.trim());
+      }
+
+      // Validasi untuk item_preview
+      if (msgType === 'item_preview' && !productId) {
+        socket.emit('chat_error', { message: 'Product ID required for item preview' });
+        return;
+      }
 
       // 4. Simpan ke Database
       const savedMessage = await chatRepository.saveMessage(
@@ -168,6 +195,35 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
       // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
+
+      // 7. Send Push Notification to receiver
+      const receiverId = savedMessage.sender_id === buyerId ? 
+        (await pool.query('SELECT user_id FROM stores WHERE store_id = $1', [storeId])).rows[0]?.user_id :
+        buyerId;
+      
+      if (receiverId) {
+        // Import notificationService di atas jika belum
+        try {
+          const senderName = user.name || 'Someone';
+          const messagePreview = msgType === 'text' ? 
+            (msgContent.length > 100 ? msgContent.substring(0, 100) + '...' : msgContent) :
+            msgType === 'image' ? '📷 Image' : '🏷️ Product Preview';
+          
+          // Emit socket event untuk trigger push notification
+          io.to(`user_${receiverId}`).emit('new_chat_notification', {
+            title: `New message from ${senderName}`,
+            body: messagePreview,
+            data: {
+              type: 'chat',
+              storeId,
+              buyerId,
+              url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
+            }
+          });
+        } catch (notifError) {
+          console.error('Push notification error:', notifError);
+        }
+      }
 
     } catch (error) {
       console.error('Chat Error:', error);

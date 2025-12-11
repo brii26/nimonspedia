@@ -153,6 +153,27 @@ export const useChatSocket = (
         setIsLoading(false);
       });
 
+      // Handle read receipts
+      socketInstance.on('messages_read', (data: { storeId: number; buyerId: number; readBy: number }) => {
+        const isCurrentRoom = 
+          currentStoreId.current === data.storeId && 
+          currentBuyerId.current === data.buyerId;
+        
+        if (isCurrentRoom) {
+          // Mark all sent messages as read
+          setMessages(prev => prev.map(msg => ({
+            ...msg,
+            is_read: msg.sender_id !== data.readBy ? true : msg.is_read
+          })));
+        }
+      });
+
+      // Handle push notifications
+      socketInstance.on('new_chat_notification', (data: any) => {
+        // This will be handled by service worker
+        console.log('New chat notification:', data);
+      });
+
       return socketInstance;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect to socket');
