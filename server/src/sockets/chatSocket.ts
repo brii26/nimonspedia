@@ -31,9 +31,21 @@ const isChatEnabled = async (userId: number): Promise<{ allowed: boolean; reason
 export default (io: Server, socket: AuthenticatedSocket) => {
   const user = socket.user;
 
+  // Auto-join user's personal notification room
+  const userRoom = `user_${user.user_id}`;
+  socket.join(userRoom);
+  console.log(`User ${user.name} joined notification room: ${userRoom}`);
+
   // 1. Setup Room Logic
   // Chat rooms berbasis store-buyer: "chat_{storeId}_{buyerId}"
   // User bisa join multiple rooms tergantung role dan chat yang aktif
+
+  // Handle explicit join_user_channel if needed (legacy support)
+  socket.on('join_user_channel', (payload: { user_id: number }) => {
+    const room = `user_${payload.user_id}`;
+    socket.join(room);
+    console.log(`User explicitly joined room: ${room}`);
+  });
 
   // 2. Handle Event Join Chat Room
   socket.on('join_chat', async (payload: { storeId: number; buyerId?: number }) => {
@@ -76,11 +88,12 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // Mark messages as read when joining
       await chatRepository.markAsRead(storeId, buyerId, user.user_id);
       
-      // Broadcast read status to other user
-      socket.to(chatRoom).emit('messages_read', {
+      // Broadcast read status to ALL in room (including self) - io.to() not socket.to()
+      io.to(chatRoom).emit('messages_read', {
         storeId,
         buyerId,
-        readBy: user.user_id
+        readBy: user.user_id,
+        timestamp: new Date().toISOString()
       });
       
       socket.emit('chat_joined', { 
@@ -196,30 +209,40 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
 
-      // 7. Send Push Notification to receiver
+      // 7. Send Push Notification to receiver (only if not in chat room)
       const receiverId = savedMessage.sender_id === buyerId ? 
         (await pool.query('SELECT user_id FROM stores WHERE store_id = $1', [storeId])).rows[0]?.user_id :
         buyerId;
       
       if (receiverId) {
-        // Import notificationService di atas jika belum
         try {
           const senderName = user.name || 'Someone';
           const messagePreview = msgType === 'text' ? 
             (msgContent.length > 100 ? msgContent.substring(0, 100) + '...' : msgContent) :
             msgType === 'image' ? '📷 Image' : '🏷️ Product Preview';
           
-          // Emit socket event untuk trigger push notification
-          io.to(`user_${receiverId}`).emit('new_chat_notification', {
-            title: `New message from ${senderName}`,
-            body: messagePreview,
-            data: {
-              type: 'chat',
-              storeId,
-              buyerId,
-              url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
-            }
-          });
+          // Check if receiver is in the chat room
+          const socketsInRoom = await io.in(chatRoom).fetchSockets();
+          const receiverInRoom = socketsInRoom.some(s => (s as any).user?.user_id === receiverId);
+          
+          console.log(`[Notification] Receiver ${receiverId} in room ${chatRoom}:`, receiverInRoom);
+          
+          // Only send notification if receiver is NOT in the room
+          if (!receiverInRoom) {
+            io.to(`user_${receiverId}`).emit('new_chat_notification', {
+              title: `New message from ${senderName}`,
+              body: messagePreview,
+              data: {
+                type: 'chat',
+                storeId,
+                buyerId,
+                url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
+              }
+            });
+            console.log(`[Notification] Sent to user_${receiverId}`);
+          } else {
+            console.log(`[Notification] Skipped - receiver is in chat room`);
+          }
         } catch (notifError) {
           console.error('Push notification error:', notifError);
         }

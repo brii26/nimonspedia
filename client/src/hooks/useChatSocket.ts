@@ -160,18 +160,52 @@ export const useChatSocket = (
           currentBuyerId.current === data.buyerId;
         
         if (isCurrentRoom) {
-          // Mark all sent messages as read
-          setMessages(prev => prev.map(msg => ({
-            ...msg,
-            is_read: msg.sender_id !== data.readBy ? true : msg.is_read
-          })));
+          console.log('[Read Receipt] Messages read by:', data.readBy);
+          // Mark messages yang DIKIRIM OLEH current user dan DIBACA OLEH orang lain as read
+          setMessages(prev => prev.map(msg => {
+            // Jika pesan ini bukan dari readBy (artinya pesan ini dibaca oleh readBy)
+            if (msg.sender_id !== data.readBy && msg.sender_id !== 0) {
+              return { ...msg, is_read: true };
+            }
+            return msg;
+          }));
         }
       });
 
       // Handle push notifications
       socketInstance.on('new_chat_notification', (data: any) => {
-        // This will be handled by service worker
-        console.log('New chat notification:', data);
+        console.log('New chat notification received:', data);
+        // Trigger browser notification via service worker
+        if ('serviceWorker' in navigator && 'registration' in navigator.serviceWorker) {
+          navigator.serviceWorker.ready.then((registration) => {
+            if (registration.active) {
+              registration.active.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                notification: {
+                  title: data.title,
+                  options: {
+                    body: data.body,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    data: data.data || {}
+                  }
+                }
+              });
+            }
+          });
+        }
+        // Also try Web Notification API directly as fallback
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification(data.title, {
+              body: data.body,
+              icon: '/favicon.ico',
+              data: data.data || {}
+            });
+          } catch (err) {
+            console.error('Notification error:', err);
+          }
+        }
       });
 
       return socketInstance;

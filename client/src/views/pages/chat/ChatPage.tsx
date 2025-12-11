@@ -64,11 +64,16 @@ const ChatPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isChatDisabled, setIsChatDisabled] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [searchProducts, setSearchProducts] = useState<any[]>([]);
+  const [isSearchingProducts, setIsSearchingProducts] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const productSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Callback Update Sidebar ---
   const handleNewMessage = useCallback((msg: any) => {
@@ -132,6 +137,52 @@ const ChatPage = () => {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const searchProductsForPreview = async (query: string) => {
+    if (query.length < 2) {
+      setSearchProducts([]);
+      return;
+    }
+    
+    // Clear previous timeout
+    if (productSearchTimeoutRef.current) {
+      clearTimeout(productSearchTimeoutRef.current);
+    }
+    
+    // Debounce search
+    productSearchTimeoutRef.current = setTimeout(async () => {
+      setIsSearchingProducts(true);
+      try {
+        // Try PHP endpoint first, fallback to different format
+        const res = await api.get(`/api/products?search=${encodeURIComponent(query)}&page=1&limit=5`);
+        console.log('Product search response:', res.data);
+        
+        if (res.data?.success && res.data?.data) {
+          // Handle both array and object response
+          const products = Array.isArray(res.data.data) ? res.data.data : res.data.data.products || [];
+          setSearchProducts(products);
+        } else if (Array.isArray(res.data)) {
+          // Direct array response
+          setSearchProducts(res.data);
+        } else {
+          setSearchProducts([]);
+        }
+      } catch (err) {
+        console.error("Product search error:", err);
+        setSearchProducts([]);
+      } finally {
+        setIsSearchingProducts(false);
+      }
+    }, 300);
+  };
+
+  const handleSendProductPreview = (product: any) => {
+    if (!product.product_id) return;
+    sendMessage('', 'item_preview', product.product_id);
+    setShowProductModal(false);
+    setProductSearch('');
+    setSearchProducts([]);
+  };
   
   const getThumbUrl = (url: string) => {
       if (!url) return '';
@@ -178,6 +229,13 @@ const ChatPage = () => {
       socket.emit('join_user_channel', { user_id: userId });
     }
   }, [socket, user, isConnected]);
+
+  // Request notification permission saat mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   // Handle Init Store ID (Redirect from Product Page)
   useEffect(() => {
@@ -504,6 +562,17 @@ const ChatPage = () => {
                    >
                      <img src="/assets/icons/image.svg" alt="Upload" className={`w-6 h-6 ${isUploading ? 'animate-pulse' : ''}`} />
                    </Button>
+
+                   <Button 
+                     type="button" 
+                     variant="ghost" 
+                     className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                     onClick={() => setShowProductModal(true)}
+                     disabled={!isConnected || isChatDisabled}
+                     title="Kirim Preview Produk"
+                   >
+                     <span className="text-lg">🛍️</span>
+                   </Button>
                    
                    <Input 
                       className="flex-1 rounded-full py-2 px-4 border-gray-300 focus:ring-blue-500 focus:border-blue-500"
@@ -520,6 +589,63 @@ const ChatPage = () => {
                       <img src="/assets/icons/send.svg" alt="Send" className="w-5 h-5" />
                    </Button>
                 </form>
+
+                {/* Product Preview Modal */}
+                {showProductModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                      <h3 className="text-lg font-semibold mb-4">Pilih Produk untuk Preview</h3>
+                      
+                      <Input 
+                        placeholder="Cari produk..."
+                        value={productSearch}
+                        onChange={(e) => {
+                          setProductSearch(e.target.value);
+                          searchProductsForPreview(e.target.value);
+                        }}
+                        className="mb-4"
+                      />
+
+                      <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                        {isSearchingProducts ? (
+                          <p className="text-sm text-gray-500 text-center py-4">Mencari produk...</p>
+                        ) : searchProducts.length > 0 ? (
+                          searchProducts.map((product) => (
+                            <div 
+                              key={product.product_id}
+                              onClick={() => handleSendProductPreview(product)}
+                              className="flex items-center p-2 cursor-pointer hover:bg-gray-100 rounded-lg border border-gray-200"
+                            >
+                              {product.main_image_path && (
+                                <img 
+                                  src={product.main_image_path} 
+                                  alt={product.product_name}
+                                  className="w-12 h-12 object-cover rounded mr-3"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 truncate">{product.product_name}</p>
+                                <p className="text-xs text-blue-600 font-bold">Rp {Number(product.price).toLocaleString('id-ID')}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : productSearch.length >= 2 ? (
+                          <p className="text-sm text-gray-500 text-center py-4">Produk tidak ditemukan</p>
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center py-4">Cari produk untuk memulai</p>
+                        )}
+                      </div>
+
+                      <Button 
+                        onClick={() => setShowProductModal(false)}
+                        variant="secondary"
+                        className="w-full"
+                      >
+                        Tutup
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           ) : (
