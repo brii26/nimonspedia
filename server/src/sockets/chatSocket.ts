@@ -85,17 +85,6 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
       const messages = await chatRepository.getChatHistory(storeId, buyerId, 50);
       
-      // Mark messages as read when joining
-      await chatRepository.markAsRead(storeId, buyerId, user.user_id);
-      
-      // Broadcast read status to ALL in room (including self) - io.to() not socket.to()
-      io.to(chatRoom).emit('messages_read', {
-        storeId,
-        buyerId,
-        readBy: user.user_id,
-        timestamp: new Date().toISOString()
-      });
-      
       socket.emit('chat_joined', { 
         storeId, 
         buyerId, 
@@ -104,6 +93,19 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       });
 
       console.log(`User ${user.name} joined chat room: ${chatRoom}`);
+
+      // Mark messages as read AFTER joining
+      await chatRepository.markAsRead(storeId, buyerId, user.user_id);
+      
+      // Broadcast read status to ALL in room (including self)
+      io.to(chatRoom).emit('messages_read', {
+        storeId,
+        buyerId,
+        readBy: user.user_id,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`[Read Receipt] Broadcasted to room ${chatRoom} - read by user ${user.user_id}`);
 
     } catch (error) {
       console.error('Join Chat Error:', error);
@@ -304,6 +306,40 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       }
     } catch (error) {
       console.error('Stop Typing Error:', error);
+    }
+  });
+
+  // Handle mark messages as read (manual trigger)
+  socket.on('mark_as_read', async (payload: { storeId: number; buyerId?: number }) => {
+    try {
+      let { storeId, buyerId } = payload;
+
+      if (user.role === 'BUYER') {
+        buyerId = user.user_id;
+      } else if (user.role === 'SELLER') {
+        const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
+        if (storeResult.rows.length === 0) return;
+        storeId = storeResult.rows[0].store_id;
+      }
+
+      if (storeId && buyerId) {
+        const chatRoom = `chat_${storeId}_${buyerId}`;
+        
+        // Mark as read in database
+        await chatRepository.markAsRead(storeId, buyerId, user.user_id);
+        
+        // Broadcast to all in room
+        io.to(chatRoom).emit('messages_read', {
+          storeId,
+          buyerId,
+          readBy: user.user_id,
+          timestamp: new Date().toISOString()
+        });
+        
+        console.log(`[Manual Read Receipt] User ${user.user_id} marked messages as read in ${chatRoom}`);
+      }
+    } catch (error) {
+      console.error('Mark as read error:', error);
     }
   });
 

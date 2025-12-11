@@ -153,18 +153,21 @@ const ChatPage = () => {
     productSearchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingProducts(true);
       try {
-        // Try PHP endpoint first, fallback to different format
-        const res = await api.get(`/api/products?search=${encodeURIComponent(query)}&page=1&limit=5`);
+        // Use PHP endpoint directly without /api prefix
+        const res = await api.get(`/products?search=${encodeURIComponent(query)}&page=1&limit=5`);
         console.log('Product search response:', res.data);
         
         if (res.data?.success && res.data?.data) {
-          // Handle both array and object response
-          const products = Array.isArray(res.data.data) ? res.data.data : res.data.data.products || [];
+          // Handle object response with products array
+          const products = res.data.data.products || [];
+          console.log('Products found:', products);
           setSearchProducts(products);
         } else if (Array.isArray(res.data)) {
           // Direct array response
+          console.log('Products found (array):', res.data);
           setSearchProducts(res.data);
         } else {
+          console.log('No products found in response');
           setSearchProducts([]);
         }
       } catch (err) {
@@ -312,6 +315,17 @@ const ChatPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, otherUserTyping]);
+
+  // Mark messages as read when viewing active room
+  useEffect(() => {
+    if (activeRoom && socket && isConnected && messages.length > 0) {
+      // Emit mark_as_read to server
+      socket.emit('mark_as_read', {
+        storeId: activeRoom.store_id,
+        buyerId: activeRoom.buyer_id
+      });
+    }
+  }, [activeRoom, messages.length, socket, isConnected]);
 
   // --- Handlers ---
   const handleSelectRoom = (room: ChatRoom) => {
