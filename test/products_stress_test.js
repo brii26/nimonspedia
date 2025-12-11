@@ -26,7 +26,6 @@ export default function () {
   // Simulate various user behaviors to hit different cache keys and DB paths
   // Parameters are kept, but no sleep time
   const params = {
-    perPage: Math.floor(Math.random() * 3) * 4 + 4, // 4, 8, 12
     page: Math.floor(Math.random() * 5) + 1,        // Page 1 to 5
     // Simulate searching sometimes
     searchTerm: Math.random() < 0.3 ? 'acc' : '', // 30% chance to search for 'acc'
