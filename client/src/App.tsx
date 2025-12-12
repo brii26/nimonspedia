@@ -13,6 +13,7 @@ import AdminDashboard from './views/pages/admin/Dashboard.js';
 import AdminReviews from './views/pages/admin/Reviews.js';
 import ChatPage from './views/pages/chat/ChatPage.js';
 import AuctionList from './views/pages/auction/AuctionList.js'
+import PaymentStatus from './views/pages/PaymentStatus.js';
 import AuctionDetail from './views/pages/auction/AuctionDetail.js'
 
 import { 
