@@ -10,6 +10,10 @@ import EmptyState from '../../components/ui/EmptyState.js';
 import Pagination from '../../components/ui/Pagination.js';
 import SearchInput from '../../components/ui/SearchInput.js';
 
+// Auth seller validation
+import { useAuth } from '../../../context/AuthContext.js';
+import { NotFound } from '../Placeholders.js';
+
 // Server Timer Resopnse type
 interface TimerData {
   timeLeft: number;
@@ -17,6 +21,11 @@ interface TimerData {
 }
 
 const AuctionList = () => {
+	const { user } = useAuth();
+	if (user?.role === 'SELLER') {
+		return <NotFound />;
+	}
+
   const [auctions, setAuctions] = useState<AuctionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
