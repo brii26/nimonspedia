@@ -400,4 +400,132 @@ This application employs a containerized microservices architecture with two pri
 | :---: |
 | ![Profile](img/lighthouse/profile_page.png) |
 
+---
 
+## Milestone 2 - New Features
+
+### Admin Panel
+* **Admin Authentication**: Secure login for administrators with role-based access control
+* **Dashboard Overview**: View platform statistics, user counts, auction metrics, and reviews
+* **User Management**: Browse, search, and manage users (buyers, sellers, admins)
+* **Review Moderation**: View and manage product reviews across the platform
+* **Feature Flags**: Control user access to specific features dynamically
+
+### Real-Time Features
+* **Live Chat**: Real-time messaging between buyers and sellers using WebSocket (Socket.io)
+  * Product-specific chat rooms
+  * Typing indicators
+  * Message status (sent, delivered, read)
+  * Auto-updating sidebar with unread counts
+  * Product preview in chat interface
+* **Live Auctions**: Real-time bidding system with WebSocket updates
+  * Live bid updates for all participants
+  * Countdown timer synchronization
+  * Automatic auction status updates
+  * Real-time bid history
+
+### Payment Integration
+* **Midtrans Integration**: Secure payment processing for balance top-ups
+  * Multiple payment methods (Credit Card, GoPay, Bank Transfer, etc.)
+  * Payment verification and status tracking
+  * Automatic balance updates upon successful payment
+  * Payment history with transaction details
+
+### Enhanced User Experience
+* **Progressive Web App (PWA)**: Install app on mobile/desktop with offline capabilities
+* **Responsive Design**: Fully responsive UI built with React and Tailwind CSS
+* **Type Safety**: Full TypeScript implementation for better code quality
+* **Modern Stack**: Vite for fast development, React Router for navigation
+
+## Milestone 2 Screenshots
+
+### Admin Panel
+
+| Admin Login | Admin Dashboard |
+| :---: | :---: |
+| ![Admin Login](img/m2/admin_login.png) | ![Admin Dashboard](img/m2/admin_dashboard.png) |
+
+| User Management | Review Management |
+| :---: | :---: |
+| ![User Management](img/m2/user_management.png) | ![Review Management](img/m2/review_management.png) |
+![Review Seller](img/m2/review_seller.png)
+
+
+### Real-Time Chat
+
+![Chat Room](img/m2/chat_room.png)
+
+### Live Auctions
+![Auction Detail](img/m2/auction_detail.png)
+### Payment Integration
+
+| Midtrans Checkout | 
+| :---: |
+| ![Midtrans Checkout](img/m2/midtrans_checkout.png) |
+
+---
+
+## Milestone 2 Technology Stack
+
+### Backend
+* **Node.js Server**: Express.js with TypeScript for WebSocket and API endpoints
+* **Socket.io**: Real-time bidirectional communication for chat and auctions
+* **Midtrans SDK**: Secure payment processing integration with multiple payment methods
+* **PostgreSQL**: Database with advanced queries and transaction management
+
+### Frontend
+* **React 18**: Modern UI library with hooks and context API
+* **TypeScript**: Type-safe development across the entire frontend
+* **Tailwind CSS**: Utility-first CSS framework for responsive design
+* **Vite**: Next-generation frontend tooling for fast builds
+* **Socket.io Client**: Real-time client library for WebSocket connections
+
+### DevOps
+* **Docker Compose**: Multi-container orchestration for all services
+* **Nginx**: Reverse proxy and static file serving
+* **Supervisor**: Process management for multiple services
+
+---
+
+## Milestone 2 Roles and Responsibilities
+
+| Server-Side Feature              | Author |
+|----------------------------------|--------|
+| Node.js Server Setup             | 149    |
+| Socket.io Infrastructure         | 149    |
+| Admin Authentication Logic       | 149    |
+| Admin Dashboard API              | 149    |
+| User Management API              | 149    |
+| Review Management API            | 135    |
+| Feature Flags System             | 149    |
+| Chat Socket Events               | 135    |
+| Chat Message Handling            | 135    |
+| Auction Socket Events            | 126    |
+| Auction Bid Processing           | 126    |
+| Midtrans Server Integration      | 149    |
+| Payment Verification Logic       | 149    |
+| WebSocket Authentication         | 135    |
+| Database Migrations (M2)         | ALL    |
+
+| Client-Side Feature              | Author |
+|----------------------------------|--------|
+| React Project Setup              | 149    |
+| Vite Configuration               | 149    |
+| TypeScript Migration             | ALL    |
+| Admin Login Page                 | 149    |
+| Admin Dashboard UI               | 149    |
+| User Management UI               | 149    |
+| Review Management UI             | 149    |
+| Chat Page UI                     | 135    |
+| Chat Sidebar Component           | 135    |
+| Chat Socket Client               | 135    |
+| Auction List Page                | 126    |
+| Auction Detail Page              | 126    |
+| Live Bidding UI                  | 126    |
+| Midtrans Checkout UI             | 149    |
+| Payment Status Pages             | 149    |
+| PWA Configuration                | 149    |
+| Service Worker Setup             | 149    |
+| Tailwind CSS Setup               | 149    |
+
+---
