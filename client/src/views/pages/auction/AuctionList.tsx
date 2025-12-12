@@ -55,7 +55,7 @@ const AuctionList = () => {
         search: debouncedSearch
       });
       
-      const response = await fetch(`http://localhost:3000/auctions/list?${params}`, {
+      const response = await fetch(`/api/node/auctions/list?${params}`, {
         credentials: 'include'
       });
       
@@ -86,7 +86,7 @@ const AuctionList = () => {
   // Fetch current timers from server
   const fetchTimers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/auctions/timers', {
+      const response = await fetch('/api/node/auctions/timers', {
         credentials: 'include'
       });
       const data = await response.json();
