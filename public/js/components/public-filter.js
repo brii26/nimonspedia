@@ -34,6 +34,25 @@ document.addEventListener('DOMContentLoaded', () => {
         csrf_token: ''
     };
 
+    // Fetch Session Metadata separately (Non-cached)
+    const fetchSessionMeta = () => {
+        fetchXhr('/api/session-meta', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                appMeta = data;
+                // Re-render products if they are already loaded to update Auth buttons
+                if (productListContainer.children.length > 0 && !productListContainer.querySelector('.products-empty-state')) {
+                    // Trigger refetch or just let the next fetch handle it.
+                    // For now, let's just let the next interaction update it, or we could store products state.
+                    // Ideally, we fetch meta BEFORE products.
+                }
+            })
+            .catch(console.error);
+    };
+
+    // Initial Fetch Sequence
+    fetchSessionMeta();
+
     const fetchProducts = (urlOverride = null) => {
         if (!productListContainer) return;
 
@@ -71,11 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(data => {
-            // Update Meta jika ada
-            if (data.meta) {
-                appMeta = data.meta;
-            }
-
+            // Note: Data meta is now fetched separately
+            
             if (data.data && Array.isArray(data.data)) {
                 renderProductList(data.data);
                 renderPagination(data);

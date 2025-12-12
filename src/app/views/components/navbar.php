@@ -8,7 +8,7 @@ $storeBalance = $storeBalance ?? 0;
 $userId = $currentUser ? $currentUser['user_id'] : null;
 $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 $chatAccess = FeatureFlagService::checkAccess($userId, 'chat_enabled');
-$isChatEnabled = $chatAccess['allowed'];
+$auctionAccess = FeatureFlagService::checkAccess($userId, 'auction_enabled');
 // Get cart count for buyers
 $productRepo = new ProductRepository();
 $cartItemRepo = new CartItemRepository();
@@ -65,11 +65,6 @@ $activePage = $currentPage ?? '';
                             <span class="nav-icon">🏠</span>
                             <span class="nav-text">Home</span>
                         </a>
-
-                        <a href="/auction" class="nav-link <?= $activePage === 'auction' ? 'active' : '' ?>">
-                            <span class="nav-icon">🛎️</span>
-                            <span class="nav-text">Auction</span>
-                        </a>
                         <?php if ($checkoutAccess['allowed']): ?>
                             <a href="/cart" class="nav-link nav-link-cart <?= $activePage === 'cart' ? 'active' : '' ?>">
                                 <span class="nav-icon">🛒
@@ -82,16 +77,18 @@ $activePage = $currentPage ?? '';
                                 <span class="nav-text">Cart</span>
                             </a>
                         <?php endif; ?>
+                        <?php if ($auctionAccess['allowed']): ?>
+                            <a href="/auction" class="nav-link <?= $activePage === 'auction' ? 'active' : '' ?>">
+                                <span class="nav-icon">🛎️</span>
+                                <span class="nav-text">Auction</span>
+                            </a>
+                        <?php endif; ?>
                         
                     <?php elseif ($userRole === 'SELLER'): ?>
                         <!-- Seller Navigation -->
-                        <a href="/" class="nav-link <?= $activePage === 'seller-dashboard' ? 'active' : '' ?>">
-                            <span class="nav-icon">📊</span>
-                            <span class="nav-text">Dashboard</span>
-                        </a>
                         <a href="/seller/products" class="nav-link <?= $activePage === 'seller-products' ? 'active' : '' ?>">
                             <span class="nav-icon">📦</span>
-                            <span class="nav-text">My Products</span>
+                            <span class="nav-text">Products</span>
                         </a>
                         <a href="/seller/orders" class="nav-link <?= $activePage === 'seller-orders' ? 'active' : '' ?>">
                             <span class="nav-icon">📋</span>
@@ -101,19 +98,12 @@ $activePage = $currentPage ?? '';
                     <?php endif; ?>
                 </div>
                 <?php if ($isLoggedIn && ($userRole === 'BUYER' || $userRole === 'SELLER')): ?>
-                        
-                        <a href="/auctions" class="nav-link <?= $activePage === 'auctions' ? 'active' : '' ?>">
-                            <span class="nav-icon">🔨</span>
-                            <span class="nav-text">Lelang</span>
-                        </a>
-
                         <?php if ($chatAccess['allowed']): ?>
                             <a href="/chat" class="nav-link <?= $activePage === 'chat' ? 'active' : '' ?>">
                                 <span class="nav-icon">💬</span>
                                 <span class="nav-text">Chat</span>
                             </a>
                         <?php endif; ?>
-
                     <?php endif; ?>
                 
                 <?php if ($isLoggedIn): ?>
@@ -160,7 +150,13 @@ $activePage = $currentPage ?? '';
                                     </a>
                                     <a href="/reviews/my-reviews" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
                                         <span class="nav-icon">⭐</span>
-                                        <span class="nav-text">My Ratings</span>
+                                        <span class="nav-text">My Reviews</span>
+                                    </a>
+                                <?php endif; ?>
+                                <?php if ($userRole === 'SELLER'): ?>
+                                    <a href="/seller/reviews" class="dropdown-item <?= $activePage === 'orders' ? 'active' : '' ?>">
+                                        <span class="nav-icon">⭐</span>
+                                        <span class="nav-text">Reviews</span>
                                     </a>
                                 <?php endif; ?>
                                         

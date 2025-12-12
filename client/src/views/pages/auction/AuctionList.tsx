@@ -10,6 +10,10 @@ import EmptyState from '../../components/ui/EmptyState.js';
 import Pagination from '../../components/ui/Pagination.js';
 import SearchInput from '../../components/ui/SearchInput.js';
 
+// Auth seller validation
+import { useAuth } from '../../../context/AuthContext.js';
+import { NotFound } from '../Placeholders.js';
+
 // Server Timer Resopnse type
 interface TimerData {
   timeLeft: number;
@@ -17,6 +21,11 @@ interface TimerData {
 }
 
 const AuctionList = () => {
+	const { user } = useAuth();
+	if (user?.role === 'SELLER') {
+		return <NotFound />;
+	}
+
   const [auctions, setAuctions] = useState<AuctionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +64,7 @@ const AuctionList = () => {
         search: debouncedSearch
       });
       
-      const response = await fetch(`http://localhost:3000/auctions/list?${params}`, {
+      const response = await fetch(`/api/node/auctions/list?${params}`, {
         credentials: 'include'
       });
       
@@ -86,7 +95,7 @@ const AuctionList = () => {
   // Fetch current timers from server
   const fetchTimers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/auctions/timers', {
+      const response = await fetch('/api/node/auctions/timers', {
         credentials: 'include'
       });
       const data = await response.json();

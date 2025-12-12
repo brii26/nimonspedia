@@ -81,6 +81,10 @@ class AuthService {
         // Find user by email
         $user = $this->userRepository->findByEmail($email);
 
+        if(!$user) {
+            throw new Exception('Invalid credentials!');
+        }
+
         $isAdmin = $user['role'] === 'ADMIN';
         
         if (!$user || !password_verify($password, $user['password']) || $isAdmin) {

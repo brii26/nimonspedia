@@ -86,7 +86,7 @@ class ProductRepository extends BaseRepository {
 		$total = $this->countFilteredProducts($whereSql, $filterParams);
 
         // Merge params for final query
-        $allParams = array_merge($filterParams, $sortParams);
+        $allParams = array_merge($filterParams, $sortParams, $sortParams);
         
         // Optimasi: Jika perPage = -1 (Unlimited), SKIP COUNT Query.
         if ($perPage === -1) {

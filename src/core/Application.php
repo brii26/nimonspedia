@@ -14,11 +14,21 @@ class Application {
     
     private function initializeSession() {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        if (!isset($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            // Fix Redis connection from ENV for session handler
+            $redisHost = getenv('REDIS_HOST') ?: 'redis';
+            $redisPort = getenv('REDIS_PORT') ?: '6379';
+            ini_set('session.save_path', "tcp://$redisHost:$redisPort");
+
+            // Lazy Session Logic:
+            // Don't start session for public API calls if no session cookie exists.
+            // This allows Nginx to cache the response.
+            $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+            $isPublicApi = ($path === '/products');
+            $hasSessionCookie = isset($_COOKIE[session_name()]);
+
+            if (!$isPublicApi || $hasSessionCookie) {
+                session_start();
+            }
         }
     }
     
@@ -73,9 +83,9 @@ class Application {
         $this->router->post('/profile', 'AuthController@updateProfile');
         $this->router->post('/profile/password', 'AuthController@changePassword');
         $this->router->post('/balance/topup', 'AuthController@topUp');
+        $this->router->get('/api/session-meta', 'AuthController@sessionMeta'); // New Endpoint
         
         // Product discovery routes
-        $this->router->get('/api/products', 'ProductController@api'); // API endpoint untuk JSON
         $this->router->get('/products', 'ProductController@index');
         $this->router->get('/product', 'ProductController@show');
 
