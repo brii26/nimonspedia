@@ -104,19 +104,39 @@ const ChatPage = () => {
 
   // --- Callback Update Sidebar ---
   const handleNewMessage = useCallback((msg: any) => {
+    console.log('[handleNewMessage] Received message:', msg);
+    console.log('[handleNewMessage] Current activeRoom:', activeRoom?.room_id);
+    
     setRooms((prevRooms: ChatRoom[]) => {
+      console.log('[handleNewMessage] prevRooms count:', prevRooms.length);
+      console.log('[handleNewMessage] prevRooms:', prevRooms.map(r => r.room_id));
+      
       const targetRoomId = `chat_${msg.store_id}_${msg.buyer_id}`;
       const targetRoom = prevRooms.find((r: ChatRoom) => r.room_id === targetRoomId);
       const otherRooms = prevRooms.filter((r: ChatRoom) => r.room_id !== targetRoomId);
       
+      console.log('[handleNewMessage] Target room:', targetRoomId, 'Found:', !!targetRoom);
+      
       if (targetRoom) {
-        return [{
+        // Format last message based on message type
+        let lastMessageText = msg.content;
+        if (msg.message_type === 'image') {
+          lastMessageText = '📷 Gambar';
+        } else if (msg.message_type === 'item_preview') {
+          lastMessageText = '🛍️ Produk';
+        }
+        
+        console.log('[handleNewMessage] Updating room with last_message:', lastMessageText);
+        const updatedRooms = [{
           ...targetRoom,
-          last_message: msg.content,
+          last_message: lastMessageText,
           last_message_time: msg.created_at,
           unread_count: (activeRoom?.room_id === targetRoomId) ? 0 : targetRoom.unread_count + 1
         }, ...otherRooms];
+        console.log('[handleNewMessage] Updated rooms:', updatedRooms.map(r => r.room_id));
+        return updatedRooms;
       }
+      console.log('[handleNewMessage] Room not found, returning original rooms');
       return prevRooms;
     });
   }, [activeRoom]);
@@ -387,12 +407,23 @@ const ChatPage = () => {
       try {
         const res = await api.get('/chat/rooms');
         if (res.data.success) {
-          const roomsWithIds = res.data.data.map((room: any) => ({
-            ...room,
-            room_id: room.room_id || `chat_${room.store_id}_${room.buyer_id}`,
-            store_image: room.store_logo_path,
-            buyer_image: room.buyer_image
-          }));
+          const roomsWithIds = res.data.data.map((room: any) => {
+            // Format last_message based on message type from server
+            let formattedLastMessage = room.last_message;
+            if (room.last_message_type === 'image') {
+              formattedLastMessage = '📷 Gambar';
+            } else if (room.last_message_type === 'item_preview') {
+              formattedLastMessage = '🛍️ Produk';
+            }
+            
+            return {
+              ...room,
+              room_id: room.room_id || `chat_${room.store_id}_${room.buyer_id}`,
+              store_image: room.store_logo_path,
+              buyer_image: room.buyer_image,
+              last_message: formattedLastMessage
+            };
+          });
           
           setRooms(prev => {
              if (activeRoom && !roomsWithIds.find((r: any) => r.room_id === activeRoom.room_id)) {
@@ -460,6 +491,16 @@ const ChatPage = () => {
       name: room.buyer_name, 
       image: formatImagePath(room.buyer_image) 
     };
+  };
+
+  // Helper to format last message based on message type
+  const formatLastMessage = (room: ChatRoom) => {
+    if (!room.last_message) {
+      return <span className="italic text-gray-400">Belum ada pesan</span>;
+    }
+    
+    // Message is already formatted from server or handleNewMessage
+    return room.last_message;
   };
 
   // --- RENDER ---
@@ -531,7 +572,7 @@ const ChatPage = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-500 truncate mr-2">
-                          {room.last_message || <span className="italic text-gray-400">Belum ada pesan</span>}
+                          {formatLastMessage(room)}
                         </p>
                         {room.unread_count > 0 && (
                           <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -567,10 +608,9 @@ const ChatPage = () => {
                   />
                   <div className="ml-3">
                     <h3 className="font-bold text-gray-800">{getOpponentInfo(activeRoom).name}</h3>
-                    <div className="flex items-center">
-                        <span className={`w-2 h-2 rounded-full mr-1 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                        <span className="text-xs text-gray-500">{isConnected ? 'Online' : 'Terputus'}</span>
-                    </div>
+                    {otherUserTyping && (
+                      <p className="text-xs text-gray-500 italic">Sedang mengetik...</p>
+                    )}
                   </div>
                 </div>
                 <Button variant="ghost" size="sm">
@@ -774,9 +814,12 @@ const ChatPage = () => {
                             >
                               {product.main_image_path && (
                                 <img 
-                                  src={product.main_image_path} 
+                                  src={formatImagePath(product.main_image_path)} 
                                   alt={product.product_name}
                                   className="w-12 h-12 object-cover rounded mr-3"
+                                  onError={(e) => {
+                                    e.currentTarget.src = '/storage/product_images/default-product.svg';
+                                  }}
                                 />
                               )}
                               <div className="flex-1 min-w-0">

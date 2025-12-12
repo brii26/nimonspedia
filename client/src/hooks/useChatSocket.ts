@@ -27,16 +27,24 @@ export const useChatSocket = (
 
   const onNewMessageRef = useRef(onNewMessage);
   
+  // Notification queue
+  const notificationQueue = useRef<any[]>([]);
+  const isProcessingNotification = useRef(false);
+  
   useEffect(() => {
     onNewMessageRef.current = onNewMessage;
   }, [onNewMessage]);
 
-  // Update ref saat props ID berubah
+  // Update user ID ref (room refs managed in join_chat useEffect)
   useEffect(() => {
-    currentStoreId.current = storeId;
-    currentBuyerId.current = buyerId;
     currentUserIdRef.current = currentUserId;
-  }, [storeId, buyerId, currentUserId]);
+    
+    // Ensure user joins notification room when userId is available/changes
+    if (socket && isConnected && currentUserId) {
+      console.log('[Socket] Ensuring user notification room join: user_' + currentUserId);
+      socket.emit('join_user_room', { userId: currentUserId });
+    }
+  }, [currentUserId, socket, isConnected]);
 
   const connectSocket = useCallback(() => {
     try {
@@ -45,11 +53,23 @@ export const useChatSocket = (
       setIsConnected(socketInstance.connected);
 
       socketInstance.on('connect', () => {
+        console.log('[Socket] Connected, ID:', socketInstance.id);
         setIsConnected(true);
         setError(null);
+        
+        // Join user notification room for global notifications
+        // Note: currentUserIdRef might not be set yet on first connect
+        // We'll also join in a separate useEffect when currentUserId is available
+        if (currentUserIdRef.current) {
+          console.log('[Socket] Joining user notification room on connect: user_' + currentUserIdRef.current);
+          socketInstance.emit('join_user_room', { userId: currentUserIdRef.current });
+        } else {
+          console.warn('[Socket] currentUserIdRef not set yet on connect');
+        }
       });
 
       socketInstance.on('disconnect', () => {
+        console.log('[Socket] Disconnected');
         setIsConnected(false);
         setIsJoined(false);
       });
@@ -104,9 +124,8 @@ export const useChatSocket = (
              });
         }
 
-        if (onNewMessageRef.current) {
-            onNewMessageRef.current(newMessage);
-        }
+        // Note: onNewMessage callback is handled by chat_sidebar_update event
+        // to avoid duplicate sidebar updates
       });
 
       socketInstance.on('partner_typing', (data: any) => {
@@ -150,6 +169,9 @@ export const useChatSocket = (
           content: payload.content,
           message_type: payload.message_type || 'text',
           product_id: payload.product_id,
+          product_name: payload.product_name,
+          product_price: payload.product_price,
+          product_image: payload.product_image,
           is_read: payload.is_read ?? false,
           created_at: payload.created_at || new Date().toISOString(),
         };
@@ -174,11 +196,13 @@ export const useChatSocket = (
           currentBuyerId.current === data.buyerId;
         
         if (isCurrentRoom) {
-          console.log('[Read Receipt] Messages read by:', data.readBy);
-          // Mark messages yang DIKIRIM OLEH current user dan DIBACA OLEH orang lain as read
+          console.log('[Read Receipt] Messages read by:', data.readBy, 'Current user:', currentUserIdRef.current);
+          // Mark messages yang DIKIRIM OLEH current user (bukan yang dibaca) dan DIBACA OLEH lawan bicara
           setMessages(prev => prev.map(msg => {
-            // Jika pesan ini bukan dari readBy (artinya pesan ini dibaca oleh readBy)
-            if (msg.sender_id !== data.readBy && msg.sender_id !== 0) {
+            // Only mark as read if:
+            // 1. Message was sent by current user (msg.sender_id === currentUserIdRef.current)
+            // 2. Message was read by someone else (data.readBy !== currentUserIdRef.current)
+            if (msg.sender_id === currentUserIdRef.current && data.readBy !== currentUserIdRef.current) {
               return { ...msg, is_read: true };
             }
             return msg;
@@ -186,39 +210,100 @@ export const useChatSocket = (
         }
       });
 
-      // Handle push notifications
-      socketInstance.on('new_chat_notification', (data: any) => {
-        console.log('New chat notification received:', data);
-        // Trigger browser notification via service worker
-        if ('serviceWorker' in navigator && 'registration' in navigator.serviceWorker) {
-          navigator.serviceWorker.ready.then((registration) => {
-            if (registration.active) {
-              registration.active.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                notification: {
-                  title: data.title,
-                  options: {
-                    body: data.body,
-                    icon: '/favicon.ico',
-                    badge: '/favicon.ico',
-                    data: data.data || {}
-                  }
-                }
-              });
-            }
-          });
+      // Handle sidebar updates (ALWAYS received for all new messages)
+      socketInstance.on('chat_sidebar_update', (data: any) => {
+        console.log('[Sidebar Update] Received:', data);
+        console.log('[Sidebar Update] Current user:', currentUserIdRef.current);
+        
+        const messageData = data.message;
+        
+        // ALWAYS update sidebar with new message, regardless of current room
+        if (messageData && onNewMessageRef.current) {
+          console.log('[Sidebar Update] Calling handleNewMessage to update sidebar');
+          onNewMessageRef.current(messageData);
+        } else {
+          console.warn('[Sidebar Update] Missing messageData or callback');
         }
-        // Also try Web Notification API directly as fallback
-        if ('Notification' in window && Notification.permission === 'granted') {
-          try {
-            new Notification(data.title, {
-              body: data.body,
-              icon: '/favicon.ico',
-              data: data.data || {}
-            });
-          } catch (err) {
-            console.error('Notification error:', err);
-          }
+      });
+
+      // Handle push notifications with queue (ONLY when not in active chat)
+      socketInstance.on('new_chat_notification', (data: any) => {
+        console.log('[Push Notification] Received:', data);
+        console.log('[Push Notification] Current user:', currentUserIdRef.current);
+        console.log('[Push Notification] Data.data:', data.data);
+        
+        // Add to queue for display
+        notificationQueue.current.push(data);
+        
+        // Process queue if not already processing
+        if (!isProcessingNotification.current) {
+          const processNext = () => {
+            if (notificationQueue.current.length === 0) {
+              isProcessingNotification.current = false;
+              return;
+            }
+            
+            isProcessingNotification.current = true;
+            const notification = notificationQueue.current.shift();
+            
+            if (notification) {
+              console.log('Processing notification:', notification);
+              
+              // Try service worker first (preferred method)
+              if ('serviceWorker' in navigator && 'registration' in navigator.serviceWorker) {
+                navigator.serviceWorker.ready.then((registration) => {
+                  if (registration.active) {
+                    registration.active.postMessage({
+                      type: 'SHOW_NOTIFICATION',
+                      notification: {
+                        title: notification.title,
+                        options: {
+                          body: notification.body,
+                          icon: '/favicon.ico',
+                          badge: '/favicon.ico',
+                          data: notification.data || {}
+                        }
+                      }
+                    });
+                    // Wait 500ms before processing next notification
+                    setTimeout(() => processNext(), 500);
+                  } else {
+                    // Fallback to Web Notification API if service worker not active
+                    showWebNotification(notification);
+                    setTimeout(() => processNext(), 500);
+                  }
+                }).catch(err => {
+                  console.error('Service worker error:', err);
+                  // Fallback to Web Notification API
+                  showWebNotification(notification);
+                  setTimeout(() => processNext(), 500);
+                });
+              } else {
+                // No service worker, use Web Notification API
+                showWebNotification(notification);
+                setTimeout(() => processNext(), 500);
+              }
+            } else {
+              isProcessingNotification.current = false;
+            }
+          };
+          
+          // Helper function to show web notification
+          const showWebNotification = (notification: any) => {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              try {
+                new Notification(notification.title, {
+                  body: notification.body,
+                  icon: '/favicon.ico',
+                  data: notification.data || {}
+                });
+              } catch (err) {
+                console.error('Notification error:', err);
+              }
+            }
+          };
+          
+          processNext();
         }
       });
 
@@ -229,6 +314,28 @@ export const useChatSocket = (
       return null;
     }
   }, []); // Dependency Kosong = Stabil
+
+  // Auto connect and setup cleanup
+  useEffect(() => {
+    const sock = connectSocket();
+    
+    // Cleanup function to remove all listeners
+    return () => {
+      if (sock) {
+        console.log('[Socket] Cleaning up event listeners');
+        sock.off('connect');
+        sock.off('disconnect');
+        sock.off('new_message');
+        sock.off('partner_typing');
+        sock.off('chat_joined');
+        sock.off('message_sent');
+        sock.off('chat_error');
+        sock.off('messages_read');
+        sock.off('chat_sidebar_update');
+        sock.off('new_chat_notification');
+      }
+    };
+  }, [connectSocket]);
 
   // sendMessage dengan dukungan text/image/item_preview
   const sendMessage = useCallback((message: string, type: 'text' | 'image' | 'item_preview' = 'text', productId?: number) => {
@@ -249,19 +356,22 @@ export const useChatSocket = (
     socket.emit('send_message', payload);
     
     // Optimistic Update - use actual current user ID
-    const optimisticMessage: ChatMessage = {
-      message_id: Date.now(), // ID sementara
-      store_id: currentStoreId.current,
-      buyer_id: currentBuyerId.current || 0,
-      sender_id: currentUserIdRef.current || 0, 
-      content: message,
-      message_type: type,
-      product_id: productId ?? (null as any),
-      is_read: false,
-      created_at: new Date().toISOString()
-    };
-    
-    setMessages((prev: ChatMessage[]) => [...prev, optimisticMessage]);
+    // Don't show optimistic for item_preview as it will show "Product Preview" without actual product data
+    if (type !== 'item_preview') {
+      const optimisticMessage: ChatMessage = {
+        message_id: Date.now(), // ID sementara
+        store_id: currentStoreId.current,
+        buyer_id: currentBuyerId.current || 0,
+        sender_id: currentUserIdRef.current || 0, 
+        content: message,
+        message_type: type,
+        product_id: productId ?? (null as any),
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages((prev: ChatMessage[]) => [...prev, optimisticMessage]);
+    }
   }, [socket, isConnected]);
 
   const sendTyping = useCallback((typing: boolean) => {
@@ -273,16 +383,25 @@ export const useChatSocket = (
      });
   }, [socket, isConnected]);
 
-  // Auto connect
-  useEffect(() => {
-     const sock = connectSocket();
-     return () => {};
-  }, [connectSocket]);
-
   // Auto join logic
   useEffect(() => {
     if (storeId && buyerId && isConnected && socket) {
+       console.log('[Auto Join] Joining room:', storeId, buyerId);
+       // SET REFS IMMEDIATELY before join to avoid race with notifications
+       currentStoreId.current = storeId;
+       currentBuyerId.current = buyerId;
        socket.emit('join_chat', { storeId, buyerId });
+       
+       // Cleanup: leave room when component unmounts or room changes
+       return () => {
+         console.log('[Auto Join] Leaving room:', storeId, buyerId);
+         socket.emit('leave_chat', { storeId, buyerId });
+         // Only clear refs if we're actually leaving (not just unmounting during hot reload)
+         if (currentStoreId.current === storeId && currentBuyerId.current === buyerId) {
+           currentStoreId.current = null;
+           currentBuyerId.current = null;
+         }
+       };
     }
   }, [storeId, buyerId, isConnected, socket]);
 

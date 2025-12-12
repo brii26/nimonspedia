@@ -34,7 +34,10 @@ export default (io: Server, socket: AuthenticatedSocket) => {
   // Auto-join user's personal notification room
   const userRoom = `user_${user.user_id}`;
   socket.join(userRoom);
-  console.log(`User ${user.name} joined notification room: ${userRoom}`);
+  console.log(`[Auto Join] User ${user.name} (ID: ${user.user_id}) joined notification room: ${userRoom}`);
+
+  // Track which chat room this socket is actively viewing (stored on socket instance)
+  socket.activeChatRoom = null;
 
   // 1. Setup Room Logic
   // Chat rooms berbasis store-buyer: "chat_{storeId}_{buyerId}"
@@ -45,6 +48,28 @@ export default (io: Server, socket: AuthenticatedSocket) => {
     const room = `user_${payload.user_id}`;
     socket.join(room);
     console.log(`User explicitly joined room: ${room}`);
+  });
+
+  // Handle explicit join_user_room (for global notifications)
+  socket.on('join_user_room', async (payload: { userId: number }) => {
+    const room = `user_${payload.userId}`;
+    
+    // Security check: only allow joining own notification room
+    if (payload.userId !== user.user_id) {
+      console.warn(`[Security] User ${user.user_id} attempted to join room for user ${payload.userId}`);
+      return;
+    }
+    
+    socket.join(room);
+    console.log(`[Explicit Join] User ${user.name} (ID: ${user.user_id}) explicitly joined notification room: ${room}`);
+    
+    // Verify membership
+    const socketsInRoom = await io.in(room).fetchSockets();
+    console.log(`[Verify] Room ${room} now has ${socketsInRoom.length} socket(s)`);
+    socketsInRoom.forEach((s, idx) => {
+      const sock = s as any;
+      console.log(`[Verify] Socket ${idx}: user_id=${sock.user?.user_id}, socket_id=${s.id}`);
+    });
   });
 
   // 2. Handle Event Join Chat Room
@@ -79,6 +104,10 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
       const chatRoom = `chat_${storeId}_${buyerId}`;
       socket.join(chatRoom);
+      
+      // Set as active chat room for this socket
+      socket.activeChatRoom = chatRoom;
+      console.log(`[Active Room] Set active chat room: ${chatRoom} for user ${user.user_id}`);
       
       // Ensure chat room exists in database
       await chatRepository.ensureChatRoom(storeId, buyerId);
@@ -211,10 +240,21 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
 
-      // 7. Send Push Notification to receiver (only if not in chat room)
-      const receiverId = savedMessage.sender_id === buyerId ? 
-        (await pool.query('SELECT user_id FROM stores WHERE store_id = $1', [storeId])).rows[0]?.user_id :
-        buyerId;
+      // 7. Send notifications to receiver
+      // Determine receiver based on sender's role
+      let receiverId: number | null = null;
+      
+      if (user.role === 'BUYER') {
+        // Buyer kirim pesan → receiver adalah seller (owner of store)
+        const storeOwnerResult = await pool.query('SELECT user_id FROM stores WHERE store_id = $1', [storeId]);
+        receiverId = storeOwnerResult.rows[0]?.user_id || null;
+      } else if (user.role === 'SELLER') {
+        // Seller kirim pesan → receiver adalah buyer
+        receiverId = buyerId;
+      }
+      
+      console.log(`[Message Sent] Sender: ${user.user_id} (${user.role}), Buyer: ${buyerId}, Store: ${storeId}`);
+      console.log(`[Message Sent] Receiver determined as: ${receiverId}`);
       
       if (receiverId) {
         try {
@@ -223,14 +263,62 @@ export default (io: Server, socket: AuthenticatedSocket) => {
             (msgContent.length > 100 ? msgContent.substring(0, 100) + '...' : msgContent) :
             msgType === 'image' ? '📷 Image' : '🏷️ Product Preview';
           
-          // Check if receiver is in the chat room
+          // Fetch product data if this is an item_preview message
+          let productName = null;
+          let productPrice = null;
+          let productImage = null;
+          
+          if (msgType === 'item_preview' && productId) {
+            const productResult = await pool.query(
+              'SELECT name, price, image FROM products WHERE product_id = $1',
+              [productId]
+            );
+            if (productResult.rows.length > 0) {
+              productName = productResult.rows[0].name;
+              productPrice = productResult.rows[0].price;
+              productImage = productResult.rows[0].image;
+            }
+          }
+          
+          // ALWAYS send sidebar update to receiver (untuk update list chat)
+          const receiverRoom = `user_${receiverId}`;
+          console.log(`[Sidebar Update] Attempting to send to room: ${receiverRoom}`);
+          
+          // Check who's in the receiver's notification room
+          const socketsInNotificationRoom = await io.in(receiverRoom).fetchSockets();
+          console.log(`[Sidebar Update] Sockets in ${receiverRoom}: ${socketsInNotificationRoom.length}`);
+          socketsInNotificationRoom.forEach((s, idx) => {
+            const sock = s as any;
+            console.log(`[Sidebar Update] Socket ${idx}: user_id=${sock.user?.user_id}, socket_id=${s.id}`);
+          });
+          
+          io.to(receiverRoom).emit('chat_sidebar_update', {
+            message: {
+              ...savedMessage,
+              product_name: productName,
+              product_price: productPrice,
+              product_image: productImage
+            },
+            storeId,
+            buyerId
+          });
+          console.log(`[Sidebar Update] Sent to user_${receiverId}`);
+          
+          // Check if receiver is ACTIVELY viewing this specific chat room
           const socketsInRoom = await io.in(chatRoom).fetchSockets();
-          const receiverInRoom = socketsInRoom.some(s => (s as any).user?.user_id === receiverId);
+          console.log(`[Notification] Checking ${chatRoom}, sockets in room: ${socketsInRoom.length}`);
           
-          console.log(`[Notification] Receiver ${receiverId} in room ${chatRoom}:`, receiverInRoom);
+          const receiverActivelyViewing = socketsInRoom.some(s => {
+            const sock = s as any;
+            const isMatch = sock.user?.user_id === receiverId && sock.activeChatRoom === chatRoom;
+            console.log(`[Notification] Socket user_id=${sock.user?.user_id}, activeChatRoom=${sock.activeChatRoom}, isMatch=${isMatch}`);
+            return isMatch;
+          });
           
-          // Only send notification if receiver is NOT in the room
-          if (!receiverInRoom) {
+          console.log(`[Notification] Receiver ${receiverId} actively viewing ${chatRoom}:`, receiverActivelyViewing);
+          
+          // Only send push notification if receiver is NOT actively viewing this chat
+          if (!receiverActivelyViewing) {
             io.to(`user_${receiverId}`).emit('new_chat_notification', {
               title: `New message from ${senderName}`,
               body: messagePreview,
@@ -241,9 +329,9 @@ export default (io: Server, socket: AuthenticatedSocket) => {
                 url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
               }
             });
-            console.log(`[Notification] Sent to user_${receiverId}`);
+            console.log(`[Notification] Push notification sent to user_${receiverId}`);
           } else {
-            console.log(`[Notification] Skipped - receiver is in chat room`);
+            console.log(`[Notification] Push notification skipped - receiver is actively viewing this chat`);
           }
         } catch (notifError) {
           console.error('Push notification error:', notifError);
@@ -306,6 +394,36 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       }
     } catch (error) {
       console.error('Stop Typing Error:', error);
+    }
+  });
+
+  // Handle leave chat room
+  socket.on('leave_chat', async (payload: { storeId: number; buyerId?: number }) => {
+    try {
+      let { storeId, buyerId } = payload;
+
+      if (user.role === 'BUYER') {
+        buyerId = user.user_id;
+      } else if (user.role === 'SELLER') {
+        const storeResult = await pool.query('SELECT store_id FROM stores WHERE user_id = $1', [user.user_id]);
+        if (storeResult.rows.length === 0) return;
+        storeId = storeResult.rows[0].store_id;
+      }
+
+      if (storeId && buyerId) {
+        const chatRoom = `chat_${storeId}_${buyerId}`;
+        socket.leave(chatRoom);
+        
+        // Clear active chat room if it matches
+        if (socket.activeChatRoom === chatRoom) {
+          socket.activeChatRoom = null;
+          console.log(`[Active Room] Cleared active chat room for user ${user.user_id}`);
+        }
+        
+        console.log(`User ${user.name} left chat room: ${chatRoom}`);
+      }
+    } catch (error) {
+      console.error('Leave Chat Error:', error);
     }
   });
 
@@ -418,6 +536,14 @@ export default (io: Server, socket: AuthenticatedSocket) => {
 
     } catch (error) {
       console.error('Load More Error:', error);
+    }
+  });
+
+  // Cleanup on disconnect
+  socket.on('disconnect', () => {
+    if (socket.activeChatRoom) {
+      console.log(`[Disconnect] User ${user.name} disconnected, clearing active room: ${socket.activeChatRoom}`);
+      socket.activeChatRoom = null;
     }
   });
 };
