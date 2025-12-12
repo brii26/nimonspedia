@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import axios from 'axios'; // Import raw axios to bypass interceptors
 import api from '../services/api/axios.js';
 import { notificationService } from '../services/notification.js';
 
@@ -20,6 +21,10 @@ interface User {
   email?: string;
   balance?: number;
   avatar?: string;
+  // Add feature flags
+  auction_enabled?: boolean;
+  chat_enabled?: boolean;
+  checkout_enabled?: boolean;
 }
 
 interface LoginResponse {
@@ -56,6 +61,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ...response.data.data,
           role: 'ADMIN'
         });
+        // Enforce Exclusive Session: Clear User if Admin is valid
+        setUser(null);
         return true; // Admin valid
       }
       return false;
@@ -72,20 +79,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // --- 2. Fetch User Session (PHP) ---
   const fetchUserSession = useCallback(async (): Promise<boolean> => {
     try {
-      delete api.defaults.headers.common['Authorization'];
+      console.log('[Auth] Fetching user session from Node (bypassing admin token)...');
       
-      const response = await api.get('/auth/user'); 
+      // Use raw axios to bypass the interceptor that injects Authorization header
+      // This ensures we rely ONLY on the PHPSESSID cookie
+      const response = await axios.get('/api/node/auth/user', {
+        withCredentials: true
+      }); 
+      console.log('[Auth] Node response:', response.data);
+
       if (response.data.success && response.data.user) {
         const userData = response.data.user;
-        // Map user_id to id for consistency if needed, or keep both
-        setUser({
+        
+        // Fetch additional session meta (feature flags)
+        let flags = { auction_enabled: true, chat_enabled: true, checkout_enabled: true };
+        try {
+            console.log('[Auth] Fetching session meta from PHP...');
+            // Also use raw axios for PHP call to ensure no pollution
+            const metaRes = await axios.get('/api/session-meta', { 
+              withCredentials: true 
+            });
+            console.log('[Auth] PHP meta response:', metaRes.data);
+            if (metaRes.data) {
+                flags = {
+                    auction_enabled: metaRes.data.auction_enabled ?? true,
+                    chat_enabled: metaRes.data.chat_enabled ?? true,
+                    checkout_enabled: metaRes.data.checkout_enabled ?? true
+                };
+            }
+        } catch (e) {
+            console.warn("[Auth] Failed to fetch session meta", e);
+        }
+
+        const finalUser = {
             ...userData,
-            id: userData.user_id || userData.id // Ensure id is populated
-        });
+            id: userData.user_id || userData.id, // Ensure id is populated
+            ...flags
+        };
+        console.log('[Auth] Setting user:', finalUser);
+
+        setUser(finalUser);
+        
+        // Enforce Exclusive Session: Clear Admin if User is valid
+        setAdmin(null);
+        localStorage.removeItem('admin_token');
+        delete api.defaults.headers.common['Authorization'];
+        
         return true;
       }
+      console.log('[Auth] Node response success=false or no user');
       return false;
     } catch (error) {
+      // Don't log 401s as errors, just means not logged in
+      // console.error('[Auth] fetchUserSession failed:', error);
       setUser(null);
       return false;
     }
@@ -104,30 +150,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAdmin = await fetchAdminSession(token);
       }
 
-      // STEP B: Fallback ke User Session (PHP) jika admin tidak valid/tidak ada
-      let isUser = false;
+      // STEP B: If Admin is NOT logged in, Check User Session (PHP)
+      // Exclusive session: If Admin is logged in, we skip User check.
       if (!isAdmin) {
-        isUser = await fetchUserSession();
+        await fetchUserSession();
       }
       
-      // STEP C: Subscribe to Push Notifications if authenticated (User or Admin)
-      if ((isAdmin || isUser) && 'Notification' in window && Notification.permission !== 'denied') {
-        try {
-          // Register service worker first
-          await notificationService.registerWorker();
-          // Then subscribe
-          await notificationService.subscribeToPush();
-          console.log('[Auth] Push notification subscription initiated globally.');
-        } catch (error) {
-          console.error('[Auth] Failed to subscribe to push notifications:', error);
-        }
-      }
-
       setLoading(false);
     };
 
     initAuth();
   }, [fetchAdminSession, fetchUserSession]);
+
+  // Separate effect for Push Notifications to ensure it runs with updated state
+  useEffect(() => {
+    if (!loading && (admin || user) && 'Notification' in window && Notification.permission !== 'denied') {
+        const subscribe = async () => {
+            try {
+                await notificationService.registerWorker();
+                await notificationService.subscribeToPush();
+                console.log('[Auth] Push notification subscription initiated globally.');
+            } catch (error) {
+                console.error('[Auth] Failed to subscribe to push notifications:', error);
+            }
+        };
+        subscribe();
+    }
+  }, [loading, admin, user]);
+
+
+  // --- Redirect Logic for Feature Flags & Auth ---
+  useEffect(() => {
+    if (loading) return;
+
+    const path = window.location.pathname;
+    const isAuction = path.startsWith('/auction');
+    const isChat = path.startsWith('/chat');
+    const isCart = path.startsWith('/cart'); // New
+    const isAdminPath = path.startsWith('/admin');
+
+    // 1. Protection for Admin Routes
+    if (isAdminPath && !path.includes('/login') && !admin) {
+        window.location.href = '/admin/login';
+        return;
+    }
+
+    // 2. Protection for User Routes (Auction/Chat/Cart - requires login)
+    if ((isAuction || isChat || isCart) && !user) {
+      console.log('[Auth] Unauthenticated access to protected route. Redirecting to /login');
+      window.location.href = '/login';
+      return;
+    }
+
+    // 3. Feature Flag Checks (Only if User is logged in)
+    if (user) {
+        if (isAuction && user.auction_enabled === false) {
+            console.log('[Auth] Auction disabled for user. Redirecting to /');
+            window.location.href = '/';
+            return;
+        }
+        if (isChat && user.chat_enabled === false) {
+            console.log('[Auth] Chat disabled for user. Redirecting to /');
+            window.location.href = '/';
+            return;
+        }
+        if (isCart && user.checkout_enabled === false) {
+          console.log('[Auth] Checkout disabled for user. Redirecting to /');
+          window.location.href = '/';
+          return;
+      }
+    }
+  }, [loading, user, admin]);
 
   // --- Actions ---
 
@@ -141,8 +234,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         setAdmin({ ...adminData, token, role: 'ADMIN' });
-        setUser(null); 
         
+        // Enforce Exclusive Session: Clear User
+        setUser(null);
+
         return { success: true };
       }
       return { success: false, message: 'No token received' };
@@ -157,33 +252,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setLoading(true);
 
-    // Skenario 1: Logout Admin
-    if (admin) {
-      localStorage.removeItem('admin_token');
-      delete api.defaults.headers.common['Authorization'];
-      setAdmin(null);
-      setLoading(false);
-      window.location.href = '/admin/login'; // Hard refresh ke login admin
-      return;
+    const path = window.location.pathname;
+    
+    // Context-aware logout
+    if (path.startsWith('/admin') || admin) {
+        // Logout Admin
+        localStorage.removeItem('admin_token');
+        delete api.defaults.headers.common['Authorization'];
+        setAdmin(null);
+        setLoading(false);
+        window.location.href = '/admin/login';
+    } else {
+        // Logout User (PHP)
+        if (user) {
+            // Use raw axios here too for consistency, though logout endpoint might not care
+            axios.get('/api/session-meta', { baseURL: '/' }).then(res => {
+                const csrfToken = res.data.csrf_token;
+                
+                axios.post('/logout', 
+                { csrf_token: csrfToken }, 
+                { withCredentials: true, baseURL: '/' } 
+                ).finally(() => {
+                setUser(null);
+                setLoading(false);
+                window.location.href = '/'; 
+                });
+            }).catch(() => {
+                setUser(null);
+                setLoading(false);
+                window.location.href = '/';
+            });
+        } else {
+            setLoading(false);
+            window.location.href = '/';
+        }
     }
-
-    // Skenario 2: Logout User (PHP)
-    if (user) {
-      api.get('/api/session-meta', { baseURL: '/' }).then(res => {
-        const csrfToken = res.data.csrf_token;
-        
-        api.post('/logout', 
-          { csrf_token: csrfToken }, 
-          { baseURL: '/' }
-        ).finally(() => {
-          setUser(null);
-          setLoading(false);
-          window.location.href = '/'; 
-        });
-      });
-    }
-
-    setLoading(false);
   };
 
   const value = {
