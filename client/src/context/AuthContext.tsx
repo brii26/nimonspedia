@@ -169,13 +169,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Skenario 2: Logout User (PHP)
     if (user) {
-      // Panggil endpoint logout PHP backend agar session hancur di server
-      api.post('/auth/logout').finally(() => {
-        setUser(null);
-        setLoading(false);
-        window.location.href = '/login.php'; // Atau redirect ke halaman login user
+      api.get('/api/session-meta', { baseURL: '/' }).then(res => {
+        const csrfToken = res.data.csrf_token;
+        
+        api.post('/logout', 
+          { csrf_token: csrfToken }, 
+          { baseURL: '/' }
+        ).finally(() => {
+          setUser(null);
+          setLoading(false);
+          window.location.href = '/'; 
+        });
       });
-      return;
     }
 
     setLoading(false);
