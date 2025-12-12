@@ -6,4 +6,5 @@ export interface AuthenticatedSocket extends Socket {
     name: string;
     role: string;
   };
+  activeChatRoom?: string | null;
 }

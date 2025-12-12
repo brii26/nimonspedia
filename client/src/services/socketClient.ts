@@ -23,9 +23,7 @@ class SocketClient {
 
     this.isConnecting = true;
 
-    const socketUrl = (import.meta as any).env?.VITE_SOCKET_URL || 
-                     (window as any).VITE_SOCKET_URL || 
-                     'http://localhost:3000';
+    const socketUrl = '/';
 
     this.socket = io(socketUrl, {
       auth: {

@@ -5,15 +5,7 @@ export { default as Modal, ModalHeader, ModalBody, ModalFooter } from './Modal.j
 export { default as Badge } from './Badge.js';
 export { default as Pagination } from './Pagination.js';
 export { default as Dropdown, DropdownItem, DropdownDivider } from './Dropdown.js';
-export { 
-  default as Navbar, 
-  NavbarBrand, 
-  NavbarNav, 
-  NavLink, 
-  NavbarUser,
-  UserBalance,
-  UserDropdown 
-} from './Navbar.js';
+export { default as Navbar } from './Navbar.js';
 export { default as Footer, FooterSection, FooterLinks } from './Footer.js';
 export { default as Alert } from './Alert.js';
 export { default as Toast, ToastContainer } from './Toast.js';

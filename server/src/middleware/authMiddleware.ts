@@ -31,22 +31,34 @@ declare module 'fastify' {
 
 // Helper untuk ambil user dari PHP Redis
 const getPHPUser = async (cookieString?: string): Promise<UserSession | null> => {
-    if (!cookieString) return null;
+    if (!cookieString) {
+        console.log("[AuthMiddleware] No cookie string provided.");
+        return null;
+    }
 
     const cookies = cookie.parse(cookieString);
     const sessionID = cookies.PHPSESSID;
 
-    if (!sessionID) return null;
+    if (!sessionID) {
+        console.log("[AuthMiddleware] PHPSESSID not found in cookies:", Object.keys(cookies));
+        return null;
+    }
 
     const sessionKey = `PHPREDIS_SESSION:${sessionID}`;
     const rawSession = await redisClient.get(sessionKey);
 
-    if (!rawSession) return null;
+    if (!rawSession) {
+        console.log(`[AuthMiddleware] Redis Key not found: ${sessionKey}`);
+        return null;
+    }
 
     try {
         const sessionData = unserializeSession(rawSession) as any;
         
-        if (!sessionData.user_id) return null;
+        if (!sessionData.user_id) {
+            console.log("[AuthMiddleware] user_id missing in session data:", sessionData);
+            return null;
+        }
 
         return {
             user_id: String(sessionData.user_id),

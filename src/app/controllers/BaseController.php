@@ -111,9 +111,27 @@ abstract class BaseController {
     }
     
     /**
-     * Get only POST data
+     * Get only POST data, handling both form-data and JSON
      */
     protected function getPost($key = null, $default = null) {
+        // Check for JSON content type
+        $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
+        if (strpos($contentType, 'application/json') !== false) {
+            // Read raw input
+            $content = file_get_contents("php://input");
+            $decoded = json_decode($content, true);
+            
+            if (is_array($decoded)) {
+                // Merge with $_POST (JSON takes precedence)
+                $data = array_merge($_POST, $decoded);
+                
+                if ($key === null) {
+                    return $data;
+                }
+                return $data[$key] ?? $default;
+            }
+        }
+
         if ($key === null) {
             return $_POST;
         }
