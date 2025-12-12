@@ -22,17 +22,19 @@ const Navbar = () => {
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const res = await api.get('/api/session-meta');
+        // Fetch flags from PHP endpoint (override baseURL)
+        const res = await api.get('/api/session-meta', { baseURL: '/' });
         if (res.data) {
             setFlags({
                 checkout_enabled: res.data.checkout_enabled ?? true,
-                chat_enabled: true, 
-                auction_enabled: true 
+                chat_enabled: res.data.chat_enabled ?? true, 
+                auction_enabled: res.data.auction_enabled ?? true 
             });
         }
 
         if (user && user.role === 'BUYER') {
-            const cartRes = await api.get('/api/cart/count');
+            // Fetch cart count from PHP endpoint (override baseURL)
+            const cartRes = await api.get('/api/cart/count', { baseURL: '/' });
             if (cartRes.data) {
                 setCartCount(cartRes.data.unique || 0);
             }
@@ -70,8 +72,21 @@ const Navbar = () => {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-[1000] shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Brand/Logo */}
-          <div className="flex items-center flex-shrink-0">
+          {/* Mobile Menu Toggle (Left) */}
+          <button 
+            type="button" 
+            className="flex flex-col gap-1 p-2 rounded-md hover:bg-gray-100 lg:hidden focus:outline-none order-1" 
+            aria-label="Toggle navigation menu" 
+            aria-expanded={isMobileMenuOpen} 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <span className={`block w-6 h-0.5 bg-gray-600 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-gray-600 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-gray-600 transition-transform duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+          </button>
+
+          {/* Brand/Logo (Right on Mobile, Left on Desktop) */}
+          <div className="flex items-center flex-shrink-0 order-2 lg:order-none">
             <a href="/" className="flex items-center gap-2 text-blue-600 no-underline" aria-label="Nimonspedia Home">
               <img 
                 src="/assets/images/logo.svg" 
@@ -85,21 +100,12 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <button 
-            type="button" 
-            className="flex flex-col gap-1 p-2 rounded-md hover:bg-gray-100 lg:hidden focus:outline-none" 
-            aria-label="Toggle navigation menu" 
-            aria-expanded={isMobileMenuOpen} 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <span className={`block w-6 h-0.5 bg-gray-600 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-600 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-600 transition-transform duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-          </button>
+          {/* Spacer for Mobile (Push Brand to Right) */}
+          <div className="flex-1 lg:hidden order-3"></div> 
 
-          {/* Navigation Menu (Desktop) */}
-          <div className="hidden lg:flex lg:items-center lg:gap-8 flex-1 justify-between ml-8">
+
+          {/* Desktop Navigation & User Section */}
+          <div className="hidden lg:flex lg:items-center lg:gap-8 flex-1 justify-between ml-8 order-4">
             <div className="flex items-center gap-6">
               {!user ? (
                 // Guest Navigation
