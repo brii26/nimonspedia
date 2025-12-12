@@ -319,7 +319,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
           console.log(`[Notification] Receiver ${receiverId} actively viewing ${chatRoom}:`, receiverActivelyViewing);
           
           // Only send notification if receiver is NOT in the room
-          if (!receiverInRoom) {
+          if (!receiverActivelyViewing) {
             // 1. Emit In-App Socket Notification
             io.to(`user_${receiverId}`).emit('new_chat_notification', {
               title: `New message from ${senderName}`,
