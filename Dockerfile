@@ -33,6 +33,9 @@ COPY php.ini /usr/local/etc/php/conf.d/php.ini
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+RUN mkdir -p /var/cache/nginx/nimonspedia && \
+    chown -R nginx:nginx /var/cache/nginx
+
 COPY . /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html/storage
