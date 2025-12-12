@@ -19,6 +19,7 @@ interface User {
   role: 'BUYER' | 'SELLER';
   email?: string;
   balance?: number;
+  avatar?: string;
 }
 
 interface LoginResponse {
