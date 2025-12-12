@@ -317,13 +317,6 @@ const ChatPage = () => {
     }
   }, [socket, user, isConnected]);
 
-  // Request notification permission saat mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
-
   // Handle Init Store ID (Redirect from Product Page)
   useEffect(() => {
     if (!user || user.role !== 'BUYER') return;

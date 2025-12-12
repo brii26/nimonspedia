@@ -3,6 +3,7 @@ import notificationRepository, {
   PushSubscriptionData, 
   NotificationPreferences 
 } from '../repositories/notificationRepository.js';
+import notificationQueue from '../queues/notificationQueue.js';
 
 interface NotificationPayload {
   title: string;
@@ -80,46 +81,28 @@ class NotificationService {
 
   /**
    * Mengirim notifikasi ke User tertentu.
-   * Otomatis mengecek apakah user mengizinkan kategori notifikasi tersebut.
+   * Menggunakan Queue (Bull) untuk reliability.
    */
   async sendNotification(
     userId: number, 
     category: 'chat' | 'auction' | 'order', 
     payload: NotificationPayload
   ): Promise<void> {
-    if (!this.isInitialized) return;
+    if (!this.isInitialized) {
+      console.warn('[Notification] Skipped: VAPID not initialized');
+      return;
+    }
 
     try {
-      const prefs = await notificationRepository.getPreferences(userId);
-      const isEnabled = prefs[`${category}_enabled` as keyof NotificationPreferences];
-
-      if (!isEnabled) {
-        console.log(`Notifikasi ${category} di-skip untuk User ${userId} (Preference OFF)`);
-        return;
-      }
-
-      const subscriptions = await notificationRepository.getSubscriptionsByUser(userId);
-      if (subscriptions.length === 0) return;
-
-      console.log(`Sending ${category} notification to User ${userId} (${subscriptions.length} devices)`);
-      const notifications = subscriptions.map(async (sub) => {
-        try {
-          await webpush.sendNotification(sub as any, JSON.stringify(payload));
-        } catch (error: any) {
-          if (error.statusCode === 410 || error.statusCode === 404) {
-            // 410 Gone: Browser sudah tidak mengenali endpoint ini (User unsubscribe / clear data)
-            console.log(`Menghapus subscription expired: ${sub.endpoint}`);
-            await notificationRepository.deleteSubscription(sub.endpoint);
-          } else {
-            console.error('Push Error:', error.message);
-          }
-        }
+      // Masukkan ke Queue (Fire and Forget)
+      await notificationQueue.add({
+        userId,
+        category,
+        payload
       });
-
-      await Promise.all(notifications);
-
+      console.log(`[Notification] Job queued for User ${userId} (${category})`);
     } catch (error) {
-      console.error('Failed to process notification:', error);
+      console.error('[Notification] Failed to queue notification:', error);
     }
   }
 }

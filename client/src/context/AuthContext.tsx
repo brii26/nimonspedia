@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import api from '../services/api/axios.js';
+import { notificationService } from '../services/notification.js';
 
 // --- Interfaces (Dipertahankan) ---
 interface Admin {
@@ -95,21 +96,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // STEP A: Cek keberadaan token Admin di storage
       const token = localStorage.getItem('admin_token');
+      let isAdmin = false;
 
       if (token) {
         // Jika ada token, PRIORITASKAN validasi admin
-        const isAdminValid = await fetchAdminSession(token);
-        
-        if (isAdminValid) {
-          setLoading(false);
-          return; 
+        isAdmin = await fetchAdminSession(token);
+      }
+
+      // STEP B: Fallback ke User Session (PHP) jika admin tidak valid/tidak ada
+      let isUser = false;
+      if (!isAdmin) {
+        isUser = await fetchUserSession();
+      }
+      
+      // STEP C: Subscribe to Push Notifications if authenticated (User or Admin)
+      if ((isAdmin || isUser) && 'Notification' in window && Notification.permission !== 'denied') {
+        try {
+          // Register service worker first
+          await notificationService.registerWorker();
+          // Then subscribe
+          await notificationService.subscribeToPush();
+          console.log('[Auth] Push notification subscription initiated globally.');
+        } catch (error) {
+          console.error('[Auth] Failed to subscribe to push notifications:', error);
         }
       }
 
-      // STEP B: Fallback ke User Session (PHP)
-      // Jalan jika: Tidak ada token admin ATAU Token admin expired
-      await fetchUserSession();
-      
       setLoading(false);
     };
 

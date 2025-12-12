@@ -17,6 +17,7 @@ import { socketAuth } from './src/middleware/authMiddleware.js';
 import registerAuctionHandlers, { recoverActiveAuctions, startScheduledAuctionChecker } from './src/sockets/auctionSocket.js';
 import registerChatHandlers from './src/sockets/chatSocket.js';
 import { AuthenticatedSocket } from './src/types/socket.js';
+import './src/queues/notificationQueue.js'; // Init Notification Queue Worker
 
 // Extend Fastify instance to include socket.io
 declare module 'fastify' {

@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import pool from '../config/database.js';
 import chatRepository from '../repositories/chatRepository.js';
 import featureFlagRepository from '../repositories/featureFlagRepository.js';
+import notificationService from '../services/notificationService.js';
 import { SendMessagePayload, TypingPayload } from '../types/socket-payloads.js';
 import { AuthenticatedSocket } from '../types/socket.js';
 import validator from 'validator';
@@ -231,6 +232,7 @@ export default (io: Server, socket: AuthenticatedSocket) => {
           
           // Only send notification if receiver is NOT in the room
           if (!receiverInRoom) {
+            // 1. Emit In-App Socket Notification
             io.to(`user_${receiverId}`).emit('new_chat_notification', {
               title: `New message from ${senderName}`,
               body: messagePreview,
@@ -241,7 +243,16 @@ export default (io: Server, socket: AuthenticatedSocket) => {
                 url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
               }
             });
-            console.log(`[Notification] Sent to user_${receiverId}`);
+
+            // 2. Trigger Web Push Queue (Offline/Background Support)
+            await notificationService.sendNotification(receiverId, 'chat', {
+              title: `Pesan baru dari ${senderName}`,
+              body: messagePreview,
+              url: `/chat`, // Simplified URL for SPA
+              icon: '/favicon.ico'
+            });
+
+            console.log(`[Notification] Sent to user_${receiverId} (Socket & Queue)`);
           } else {
             console.log(`[Notification] Skipped - receiver is in chat room`);
           }
