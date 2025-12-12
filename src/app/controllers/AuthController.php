@@ -328,4 +328,27 @@ class AuthController extends BaseController {
             $this->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
+
+    /**
+     * Get Session Metadata (CSRF, Auth Status, Feature Flags)
+     * Used by client-side scripts to hydrate UI state.
+     */
+    public function sessionMeta() {
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        
+        // Ensure session is active to get CSRF token
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $userId = Auth::id();
+        $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
+
+        $this->json([
+            'is_logged_in' => Auth::check(),
+            'user_role' => $_SESSION['role'] ?? null,
+            'checkout_enabled' => $checkoutAccess['allowed'],
+            'csrf_token' => Auth::csrfToken()
+        ]);
+    }
 }

@@ -231,10 +231,10 @@ const ChatPage = () => {
     productSearchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingProducts(true);
       try {
-        // Use /api/products endpoint for JSON response
-        const searchParam = query ? `search=${encodeURIComponent(query)}&` : '';
+        // Use /products endpoint (Public API)
+        const searchParam = query ? `searchTerm=${encodeURIComponent(query)}&` : '';
         const limit = query ? 10 : 20;
-        const url = `/api/products?${searchParam}page=1&limit=${limit}`;
+        const url = `/products?${searchParam}page=1&perPage=${limit}`;
         
         console.log('[Product Search] Fetching from:', url);
         const res = await axios.get(url);
@@ -243,8 +243,8 @@ const ChatPage = () => {
         // Parse response from PHP backend
         let products = [];
         
-        if (res.data?.success && res.data?.data) {
-          // Expected format: { success: true, data: [...] }
+        // New Format: { data: [...], current_page: 1, ... }
+        if (res.data && Array.isArray(res.data.data)) {
           products = res.data.data;
         } else if (Array.isArray(res.data)) {
           products = res.data;
