@@ -465,6 +465,38 @@ This application employs a containerized microservices architecture with two pri
 
 ---
 
+## Milestone 2 Google Lighthouse
+
+### Admin Panel
+
+| Admin Login | Admin Dashboard |
+| :---: | :---: |
+| ![Admin Login Lighthouse](img/m2/lighthouse/admin_login.png) | ![Admin Dashboard Lighthouse](img/m2/lighthouse/admin_dashboard.png) |
+
+| User Management | Review Management |
+| :---: | :---: |
+| ![User Management Lighthouse](img/m2/lighthouse/user_management.png) | ![Review Management Lighthouse](img/m2/lighthouse/review_management.png) |
+
+### Real-Time Chat
+
+| Chat Room |
+| :---: |
+| ![Chat Room Lighthouse](img/m2/lighthouse/chat_room.png) |
+
+### Live Auctions
+
+| Auction Detail |
+| :---: |
+| ![Auction Detail Lighthouse](img/m2/lighthouse/auction_detail.png) |
+
+### Payment Integration
+
+| Midtrans Checkout |
+| :---: |
+| ![Midtrans Checkout Lighthouse](img/m2/lighthouse/midtrans_checkout.png) |
+
+---
+
 ## Milestone 2 Technology Stack
 
 ### Backend
