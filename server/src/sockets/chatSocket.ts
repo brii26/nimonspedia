@@ -241,7 +241,39 @@ export default (io: Server, socket: AuthenticatedSocket) => {
       // 6. Feedback ke Sender
       socket.emit('message_sent', savedMessage);
 
-      // 7. Send notifications to receiver
+      // 7. Fetch product data if needed (for sidebar updates)
+      let productName = null;
+      let productPrice = null;
+      let productImage = null;
+      
+      if (msgType === 'item_preview' && productId) {
+        const productResult = await pool.query(
+          'SELECT name, price, image FROM products WHERE product_id = $1',
+          [productId]
+        );
+        if (productResult.rows.length > 0) {
+          productName = productResult.rows[0].name;
+          productPrice = productResult.rows[0].price;
+          productImage = productResult.rows[0].image;
+        }
+      }
+
+      const messageData = {
+        ...savedMessage,
+        product_name: productName,
+        product_price: productPrice,
+        product_image: productImage
+      };
+
+      // 8. ALWAYS send sidebar update to SENDER (agar sidebar pengirim terupdate)
+      io.to(`user_${user.user_id}`).emit('chat_sidebar_update', {
+        message: messageData,
+        storeId,
+        buyerId
+      });
+      console.log(`[Sidebar Update] Sent to sender user_${user.user_id}`);
+
+      // 9. Send notifications to receiver
       // Determine receiver based on sender's role
       let receiverId: number | null = null;
       
@@ -264,26 +296,9 @@ export default (io: Server, socket: AuthenticatedSocket) => {
             (msgContent.length > 100 ? msgContent.substring(0, 100) + '...' : msgContent) :
             msgType === 'image' ? '📷 Image' : '🏷️ Product Preview';
           
-          // Fetch product data if this is an item_preview message
-          let productName = null;
-          let productPrice = null;
-          let productImage = null;
-          
-          if (msgType === 'item_preview' && productId) {
-            const productResult = await pool.query(
-              'SELECT name, price, image FROM products WHERE product_id = $1',
-              [productId]
-            );
-            if (productResult.rows.length > 0) {
-              productName = productResult.rows[0].name;
-              productPrice = productResult.rows[0].price;
-              productImage = productResult.rows[0].image;
-            }
-          }
-          
-          // ALWAYS send sidebar update to receiver (untuk update list chat)
+          // ALWAYS send sidebar update to RECEIVER (untuk update list chat)
           const receiverRoom = `user_${receiverId}`;
-          console.log(`[Sidebar Update] Attempting to send to room: ${receiverRoom}`);
+          console.log(`[Sidebar Update] Attempting to send to receiver room: ${receiverRoom}`);
           
           // Check who's in the receiver's notification room
           const socketsInNotificationRoom = await io.in(receiverRoom).fetchSockets();
@@ -294,16 +309,11 @@ export default (io: Server, socket: AuthenticatedSocket) => {
           });
           
           io.to(receiverRoom).emit('chat_sidebar_update', {
-            message: {
-              ...savedMessage,
-              product_name: productName,
-              product_price: productPrice,
-              product_image: productImage
-            },
+            message: messageData,
             storeId,
             buyerId
           });
-          console.log(`[Sidebar Update] Sent to user_${receiverId}`);
+          console.log(`[Sidebar Update] Sent to receiver user_${receiverId}`);
           
           // Check if receiver is ACTIVELY viewing this specific chat room
           const socketsInRoom = await io.in(chatRoom).fetchSockets();
