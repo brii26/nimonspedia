@@ -314,34 +314,16 @@ export default (io: Server, socket: AuthenticatedSocket) => {
             buyerId
           });
           console.log(`[Sidebar Update] Sent to receiver user_${receiverId}`);
+
+          // Check if receiver is in the specific chat room
+          const socketsInChatRoom = await io.in(chatRoom).fetchSockets();
+          const receiverInRoom = socketsInChatRoom.some(s => (s as any).user?.user_id === String(receiverId));
           
-          // Check if receiver is ACTIVELY viewing this specific chat room
-          const socketsInRoom = await io.in(chatRoom).fetchSockets();
-          console.log(`[Notification] Checking ${chatRoom}, sockets in room: ${socketsInRoom.length}`);
-          
-          const receiverActivelyViewing = socketsInRoom.some(s => {
-            const sock = s as any;
-            const isMatch = sock.user?.user_id === receiverId && sock.activeChatRoom === chatRoom;
-            console.log(`[Notification] Socket user_id=${sock.user?.user_id}, activeChatRoom=${sock.activeChatRoom}, isMatch=${isMatch}`);
-            return isMatch;
-          });
-          
-          console.log(`[Notification] Receiver ${receiverId} actively viewing ${chatRoom}:`, receiverActivelyViewing);
+          // Check if receiver is online (connected to the app at all)
+          console.log(`[Notification] Receiver ${receiverId} in room ${chatRoom}:`, receiverInRoom);
           
           // Only send notification if receiver is NOT in the room
-          if (!receiverActivelyViewing) {
-            // 1. Emit In-App Socket Notification
-            io.to(`user_${receiverId}`).emit('new_chat_notification', {
-              title: `New message from ${senderName}`,
-              body: messagePreview,
-              data: {
-                type: 'chat',
-                storeId,
-                buyerId,
-                url: `/chat?storeId=${storeId}&buyerId=${buyerId}`
-              }
-            });
-
+          if (!receiverInRoom) {
             // 2. Trigger Web Push Queue (Offline/Background Support)
             await notificationService.sendNotification(receiverId, 'chat', {
               title: `Pesan baru dari ${senderName}`,
