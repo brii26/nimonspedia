@@ -39,6 +39,15 @@ class ChatController extends BaseController {
 
         $user = Auth::user();
         
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess($user['user_id'], 'chat_enabled');
+        if (!$access['allowed']) {
+             return $this->jsonResponse([
+                'success' => false,
+                'message' => 'Fitur Chat Dimatikan: ' . $access['reason']
+            ], 503);
+        }
+
         // Only buyers can initiate chat
         if ($user['role'] !== 'BUYER') {
             return $this->jsonResponse([

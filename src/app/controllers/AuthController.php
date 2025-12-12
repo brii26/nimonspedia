@@ -343,11 +343,16 @@ class AuthController extends BaseController {
 
         $userId = Auth::id();
         $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
+        $chatAccess = FeatureFlagService::checkAccess($userId, 'chat_enabled');
+        $auctionAccess = FeatureFlagService::checkAccess($userId, 'auction_enabled');
+
 
         $this->json([
             'is_logged_in' => Auth::check(),
             'user_role' => $_SESSION['role'] ?? null,
             'checkout_enabled' => $checkoutAccess['allowed'],
+            'chat_enabled' => $chatAccess['allowed'],
+            'auction_enabled' => $auctionAccess['allowed'],
             'csrf_token' => Auth::csrfToken()
         ]);
     }

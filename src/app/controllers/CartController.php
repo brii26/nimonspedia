@@ -173,6 +173,7 @@ class CartController extends BaseController {
      * Remove item (POST)
      */
     public function remove() {
+        $this->checkCartFeature();
         try {
             $this->verifyCsrf();
             $productId = (int)$this->getPost('product_id');

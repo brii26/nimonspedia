@@ -9,6 +9,14 @@ class AuctionController extends BaseController {
 
     public function create() {
         $this->requireRole('SELLER');
+        
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess(Auth::id(), 'auction_enabled');
+        if (!$access['allowed']) {
+            $this->redirect('/seller/products?error=' . urlencode('Fitur Lelang Dimatikan: ' . $access['reason']));
+            return;
+        }
+
         $post = $this->getPost();
 
         try {
@@ -46,6 +54,15 @@ class AuctionController extends BaseController {
 
     public function list() {
         header('Content-Type: application/json');
+        
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess(Auth::id(), 'auction_enabled');
+        if (!$access['allowed']) {
+            http_response_code(503);
+            echo json_encode(['success' => false, 'message' => 'Fitur Lelang Dimatikan: ' . $access['reason']]);
+            exit;
+        }
+
         try {
             $productId = (int)$this->getQuery('product_id');
             
@@ -73,6 +90,15 @@ class AuctionController extends BaseController {
     public function cancel() {
         $this->requireRole('SELLER');
         header('Content-Type: application/json');
+        
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess(Auth::id(), 'auction_enabled');
+        if (!$access['allowed']) {
+            http_response_code(503);
+            echo json_encode(['success' => false, 'message' => 'Fitur Lelang Dimatikan: ' . $access['reason']]);
+            exit;
+        }
+
         try {
             $rawInput = file_get_contents('php://input');
             $jsonData = json_decode($rawInput, true);
@@ -100,6 +126,14 @@ class AuctionController extends BaseController {
 
     public function getAuctions() {
         header('Content-Type: application/json');
+        
+        require_once __DIR__ . '/../services/FeatureFlagService.php';
+        $access = FeatureFlagService::checkAccess(Auth::id(), 'auction_enabled');
+        if (!$access['allowed']) {
+            http_response_code(503);
+            echo json_encode(['success' => false, 'message' => 'Fitur Lelang Dimatikan: ' . $access['reason']]);
+            exit;
+        }
             
         try {
             $params = [
