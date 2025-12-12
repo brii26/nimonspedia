@@ -6,7 +6,7 @@ import {
   NewBidUpdatePayload, 
   TimerUpdatePayload,
 } from '../types/socket-payloads.js';
-import auctionRepository from '../repositories/auctionRepository.js';
+import auctionService from '../services/auctionService.js';
 import featureFlagRepository from '../repositories/featureFlagRepository.js';
 import userRepository from '../repositories/userRepository.js';
 import notificationService from '../services/notificationService.js';
@@ -63,14 +63,14 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       socket.join(auctionRoom);
 
       // Get auction info
-      const auction = await auctionRepository.getAuctionById(payload.auctionId);
+      const auction = await auctionService.getAuctionById(payload.auctionId);
       if (!auction) {
         socket.emit('auction_error', { message: 'Auction tidak ditemukan' });
         return;
       }
 
       // Get bid history
-      const bidHistory = await auctionRepository.getBidHistory(payload.auctionId, 10);
+      const bidHistory = await auctionService.getBidHistory(payload.auctionId, 10);
 
       const now = Date.now();
       let timeLeft = 0;
@@ -135,7 +135,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
   socket.on('update_auction_status', async (payload) => {
     const { auction_id, new_status } = payload;
     try {
-      await auctionRepository.updateAuctionStatus(auction_id, new_status);
+      await auctionService.updateAuctionStatus(auction_id, new_status);
       
       // Broadcast ke SEMUA clients supaya list refresh
       io.emit('auction_status_updated', {
@@ -146,7 +146,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       
       // Start timer if auction just became active
       if (new_status === 'active') {
-        const auction = await auctionRepository.getAuctionById(auction_id);
+        const auction = await auctionService.getAuctionById(auction_id);
         if (auction && auction.end_time) {
           const endTime = new Date(auction.end_time).getTime();
           if (endTime > Date.now() && !auctionTimers.has(auction_id)) {
@@ -171,7 +171,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
   socket.on('place_bid', async (payload: PlaceBidPayload) => {
     try {
       // Get current auction data
-      const auction = await auctionRepository.getAuctionById(payload.auctionId);
+      const auction = await auctionService.getAuctionById(payload.auctionId);
       if (!auction) {
         socket.emit('bid_error', { message: 'Auction tidak ditemukan' });
         return;
@@ -187,18 +187,8 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
         }
       }
 
-      // Skip validation - REST API already validated and updated current_price
-      // The bid is valid if we reach here since REST API returned success
-      // payload.amount should now BE the current_price after REST API update
-
-      // Apply the bid time logic:
-      // remainingTime -= (15 - displayCountdown), then displayCountdown = 15
-      // This "uses up" the time that passed since last bid, then grants 15s fresh
-      
       let currentRemaining = auctionRemainingTime.get(payload.auctionId);
       let currentDisplay = auctionDisplayCountdown.get(payload.auctionId);
-      
-      // If timer not yet started, initialize from database end_time
       if (currentRemaining === undefined || currentDisplay === undefined) {
         if (!auction.end_time) {
           socket.emit('bid_error', { message: 'Auction configuration error' });
@@ -208,7 +198,6 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
         currentRemaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
         currentDisplay = Math.min(currentRemaining, 15);
         
-        // Initialize the maps so timer can use them
         auctionRemainingTime.set(payload.auctionId, currentRemaining);
         auctionDisplayCountdown.set(payload.auctionId, currentDisplay);
       }
@@ -222,7 +211,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       auctionDisplayCountdown.set(payload.auctionId, newDisplay);
       
       const newEndTime = Date.now() + (newRemaining * 1000);
-      await auctionRepository.extendAuction(payload.auctionId, new Date(newEndTime));
+      await auctionService.extendAuction(payload.auctionId, new Date(newEndTime));
 
       if (auctionTimers.has(payload.auctionId)) {
         clearInterval(auctionTimers.get(payload.auctionId)!);
@@ -242,14 +231,14 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       io.to(auctionRoom).emit('new_bid', bidUpdate);
 
       try {
-        const bidHistory = await auctionRepository.getBidHistory(payload.auctionId, 2);
+        const bidHistory = await auctionService.getBidHistory(payload.auctionId, 2);
         if (bidHistory.length >= 2) {
           const previousBidder = bidHistory[1];
           if (previousBidder.bidder_id !== user.user_id) {
             const baseUrl = process.env.CLIENT_URL || 'http://localhost:8080';
             await notificationService.sendNotification(previousBidder.bidder_id, 'auction', {
-              title: 'Anda Dikalahkan dalam Lelang! 😢',
-              body: `Produk "${auction.product_name || 'Lelang'}" telah dibid dengan harga Rp ${new Intl.NumberFormat('id-ID').format(payload.amount)}. Anda dapat mengajukan bid baru.`,
+              title: `Outbidded by ${user.name}`,
+              body: `You have been outbid on this auction!`,
               url: `${baseUrl}/auction/${payload.auctionId}`,
               icon: '/assets/icons/auction-outbid.png',
               tag: `auction-outbid-${payload.auctionId}`,
@@ -280,7 +269,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
   // Stop Auction (Seller Only)
   socket.on('stop_auction', async (payload: JoinAuctionPayload) => {
     try {
-      const auction = await auctionRepository.getAuctionById(payload.auctionId);
+      const auction = await auctionService.getAuctionById(payload.auctionId);
       if (!auction) {
         socket.emit('auction_error', { message: 'Auction tidak ditemukan' });
         return;
@@ -293,7 +282,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
       }
 
       // End the auction
-      await auctionRepository.endAuction(payload.auctionId);
+      await auctionService.endAuction(payload.auctionId);
 
       // Broadcast to all users in auction room
       const auctionRoom = `auction_${payload.auctionId}`;
@@ -303,6 +292,41 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
         finalPrice: auction.current_price,
         endTime: new Date().toISOString()
       });
+
+      // Emit a special event for stopped by seller (for UI)
+      io.to(auctionRoom).emit('auction_stopped', {
+        auctionId: payload.auctionId,
+        stoppedBy: user.name
+      });
+
+      try {
+        let apiBase = process.env.INTERNAL_API_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBase}/api/node/auctions/${payload.auctionId}/participants`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Cookie': socket.request.headers.cookie || '' },
+          credentials: 'include',
+        });
+        const data = await res.json();
+        const participants = data.success ? data.participants : [];
+        let baseUrl = process.env.CLIENT_URL;
+        if (!baseUrl) {
+          const nginxPort = process.env.NGINX_PORT || '8080';
+          baseUrl = `http://localhost:${nginxPort}`;
+        }
+        for (const participant of participants) {
+          if (String(participant.user_id) !== String(user.user_id)) {
+            await notificationService.sendNotification(participant.user_id, 'auction', {
+              title: `Auction ${auction.product_name} had been stopped`,
+              body: `Auction was stopped by the seller.`,
+              url: `${baseUrl}/auction/${payload.auctionId}`,
+              icon: '/assets/icons/auction-stop.png',
+              tag: `auction-stopped-${payload.auctionId}`,
+              data: { type: 'auction_stopped', auctionId: payload.auctionId }
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('Failed to send stop auction notification:', notifError);
+      }
 
       console.log(`Auction ${payload.auctionId} stopped by seller ${user.name}`);
     } catch (error) {
@@ -324,7 +348,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
   // Request current auction status
   socket.on('get_auction_status', async (payload: JoinAuctionPayload) => {
     try {
-      const auction = await auctionRepository.getAuctionById(payload.auctionId);
+      const auction = await auctionService.getAuctionById(payload.auctionId);
       if (!auction) {
         socket.emit('auction_error', { message: 'Auction tidak ditemukan' });
         return;
@@ -375,7 +399,7 @@ export default function registerAuctionHandlers(io: SocketIOServer, socket: Auth
           filter = 'ended';
         }
 
-        const result = await auctionRepository.getAuctionsPaginated(page, limit, filter, search);
+        const result = await auctionService.getAuctionsPaginated(page, limit, filter, search);
 
         socket.emit('auction_list_response', {
             data: result.data,
@@ -426,8 +450,8 @@ const startAuctionTimer = (io: SocketIOServer, auctionId: number, endTime: numbe
     if (displayCountdown === 5 && !endingSoonNotified.has(auctionId)) {
       endingSoonNotified.add(auctionId);
       try {
-        const auction = await auctionRepository.getAuctionById(auctionId);
-        const bidHistory = await auctionRepository.getBidHistory(auctionId, 50);
+        const auction = await auctionService.getAuctionById(auctionId);
+        const bidHistory = await auctionService.getBidHistory(auctionId, 50);
         
         // Notify all unique bidders about ending soon
         const notifiedUsers = new Set<number>();
@@ -437,8 +461,8 @@ const startAuctionTimer = (io: SocketIOServer, auctionId: number, endTime: numbe
           if (!notifiedUsers.has(bid.bidder_id)) {
             notifiedUsers.add(bid.bidder_id);
             await notificationService.sendNotification(bid.bidder_id, 'auction', {
-              title: 'Lelang Akan Segera Berakhir! ⏰',
-              body: `Lelang "${auction?.product_name || 'Produk'}" akan berakhir dalam 5 detik. Bid sekarang!`,
+              title: `Auction ${auction?.product_name || 'Product'} ending soon...`,
+              body: `Auction is ending in 5 seconds!`,
               url: `${baseUrl}/auction/${auctionId}`,
               icon: '/assets/icons/auction-ending.png',
               tag: `auction-ending-${auctionId}`,
@@ -473,10 +497,10 @@ const endAuction = async (io: SocketIOServer, auctionId: number): Promise<void> 
     const auctionRoom = `auction_${auctionId}`;
     
     // Mark auction as ended in database
-    await auctionRepository.endAuction(auctionId);
+    await auctionService.endAuction(auctionId);
     
     // Get final auction result
-    const finalAuction = await auctionRepository.getAuctionById(auctionId);
+    const finalAuction = await auctionService.getAuctionById(auctionId);
     
     // Broadcast auction ended to users in the auction room
     io.to(auctionRoom).emit('auction_ended', {
@@ -498,8 +522,8 @@ const endAuction = async (io: SocketIOServer, auctionId: number): Promise<void> 
       try {
         const baseUrl = process.env.CLIENT_URL || 'http://localhost:8080';
         await notificationService.sendNotification(finalAuction.winner_id, 'auction', {
-          title: 'Selamat! Anda Memenangkan Lelang! 🎉',
-          body: `Anda telah memenangkan lelang "${finalAuction.product_name || 'Produk'}" dengan harga Rp ${new Intl.NumberFormat('id-ID').format(finalAuction.current_price || 0)}.`,
+          title: 'You won the bid!',
+          body: `Congratulations! You have won the auction!`,
           url: `${baseUrl}/auction/${auctionId}`,
           icon: '/assets/icons/auction-won.png',
           tag: `auction-won-${auctionId}`,
@@ -519,13 +543,13 @@ const endAuction = async (io: SocketIOServer, auctionId: number): Promise<void> 
 // Check and activate scheduled auctions that have reached their start time
 export async function checkScheduledAuctions(io: SocketIOServer): Promise<void> {
   try {
-    const scheduledAuctions = await auctionRepository.findScheduledToActivate();
+    const scheduledAuctions = await auctionService.findScheduledToActivate();
     
     for (const auction of scheduledAuctions) {
       console.log(`Activating scheduled auction ${auction.auction_id}: ${auction.product_name || 'Unknown'}`);
       
       // Update status to active
-      await auctionRepository.updateAuctionStatus(auction.auction_id, 'active');
+      await auctionService.updateAuctionStatus(auction.auction_id, 'active');
       
       // Broadcast to ALL clients 
       io.emit('auction_status_updated', {
@@ -563,7 +587,7 @@ export async function recoverActiveAuctions(io: SocketIOServer): Promise<void> {
   console.log('System recovering: Checking active auctions...');
   
   try {
-    const activeAuctions = await auctionRepository.findAllActiveAuctions();
+    const activeAuctions = await auctionService.findAllActiveAuctions();
     let recoveredCount = 0;
     let endedCount = 0;
 

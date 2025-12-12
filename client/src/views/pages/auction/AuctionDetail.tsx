@@ -45,8 +45,9 @@ const AuctionDetail = () => {
   const [loading, setLoading] = useState(true);
   const loadingRef = useRef(true);
   const [bidHistory, setBidHistory] = useState<BidHistoryItem[]>([]);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [stoppedBySeller, setStoppedBySeller] = useState<string | null>(null);
   const [currentUserBalance, setCurrentUserBalance] = useState<number>(0);
   const [serverTimeLeft, setServerTimeLeft] = useState<number | null>(null);
 
@@ -276,13 +277,27 @@ const AuctionDetail = () => {
     }
   };
 
-  const handleStopAuction = () => {
-    if (!auction || !id) return;
-    setIsCancelling(true);
-    socketClient.emit('stop_auction', { auctionId: parseInt(id) });
-    setShowCancelModal(false);
-    setTimeout(() => setIsCancelling(false), 1000);
-  };
+
+    const handleStopAuction = () => {
+        if (!auction || !id) return;
+        setIsCancelling(true);
+        socketClient.emit('stop_auction', { auctionId: parseInt(id) });
+        setShowCancelModal(false);
+        setTimeout(() => setIsCancelling(false), 1000);
+    };
+
+    // Listen for auction stopped event (for seller)
+    useEffect(() => {
+        const handleAuctionStopped = (payload: any) => {
+            if (payload && payload.stoppedBy) {
+                setStoppedBySeller(payload.stoppedBy);
+            }
+        };
+        socketClient.on('auction_stopped', handleAuctionStopped);
+        return () => {
+            socketClient.off('auction_stopped', handleAuctionStopped);
+        };
+    }, []);
 
   if (loading) return (
     <div className="flex h-screen justify-center items-center bg-gray-50">
@@ -582,19 +597,27 @@ const AuctionDetail = () => {
                     </div>
 
                     {/* --- Helper Info Card --- */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-3">
-                        <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-900">15 Sec</h4>
-                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                                    Good Luck , and hev funn!!!
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+					{/* Helper Info Card or Auction Stopped Card */}
+					{stoppedBySeller && !isSeller ? (
+						<div className="bg-white rounded-xl shadow border border-red-200 p-6 flex flex-col items-center justify-center text-center animate-fade-in">
+							<h4 className="text-lg font-bold text-red-600 mb-2">Auction had been stopped by {stoppedBySeller}</h4>
+							<p className="text-xs text-gray-400 mt-2">This auction was ended early by the seller.</p>
+						</div>
+					) : (
+						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-3">
+							<div className="flex items-start gap-3">
+									<div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
+											<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+									</div>
+									<div>
+											<h4 className="text-sm font-bold text-gray-900">15 Sec</h4>
+											<p className="text-xs text-gray-500 mt-1 leading-relaxed">
+													Good Luck , and hev funn!!!
+											</p>
+									</div>
+							</div>
+						</div>
+					)}
 
                 </div>
             </div>
@@ -609,10 +632,10 @@ const AuctionDetail = () => {
           <div className="space-y-4 p-2">
             <div className="flex items-center gap-3 text-amber-600 bg-amber-50 p-4 rounded-lg">
                 <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <p className="text-sm font-medium">This action is irreversible. The auction will end immediately.</p>
+                <p className="text-sm font-medium">The auction will end immediately.</p>
             </div>
             <p className="text-gray-600 text-sm">
-              If there are existing bids, the highest bidder ({auction.current_price > auction.starting_price ? 'Present' : 'None'}) will be declared the winner.
+              Highest bidder ({auction.current_price > auction.starting_price ? 'Present' : 'None'}) will be declared the winner.
             </p>
             <div className="flex gap-3 justify-end pt-4">
               <Button variant="ghost" onClick={() => setShowCancelModal(false)}>Cancel</Button>

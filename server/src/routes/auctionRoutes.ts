@@ -7,6 +7,13 @@ export default async function auctionRoutes(
   options: FastifyPluginOptions
 ): Promise<void> {
 
+  // Get all unique participants (bidders) for an auction
+  fastify.get('/:id/participants', {
+    preHandler: requireAuth
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    return auctionController.getAuctionParticipants(request, reply);
+  });
+
   fastify.get('/list', async (request: FastifyRequest, reply: FastifyReply) => {
     return auctionController.getAuctionList(request, reply);
   });

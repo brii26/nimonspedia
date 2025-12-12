@@ -1,18 +1,30 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import pool from '../config/database.js';
 import userRepository from '../repositories/userRepository.js';
-import auctionRepository from '../repositories/auctionRepository.js';
+import auctionService from '../services/auctionService.js';
 import { getAllAuctionTimerStates } from '../sockets/auctionSocket.js';
 
 class AuctionController {
-  
-  /**
-   * Place a bid on an auction with refund logic for previous bidder
-   * POST /auctions/place-bid
-   */
+
+
+  async getAuctionParticipants(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const auctionId = Number((request.params as any).id);
+      if (!auctionId) {
+        return reply.status(400).send({ success: false, message: 'Missing auction id' });
+      }
+      const participants = await auctionService.getAuctionParticipants(auctionId);
+      return reply.send({ success: true, participants });
+    } catch (error: any) {
+      console.error('[GetAuctionParticipants] ERROR:', error);
+      return reply.status(500).send({ success: false, message: error.message || 'Failed to get participants' });
+    }
+  }
+
+
   async placeBid(request: FastifyRequest, reply: FastifyReply) {
     const client = await pool.connect();
-    
+
     try {
       const { auction_id, bid_amount } = request.body as { auction_id: number; bid_amount: number };
       let userId = (request.user as any)?.user_id;
@@ -56,8 +68,7 @@ class AuctionController {
         return reply.status(400).send({ success: false, message: 'Insufficient balance' });
       }
 
-      // Get auction details from repository
-      const auction = await auctionRepository.getAuctionForBiddingWithClient(client, auction_id);
+      const auction = await auctionService.getAuctionForBiddingWithClient(client, auction_id);
 
       if (!auction) {
         await client.query('ROLLBACK');
@@ -78,11 +89,11 @@ class AuctionController {
       const newBalance = parseFloat(String(updatedUser?.balance)) || 0;
       console.log('[PlaceBid] Balance updated via userRepository: new=', newBalance);
 
-      // Insert new bid via repository
-      const bidId = await auctionRepository.insertBidWithClient(client, auction_id, userId, bid_amount);
+      // Insert new bid 
+      const bidId = await auctionService.insertBidWithClient(client, auction_id, userId, bid_amount);
 
-      // Update auction via repository
-      await auctionRepository.updateAuctionBidWithClient(client, auction_id, bid_amount, userId);
+      // Update auction 
+      await auctionService.updateAuctionBidWithClient(client, auction_id, bid_amount, userId);
 
       await client.query('COMMIT');
 
@@ -107,7 +118,6 @@ class AuctionController {
       client.release();
     }
   }
-
 
   async getUserBalance(request: FastifyRequest, reply: FastifyReply) {
     try {
@@ -138,7 +148,6 @@ class AuctionController {
     }
   }
 
-
   async getAuctionList(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { page = '1', limit = '8', filter = 'active', search = '' } = request.query as {
@@ -152,9 +161,7 @@ class AuctionController {
       const limitNum = parseInt(limit) || 8;
       const searchTerm = search.trim();
       const filterType = (filter === 'active' || filter === 'scheduled' || filter === 'ended') ? filter : 'active';
-
-      // Use repository method
-      const { data, total } = await auctionRepository.getAuctionsPaginated(pageNum, limitNum, filterType, searchTerm);
+      const { data, total } = await auctionService.getAuctionsPaginated(pageNum, limitNum, filterType, searchTerm);
 
       // Map to include title field for backwards compatibility
       const mappedData = data.map(item => ({
@@ -176,18 +183,17 @@ class AuctionController {
     }
   }
 
-
   async getTimers(request: FastifyRequest, reply: FastifyReply) {
     try {
       const now = Date.now();
       const timers: Record<number, { timeLeft: number; displayTimeLeft: number }> = {};
-      
+
       const timerStates = getAllAuctionTimerStates();
-      const activeAuctions = await auctionRepository.getActiveAuctionsForTimers();
+      const activeAuctions = await auctionService.getActiveAuctionsForTimers();
 
       for (const row of activeAuctions) {
         const auctionId = row.auction_id;
-        
+
         const inMemoryState = timerStates.get(auctionId);
         if (inMemoryState) {
           timers[auctionId] = {
