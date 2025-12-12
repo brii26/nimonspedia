@@ -6,7 +6,8 @@ import type { ChatMessage, SocketErrorResponse } from '../types/socket.js';
 export const useChatSocket = (
   storeId: number | null, 
   buyerId: number | null,
-  onNewMessage?: (message: any) => void 
+  onNewMessage?: (message: any) => void,
+  currentUserId?: number | null
 ) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -21,6 +22,7 @@ export const useChatSocket = (
 
   const currentStoreId = useRef(storeId);
   const currentBuyerId = useRef(buyerId);
+  const currentUserIdRef = useRef(currentUserId);
   const typingTimer = useRef<number | null>(null);
 
   const onNewMessageRef = useRef(onNewMessage);
@@ -33,7 +35,8 @@ export const useChatSocket = (
   useEffect(() => {
     currentStoreId.current = storeId;
     currentBuyerId.current = buyerId;
-  }, [storeId, buyerId]);
+    currentUserIdRef.current = currentUserId;
+  }, [storeId, buyerId, currentUserId]);
 
   const connectSocket = useCallback(() => {
     try {
@@ -61,6 +64,9 @@ export const useChatSocket = (
            content: payload.content || payload.message_text || payload.message,
            message_type: payload.type || payload.message_type || 'text',
            product_id: payload.product_id,
+           product_name: payload.product_name,
+           product_price: payload.product_price,
+           product_image: payload.product_image,
            is_read: false,
            created_at: payload.created_at || new Date().toISOString()
         };
@@ -77,9 +83,13 @@ export const useChatSocket = (
                 }
 
                 // B. Cek Pesan Optimistic
-                // Cari pesan 'pending' (sender_id 0) yang kontennya sama
+                // Cari pesan 'pending' (message_id yang temporary - biasanya timestamp besar)
+                // yang sender_id-nya sama dengan sender pesan baru dan kontennya sama
                 const optimisticIndex = [...prev].reverse().findIndex(m => 
-                    m.sender_id === 0 && m.content === newMessage.content
+                    m.message_id > 1000000000000 && // Temporary ID (timestamp)
+                    m.sender_id === newMessage.sender_id && 
+                    m.content === newMessage.content &&
+                    m.message_type === newMessage.message_type
                 );
 
                 if (optimisticIndex !== -1) {
@@ -112,7 +122,11 @@ export const useChatSocket = (
             content: msg.content || msg.message_text,
             message_type: msg.type || msg.message_type || 'text',
             created_at: msg.created_at,
-            is_read: msg.is_read
+            is_read: msg.is_read,
+            product_id: msg.product_id,
+            product_name: msg.product_name,
+            product_price: msg.product_price,
+            product_image: msg.product_image
         }));
         setMessages(formattedMessages);
         setIsJoined(true);
@@ -234,12 +248,12 @@ export const useChatSocket = (
 
     socket.emit('send_message', payload);
     
-    // Optimistic Update
+    // Optimistic Update - use actual current user ID
     const optimisticMessage: ChatMessage = {
       message_id: Date.now(), // ID sementara
       store_id: currentStoreId.current,
       buyer_id: currentBuyerId.current || 0,
-      sender_id: 0, 
+      sender_id: currentUserIdRef.current || 0, 
       content: message,
       message_type: type,
       product_id: productId ?? (null as any),
@@ -297,7 +311,11 @@ export const useChatSocket = (
          content: msg.content,
          message_type: msg.message_type || 'text',
          created_at: msg.created_at,
-         is_read: msg.is_read
+         is_read: msg.is_read,
+         product_id: msg.product_id,
+         product_name: msg.product_name,
+         product_price: msg.product_price,
+         product_image: msg.product_image
       }));
 
       // Prepend (tambah di depan) pesan lama

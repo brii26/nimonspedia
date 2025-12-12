@@ -279,6 +279,18 @@ const ChatPage = () => {
       return url.substring(0, lastDotIndex) + '_thumb' + url.substring(lastDotIndex);
   };
 
+  // Helper to format image path - add /storage/ prefix if not already present
+  const formatImagePath = (path?: string) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/storage/')) {
+      return path;
+    }
+    return `/storage/${path}`;
+  };
+
+  // Ambil ID user yang aman (handle kemungkinan user_id dari PHP)
+  const currentUserId = user ? Number(user.id || (user as any).user_id) : null;
+
   // --- Init Hook ---
   const { 
     messages, 
@@ -295,7 +307,8 @@ const ChatPage = () => {
   } = useChatSocket(
     activeRoom ? activeRoom.store_id : null, 
     activeRoom ? activeRoom.buyer_id : null,
-    handleNewMessage
+    handleNewMessage,
+    currentUserId
   );
 
   useEffect(() => {
@@ -436,8 +449,17 @@ const ChatPage = () => {
 
   const getOpponentInfo = (room: ChatRoom) => {
     if (!user) return { name: 'Loading...', image: '' };
-    if (user.role === 'BUYER') return { name: room.store_name, image: room.store_image };
-    return { name: room.buyer_name, image: room.buyer_image };
+    
+    if (user.role === 'BUYER') {
+      return { 
+        name: room.store_name, 
+        image: formatImagePath(room.store_image) 
+      };
+    }
+    return { 
+      name: room.buyer_name, 
+      image: formatImagePath(room.buyer_image) 
+    };
   };
 
   // --- RENDER ---
@@ -447,9 +469,6 @@ const ChatPage = () => {
   const filteredRooms = rooms.filter(room => 
     getOpponentInfo(room).name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // Ambil ID user yang aman (handle kemungkinan user_id dari PHP)
-  const currentUserId = Number(user.id || (user as any).user_id);
 
   return (
     <div className="container mx-auto p-4 h-[calc(100vh-80px)]">
@@ -613,9 +632,12 @@ const ChatPage = () => {
                             <div className="bg-white rounded-lg p-3 max-w-[250px] border border-gray-200">
                                 {(msg as any).product_image && (
                                   <img 
-                                    src={(msg as any).product_image} 
+                                    src={formatImagePath((msg as any).product_image)} 
                                     alt="Product" 
                                     className="w-full h-32 object-cover rounded-md mb-2"
+                                    onError={(e) => {
+                                      e.currentTarget.src = '/storage/product_images/default-product.svg';
+                                    }}
                                   />
                                 )}
                                 <h4 className="font-semibold text-gray-800 text-sm mb-1">
