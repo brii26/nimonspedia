@@ -179,7 +179,7 @@ const AuctionDetail = () => {
     };
 
     const handleBidPlaced = (payload: any) => {
-        fetch('http://localhost:3000/auctions/user/balance', {
+        fetch('/api/node/auctions/user/balance', {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'include'
         })
@@ -235,7 +235,7 @@ const AuctionDetail = () => {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/auctions/place-bid', {
+        const response = await fetch('/api/node/auctions/place-bid', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
