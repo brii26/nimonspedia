@@ -1,0 +1,84 @@
+# frontend/ — React 18 SPA Frontend
+
+## Purpose
+Single-page application for admin dashboard, auction pages, chat, and payment status.
+The regular buyer/seller UI (product listing, cart, checkout) is served by PHP views — this React
+app only covers features requiring real-time interactivity or complex admin UI.
+
+## Framework & Libraries
+- React 18.2 + TypeScript
+- Vite (build tool, dev server with proxy)
+- TailwindCSS + PostCSS
+- React Router v6 (client-side routing)
+- Axios (HTTP client)
+- Socket.io-client (WebSocket connection to node-server)
+
+## Entry Point
+frontend/src/main.tsx → renders <App /> into #root in index.html
+
+## Directory Map
+```
+frontend/src/
+├── App.tsx             Route definitions (React Router v6)
+├── context/
+│   └── AuthContext.tsx Global auth state — wraps app, provides useAuth() hook
+├── hooks/
+│   ├── useAuctionSocket.ts  Socket.io hook for auction room events
+│   ├── useAuctionTimer.ts   Countdown timer for auction end
+│   └── useChatSocket.ts     Socket.io hook for chat events
+├── services/
+│   ├── auth.ts              Auth API calls (login, register, profile)
+│   ├── notification.ts      Push notification subscription management
+│   ├── socketClient.ts      Socket.io client singleton
+│   ├── api/                 Axios instance + API endpoint functions
+│   ├── routes/              Route path constants
+│   └── utils/               Shared utility functions
+├── views/
+│   ├── components/
+│   │   └── layouts/         AdminLayout, MainLayout (wraps pages)
+│   └── pages/
+│       ├── admin/           AdminLogin, AdminDashboard, AdminReviews
+│       ├── auction/         AuctionList, AuctionDetail (real-time bidding)
+│       ├── chat/            ChatPage (real-time messaging)
+│       └── PaymentStatus.tsx (Midtrans redirect landing page)
+├── types/
+│   ├── css.d.ts             CSS module type declarations
+│   └── socket.ts            Socket.io event type definitions
+└── utils/
+    └── imageUtils.ts        Image URL helpers (maps to /uploads/* paths)
+```
+
+## React Routes (App.tsx)
+- /admin/login          → AdminLogin
+- /admin/dashboard      → AdminDashboard (protected, requires admin JWT)
+- /admin/reviews        → AdminReviews (protected)
+- /auction              → AuctionList
+- /auction/:id          → AuctionDetail (Socket.io bid room)
+- /chat                 → ChatPage (Socket.io chat)
+- /payment/status       → PaymentStatus
+- *                     → NotFound
+
+## Colour Palette (main: #00AA5B)
+- #00AA5B — primary green (buttons, active, links)
+- #008f4d — hover/dark green
+- #007a42 — darker green (gradient end)
+- #005c2e — deep green (dark text)
+- #e6f7ef — light green bg (replaces blue-50)
+- #ccf0de — medium light green (replaces blue-100)
+- #99e1bd — soft green border (replaces blue-200)
+- #1a3d2b — dark footer bg
+
+## Auth
+JWT-based (not session). AuthContext stores token in localStorage.
+Protected routes redirect to /admin/login if no valid JWT.
+Token sent as Authorization: Bearer <token> header to Node.js API.
+
+## API Targets
+- /api/node/* → proxied to Node.js (Fastify) during dev (vite.config.js proxy)
+- In production: nginx routes /api/node/* to node-server:3000
+- VITE_API_BASE_URL env var sets the base URL (default: http://localhost:8080)
+
+## Build Output
+`npm run build` → frontend/dist/
+Docker build (Dockerfile.nginx) copies frontend/ → builds → puts in nginx container at /var/www/html/public/
+For dev outside Docker: cd frontend && npm run dev (Vite HMR at localhost:5173)
