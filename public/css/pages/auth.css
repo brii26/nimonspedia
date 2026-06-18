@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42b549 0%, #217a28 100%);
     padding: 2rem 1rem;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .auth-header h1 {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin-bottom: 0.5rem;
     font-size: 1.75rem;
     font-weight: 700;
@@ -48,7 +48,7 @@
 .auth-form label {
     display: block;
     font-weight: 600;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin-bottom: 0.5rem;
 }
 
@@ -68,8 +68,8 @@
 .auth-form textarea:focus,
 .auth-form select:focus {
     outline: none;
-    border-color: var(--primary-color, #667eea);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-color, #42b549);
+    box-shadow: 0 0 0 3px rgba(66, 181, 73, 0.1);
 }
 
 .auth-form textarea {
@@ -113,11 +113,11 @@
 
 .password-toggle:hover {
     background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 
 .password-toggle:focus {
-    outline: 2px solid var(--primary-color, #667eea);
+    outline: 2px solid var(--primary-color, #42b549);
     outline-offset: 1px;
 }
 
@@ -162,7 +162,7 @@
 }
 
 .auth-nav a {
-    color: var(--primary-color, #667eea);
+    color: var(--primary-color, #42b549);
     text-decoration: none;
     font-weight: 500;
 }
@@ -224,12 +224,12 @@
 }
 
 .btn-primary {
-    background-color: var(--primary-color, #667eea);
+    background-color: var(--primary-color, #42b549);
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-hover, #5a67d8);
+    background-color: var(--primary-hover, #2d8f34);
     transform: translateY(-1px);
 }
 

@@ -49,7 +49,7 @@
     font-weight: 600;
 }
 .app-modal-header.success h2 {
-    color: var(--primary-color, #667eea);
+    color: var(--primary-color, #42b549);
 }
 .app-modal-header.error h2 {
     color: #dc3545;
@@ -102,7 +102,7 @@
 .recommend-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin: 1.5rem 0 1rem 0;
     border-top: 1px solid #e9ecef;
     padding-top: 1rem;
@@ -122,7 +122,7 @@
 .recommend-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border-color: var(--primary-color, #667eea);
+    border-color: var(--primary-color, #42b549);
 }
 .recommend-img {
     width: 100%;
@@ -136,7 +136,7 @@
 .recommend-name {
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin: 0 0 0.25rem 0;
     line-height: 1.2;
     height: 2.4em;
@@ -145,7 +145,7 @@
 .recommend-price {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--primary-color, #667eea);
+    color: var(--primary-color, #42b549);
     margin: 0;
 }
 
@@ -192,7 +192,7 @@
 .app-confirm-header h2 {
     margin: 0 0 0.5rem 0;
     font-size: 1.125rem;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 .app-confirm-body {
     color: var(--text-dark, #333);

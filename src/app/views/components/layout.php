@@ -24,6 +24,11 @@ $currentPage = $currentPage ?? '';
     <!-- CSRF Token for JavaScript -->
     <meta name="csrf-token" content="<?= Auth::csrfToken() ?>">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
     <!-- CSS Framework - External files only -->
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/components.css">
@@ -78,22 +83,8 @@ $currentPage = $currentPage ?? '';
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Nimonspedia</h4>
-                    <p>Your trusted online marketplace for buying and selling products.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul class="footer-links">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/">Products</a></li>
-                        <li><a href="https://wa.me/628123543448" target="_blank">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
             <div class="footer-bottom">
-                <p>&copy; <?= date('Y') ?> Nimonspedia. All rights reserved.</p>
+                <p>&copy; 2025 - <?= date('Y') ?> Nimonspedia. All rights reserved.</p>
             </div>
         </div>
     </footer>

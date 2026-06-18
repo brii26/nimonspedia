@@ -20,7 +20,7 @@
 }
 
 .page-header h1 {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     font-size: 1.75rem;
     margin-bottom: 0.25rem;
 }
@@ -38,7 +38,7 @@
 }
 
 .error-section strong {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 
 /* Actions */

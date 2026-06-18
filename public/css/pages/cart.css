@@ -70,7 +70,7 @@
 .cart-product-price {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--primary-color, #667eea);
+    color: var(--primary-color, #42b549);
 }
 
 /* Aksi (Qty & Hapus) */
@@ -125,8 +125,8 @@
 }
 .quantity-selector .cart-quantity:focus {
     outline: none;
-    border-color: var(--primary-color, #667eea);
-    box-shadow: 0 0 0 1px var(--primary-color, #667eea) inset;
+    border-color: var(--primary-color, #42b549);
+    box-shadow: 0 0 0 1px var(--primary-color, #42b549) inset;
 }
 .quantity-selector .cart-quantity::-webkit-outer-spin-button,
 .quantity-selector .cart-quantity::-webkit-inner-spin-button {
@@ -202,7 +202,7 @@
     color: var(--text-muted, #6c757d);
 }
 .grand-total {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     font-size: 1.3rem;
     font-weight: 700;
     margin: 0;

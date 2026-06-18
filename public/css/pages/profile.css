@@ -1,16 +1,16 @@
 .user-info {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     font-weight: 500;
 }
 .user-info {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     font-weight: 500;
 }
 .balance {
-    color: var(--primary-color, #667eea);
+    color: var(--primary-color, #42b549);
     font-weight: 600;
     padding: 0.25rem 0.5rem;
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(66, 181, 73, 0.1);
     border-radius: 4px;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .page-header h1 {
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin-bottom: 0.5rem;
     font-size: 2rem;
     font-weight: 700;
@@ -67,7 +67,7 @@
 }
 
 .section-header {
-    background: var(--primary-color, #667eea);
+    background: var(--primary-color, #42b549);
     color: white;
     padding: 1.5rem;
 }
@@ -94,7 +94,7 @@
 .form-group label {
     display: block;
     font-weight: 600;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
     margin-bottom: 0.5rem;
 }
 
@@ -114,8 +114,8 @@
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--primary-color, #667eea);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-color, #42b549);
+    box-shadow: 0 0 0 3px rgba(66, 181, 73, 0.1);
 }
 
 .form-group input[readonly] {
@@ -168,11 +168,11 @@
 
 .password-toggle:hover {
     background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 
 .password-toggle:focus {
-    outline: 2px solid var(--primary-color, #667eea);
+    outline: 2px solid var(--primary-color, #42b549);
     outline-offset: 1px;
 }
 
@@ -194,7 +194,7 @@
 }
 
 .balance-display {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42b549 0%, #217a28 100%);
     color: white;
     padding: 1.25rem;
     border-radius: 8px;
@@ -385,7 +385,7 @@
 .app-confirm-header h2 {
     margin: 0 0 0.5rem 0;
     font-size: 1.125rem;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 
 .app-confirm-body { color: var(--text-dark, #333); margin-bottom: 1rem; }
@@ -408,7 +408,7 @@
 }
 
 .notification-section .section-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42b549 0%, #217a28 100%);
 }
 
 .btn-enable-notif {
@@ -421,17 +421,17 @@
     font-size: 1rem;
     font-weight: 600;
     border-radius: 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42b549 0%, #217a28 100%);
     border: none;
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+    box-shadow: 0 4px 15px rgba(66, 181, 73, 0.35);
 }
 
 .btn-enable-notif:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+    box-shadow: 0 6px 20px rgba(66, 181, 73, 0.45);
 }
 
 .btn-enable-notif .btn-icon {
@@ -487,8 +487,8 @@
 
 .toggle-item:hover {
     background: #fff;
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    border-color: #42b549;
+    box-shadow: 0 2px 8px rgba(66, 181, 73, 0.1);
 }
 
 .toggle-info {
@@ -517,7 +517,7 @@
 
 .toggle-label {
     font-weight: 600;
-    color: #2c3e50;
+    color: #1a3d1c;
     font-size: 0.9375rem;
 }
 
@@ -567,7 +567,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42b549 0%, #217a28 100%);
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -575,7 +575,7 @@
 }
 
 .toggle-switch input:focus + .toggle-slider {
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 3px rgba(66, 181, 73, 0.25);
 }
 
 /* Responsive adjustments */

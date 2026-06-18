@@ -1,9 +1,9 @@
 :root {
-    --primary-color: #667eea;
-    --primary-hover: #5a67d8;
-    --primary-glow: rgba(102, 126, 234, 0.2);
-    --primary-shadow: rgba(102, 126, 234, 0.15);
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #42b549;
+    --primary-hover: #2d8f34;
+    --primary-glow: rgba(66, 181, 73, 0.2);
+    --primary-shadow: rgba(66, 181, 73, 0.15);
+    --primary-gradient: linear-gradient(135deg, #42b549 0%, #217a28 100%);
 }
 
 .product-form-card {
@@ -156,7 +156,7 @@
 .btn-primary:hover {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(66, 181, 73, 0.4);
     transform: translateY(-2px);
 }
 

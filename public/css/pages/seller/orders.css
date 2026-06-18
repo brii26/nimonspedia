@@ -33,10 +33,10 @@
 }
 
 .status-tabs .tab.active {
-    background-color: #3498db; 
+    background-color: #42b549; 
     color: white;
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    border-color: #3498db;
+    border-color: #42b549;
 }
 
 .search-form {
@@ -61,14 +61,14 @@
 }
 
 .search-form input[type="text"]:focus {
-    border-color: #3498db;
+    border-color: #42b549;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
     outline: none;
 }
 
 .search-form button[type="submit"] {
     padding: 12px 25px;
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
     border: none;
     border-radius: 8px; 
@@ -79,7 +79,7 @@
 }
 
 .search-form button[type="submit"]:hover {
-    background-color: #2980b9;
+    background-color: #2d8f34;
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
@@ -208,7 +208,7 @@
 
 .status-badge.waiting_approval { background-color: #f1c40f; }
 .status-badge.approved { background-color: #2ecc71; }
-.status-badge.on_delivery { background-color: #3498db; }
+.status-badge.on_delivery { background-color: #42b549; }
 .status-badge.received { background-color: #27ae60; } 
 .status-badge.rejected { background-color: #e74c3c; }
 
@@ -313,9 +313,9 @@
 }
 
 .pagination a.active {
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
-    border-color: #3498db;
+    border-color: #42b549;
     box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
 }
 
@@ -346,7 +346,7 @@
 .orders-popup-content h3 {
     margin-top: 0;
     margin-bottom: 25px;
-    color: #2c3e50;
+    color: #1a3d1c;
     font-size: 1.8em;
     text-align: center;
     border-bottom: 1px solid #ecf0f1;
@@ -383,7 +383,7 @@
 
 .orders-popup-content .form-group input[type="date"]:focus,
 .orders-popup-content .form-group textarea:focus {
-    border-color: #3498db;
+    border-color: #42b549;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
     outline: none;
 }
@@ -416,11 +416,11 @@
 }
 
 .orders-popup-action button[type="submit"] {
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
 }
 .orders-popup-action button[type="submit"]:hover {
-    background-color: #2980b9;
+    background-color: #2d8f34;
 }
 
 #reject-popup .orders-popup-action button[type="submit"] {
@@ -457,7 +457,7 @@
 
 .order-detail h4 {
     font-size: 1.1em;
-    color: #2c3e50;
+    color: #1a3d1c;
     margin-bottom: 10px;
     margin-top: 0;
     padding-bottom: 5px;
@@ -549,11 +549,11 @@
 }
 
 .dashboard-card .btn-analytics {
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
 }
 .dashboard-card .btn-analytics:hover {
-    background-color: #2980b9;
+    background-color: #2d8f34;
 }
 
 .dashboard-card .btn-manage,
@@ -596,11 +596,11 @@
 }
 
 .quick-actions .btn-manage-products {
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
 }
 .quick-actions .btn-manage-products:hover {
-    background-color: #2980b9;
+    background-color: #2d8f34;
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
@@ -650,7 +650,7 @@ footer h4::after {
     bottom: -5px;
     width: 30px;
     height: 2px;
-    background-color: #3498db; 
+    background-color: #42b549; 
 }
 
 footer p {
@@ -675,7 +675,7 @@ footer ul li a {
 }
 
 footer ul li a:hover {
-    color: #3498db;
+    color: #42b549;
 }
 
 footer .copyright {
@@ -699,10 +699,10 @@ footer .copyright {
     background-color: #c0392b;
 }
 #delivery-popup .orders-popup-action button[type="submit"] {
-    background-color: #3498db;
+    background-color: #42b549;
 }
 #delivery-popup .orders-popup-action button[type="submit"]:hover {
-    background-color: #2980b9;
+    background-color: #2d8f34;
 }
 
 .order-card-list {
@@ -789,7 +789,7 @@ footer .copyright {
 .order-total strong {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-dark, #2c3e50);
+    color: var(--text-dark, #1a3d1c);
 }
 
 .order-actions {
@@ -863,7 +863,7 @@ footer .copyright {
 
 .order-detail .section h4 {
     font-size: 1.1rem;
-    color: #2c3e50;
+    color: #1a3d1c;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #e0e0e0;
@@ -877,7 +877,7 @@ footer .copyright {
 }
 
 .order-detail .section p strong {
-    color: #2c3e50;
+    color: #1a3d1c;
     min-width: 130px;
     display: inline-block;
 }
@@ -940,15 +940,15 @@ footer .copyright {
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
     font-weight: 600;
-    color: #3498db;
+    color: #42b549;
     background-color: transparent;
-    border: 1px solid #3498db;
+    border: 1px solid #42b549;
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
-    background-color: #3498db;
+    background-color: #42b549;
     color: white;
 }
 
@@ -1020,7 +1020,7 @@ footer .copyright {
     .table-responsive-stack .table tfoot td {
         font-size: 1.15rem;
         font-weight: 700;
-        color: #2c3e50;
+        color: #1a3d1c;
     }
     
     .table-responsive-stack .table tfoot td[colspan="3"] {
@@ -1035,7 +1035,7 @@ footer .copyright {
     .table-responsive-stack .table tfoot td:not([colspan="3"])::before {
         content: 'Total:';
         font-weight: 700;
-        color: #2c3e50;
+        color: #1a3d1c;
     }
 }
 

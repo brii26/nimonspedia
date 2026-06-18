@@ -44,8 +44,8 @@ p {
 }
 
 a {
-  color: #0d6efd;
-  text-decoration: none; 
+  color: #42b549;
+  text-decoration: none;
 }
 
 a:hover {
@@ -95,8 +95,40 @@ img, svg, video, canvas, audio, iframe, embed, object {
 }
 
 :root {
-  --primary-color: #667eea;
-  --primary-hover: #5a67d8;
-  --text-dark: #2c3e50;
-  --text-muted: #6c757d;
+  --primary-color: #42b549;
+  --primary-hover: #2d8f34;
+  --primary:       #42b549;
+  --primary-dark:  #2d8f34;
+  --primary-light: #edfef0;
+  --text-dark:     #1a3d1c;
+  --text-muted:    #6c757d;
+
+  /* Bootstrap overrides */
+  --bs-primary:          #42b549;
+  --bs-primary-rgb:      0, 170, 91;
+  --bs-link-color:       #42b549;
+  --bs-link-hover-color: #2d8f34;
 }
+
+/* Bootstrap btn-primary override */
+.btn-primary {
+  background-color: #42b549 !important;
+  border-color: #42b549 !important;
+  color: #fff !important;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: #2d8f34 !important;
+  border-color: #2d8f34 !important;
+}
+.btn-outline-primary {
+  color: #42b549 !important;
+  border-color: #42b549 !important;
+}
+.btn-outline-primary:hover {
+  background-color: #42b549 !important;
+  color: #fff !important;
+}
+.text-primary { color: #42b549 !important; }
+.bg-primary   { background-color: #42b549 !important; }
+.border-primary { border-color: #42b549 !important; }
+.badge.bg-primary { background-color: #42b549 !important; }
