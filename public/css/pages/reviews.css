@@ -188,12 +188,12 @@
 }
 
 .upload-area:hover {
-    border-color: var(--primary, #3b82f6);
+    border-color: var(--primary, #42b549);
     background-color: rgba(59, 130, 246, 0.02);
 }
 
 .upload-area.dragover {
-    border-color: var(--primary, #3b82f6);
+    border-color: var(--primary, #42b549);
     background-color: rgba(59, 130, 246, 0.05);
 }
 
@@ -356,8 +356,8 @@
 
 .btn-icon:hover {
     background: var(--gray-50, #f9fafb);
-    border-color: var(--primary, #3b82f6);
-    color: var(--primary, #3b82f6);
+    border-color: var(--primary, #42b549);
+    color: var(--primary, #42b549);
 }
 
 .btn-icon.btn-delete:hover {

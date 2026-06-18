@@ -67,7 +67,7 @@ body.edit-mode #store-edit { display: block; }
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    background: linear-gradient(135deg, #42b549, #2d8f34);
+    background: #42b549;
     color: white;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
 }

@@ -3,7 +3,7 @@
     --primary-hover: #2d8f34;
     --primary-glow: rgba(66, 181, 73, 0.2);
     --primary-shadow: rgba(66, 181, 73, 0.15);
-    --primary-gradient: linear-gradient(135deg, #42b549 0%, #217a28 100%);
+    --primary-gradient: #42b549;
 }
 
 .product-form-card {
@@ -14,7 +14,7 @@
 }
 
 .product-form-card .card-header {
-    background: var(--primary-gradient);
+    background: #42b549;
     color: white;
     padding: 1.5rem 2rem;
     border-bottom: none;

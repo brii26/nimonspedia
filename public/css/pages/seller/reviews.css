@@ -102,7 +102,7 @@
 }
 
 .stat-card.stat-primary .stat-value {
-    color: var(--primary, #3b82f6);
+    color: var(--primary, #42b549);
 }
 
 /* ========================================
@@ -151,7 +151,7 @@
 }
 
 .filter-tab.active {
-    background: var(--primary, #3b82f6);
+    background: var(--primary, #42b549);
     color: white;
 }
 
@@ -213,7 +213,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary, #3b82f6) 0%, #60a5fa 100%);
+    background: #42b549;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -319,7 +319,7 @@
 
 .product-link span {
     font-weight: 500;
-    color: var(--primary, #3b82f6);
+    color: var(--primary, #42b549);
 }
 
 .review-comment {
@@ -361,8 +361,8 @@
    6. Seller Response Section
    ======================================== */
 .seller-response {
-    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-    border-left: 4px solid var(--primary, #3b82f6);
+    background: #f0fdf4;
+    border-left: 4px solid var(--primary, #42b549);
     padding: 1rem 1.25rem;
     margin: 1rem 1.25rem 1.25rem 1.25rem;
     border-radius: 0 8px 8px 0;
@@ -381,7 +381,7 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    color: var(--primary, #3b82f6);
+    color: var(--primary, #42b549);
     font-size: 0.875rem;
 }
 
@@ -571,7 +571,7 @@
 }
 
 .back-link:hover {
-    color: var(--primary, #3b82f6);
+    color: var(--primary, #42b549);
 }
 
 .back-link svg {
