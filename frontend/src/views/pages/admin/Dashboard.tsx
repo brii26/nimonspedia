@@ -411,7 +411,7 @@ const Dashboard: React.FC = () => {
                           <TableCell colSpan={7} className="text-center py-8">
                             <div className="flex items-center justify-center gap-2">
                               <Spinner size="sm" />
-                              <span className="text-gray-500">Memuat data...</span>
+                              <span className="text-gray-500">Loading data...</span>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -420,7 +420,7 @@ const Dashboard: React.FC = () => {
                           <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                             {searchTerm || roleFilter 
                               ? `Hasil tidak ditemukan${searchTerm ? ` untuk "${searchTerm}"` : ''}${roleFilter ? ` dengan role "${roleFilter}"` : ''}`
-                              : 'Tidak ada data pengguna'}
+                              : 'No user data'}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -433,7 +433,7 @@ const Dashboard: React.FC = () => {
                             <TableCell className="font-semibold text-green-600">Rp {(user.balance || 0).toLocaleString('id-ID')}</TableCell>
                             <TableCell className="text-gray-600">{new Date(user.created_at).toLocaleDateString('id-ID')}</TableCell>
                             <TableCell>
-                              <Button size="sm" variant="primary" onClick={() => handleOpenFlagsModal(user)}>Kelola Flags</Button>
+                              <Button size="sm" variant="primary" onClick={() => handleOpenFlagsModal(user)}>Manage Flags</Button>
                             </TableCell>
                           </TableRow>
                         ))
@@ -450,7 +450,7 @@ const Dashboard: React.FC = () => {
               <TabPanel eventKey={'1'} activeTab={activeTab}>
                 <div className="mb-6">
                     <Alert variant="warning">
-                        <strong>Warning:</strong> Mengubah Global Feature Flags akan berdampak pada seluruh pengguna aplikasi. Mohon berhati-hati.
+                        <strong>Warning:</strong> Changing Global Feature Flags will affect all users. Please proceed with caution.
                     </Alert>
                 </div>
                 <div className="space-y-6">
@@ -505,7 +505,7 @@ const Dashboard: React.FC = () => {
                                 {isChanged && (
                                     <div className="flex justify-end mt-2">
                                         <Button size="sm" variant="primary" onClick={() => handleSaveGlobalClick(feature)}>
-                                            Simpan Perubahan
+                                            Save Changes
                                         </Button>
                                     </div>
                                 )}
@@ -521,10 +521,10 @@ const Dashboard: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Modal Kelola Flags User */}
+      {/* Modal Manage Flags User */}
       <Modal isOpen={showFlagsModal} onClose={() => setShowFlagsModal(false)} size="lg">
         <ModalHeader onClose={() => setShowFlagsModal(false)}>
-          Kelola Feature Flags - {selectedUser?.name}
+          Manage Feature Flags - {selectedUser?.name}
         </ModalHeader>
         <ModalBody>
           <div className="space-y-6">
@@ -564,15 +564,15 @@ const Dashboard: React.FC = () => {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="secondary" onClick={() => setShowFlagsModal(false)}>Batal</Button>
-          <Button variant="primary" onClick={handleSaveUserFlags}>Simpan Flags</Button>
+          <Button variant="secondary" onClick={() => setShowFlagsModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleSaveUserFlags}>Save Flags</Button>
         </ModalFooter>
       </Modal>
 
       <Modal isOpen={showGlobalConfirmModal} onClose={() => setShowGlobalConfirmModal(false)} size="md">
-          <ModalHeader onClose={() => setShowGlobalConfirmModal(false)}>Konfirmasi Perubahan Global</ModalHeader>
+          <ModalHeader onClose={() => setShowGlobalConfirmModal(false)}>Confirm Global Change</ModalHeader>
           <ModalBody>
-              <p>Apakah Anda yakin ingin mengubah status fitur <strong>{pendingGlobalFeature?.feature_name}</strong>?</p>
+              <p>Are you sure you want to change the status of feature <strong>{pendingGlobalFeature?.feature_name}</strong>?</p>
               <p className="mt-2 text-sm text-gray-600">
                   Tindakan: <strong>{pendingGlobalFeature?.pending_enabled ? 'MENGAKTIFKAN' : 'MEMATIKAN'}</strong>
               </p>
@@ -583,8 +583,8 @@ const Dashboard: React.FC = () => {
               )}
           </ModalBody>
           <ModalFooter>
-              <Button variant="secondary" onClick={() => setShowGlobalConfirmModal(false)}>Batal</Button>
-              <Button variant="primary" onClick={confirmSaveGlobalFeature}>Ya, Simpan Perubahan</Button>
+              <Button variant="secondary" onClick={() => setShowGlobalConfirmModal(false)}>Cancel</Button>
+              <Button variant="primary" onClick={confirmSaveGlobalFeature}>Ya, Save Changes</Button>
           </ModalFooter>
       </Modal>
     </div>

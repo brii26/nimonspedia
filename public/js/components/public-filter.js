@@ -7,11 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleButton && advancedFilters) {
         toggleButton.addEventListener('click', () => {
             advancedFilters.classList.toggle('open');
-            if (advancedFilters.classList.contains('open')) {
-                toggleButton.textContent = 'Close Filter';
-            } else {
-                toggleButton.textContent = 'Advanced Filter';
-            }
+            toggleButton.classList.toggle('open', advancedFilters.classList.contains('open'));
         });
     }
 

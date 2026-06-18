@@ -19,10 +19,9 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
             
             <div class="product-card">
                 <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-image-link">
-                    <?php 
+                    <?php
                         $mainImagePath = $product['main_image_path'] ?? 'product_images/default-product.svg';
                         $previewPath = $mainImagePath;
-                        
                         if ($mainImagePath !== 'product_images/default-product.svg') {
                             $pathParts = pathinfo($mainImagePath);
                             if (isset($pathParts['extension'])) {
@@ -30,8 +29,8 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                             }
                         }
                     ?>
-                    <img src="<?= '/storage/' . View::escape($previewPath) ?>" 
-                         alt="<?= View::escape($product['product_name']) ?>" 
+                    <img src="<?= '/storage/' . View::escape($previewPath) ?>"
+                         alt="<?= View::escape($product['product_name']) ?>"
                          class="product-image"
                          loading="lazy"
                          onerror="this.onerror=null;this.src='<?= '/storage/' . View::escape($mainImagePath) ?>';">

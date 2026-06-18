@@ -269,7 +269,7 @@ const AuctionDetail = () => {
             setBidAmount(data.data.new_price + auction.min_increment);
 
         } else {
-            setError(data.message || 'Gagal menempatkan bid');
+            setError(data.message || 'Failed to place bid');
         }
     } catch (err) {
         console.error('Bid error:', err);

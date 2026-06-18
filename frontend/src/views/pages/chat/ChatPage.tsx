@@ -21,11 +21,11 @@ const formatTimeAgo = (dateString: string) => {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 30) return 'Baru saja';
-  if (diffInSeconds < 60) return `${diffInSeconds} detik lalu`;
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit lalu`;
+  if (diffInSeconds < 30) return 'Just now';
+  if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   
-  // Format jam:menit (misal 14:30) untuk pesan hari ini
+  // Format HH:MM for messages today
   if (diffInSeconds < 86400) {
       return new Intl.DateTimeFormat('id-ID', { 
         hour: '2-digit', minute: '2-digit' 
@@ -121,9 +121,9 @@ const ChatPage = () => {
         // Format last message based on message type
         let lastMessageText = msg.content;
         if (msg.message_type === 'image') {
-          lastMessageText = '📷 Gambar';
+          lastMessageText = '📷 Image';
         } else if (msg.message_type === 'item_preview') {
-          lastMessageText = '🛍️ Produk';
+          lastMessageText = '🛍️ Product';
         }
         
         console.log('[handleNewMessage] Updating room with last_message:', lastMessageText);
@@ -144,7 +144,7 @@ const ChatPage = () => {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     
-    // Trigger load more ketika scroll position dekat top (dalam 100px)
+    // Trigger load more when scroll position is near top (within 100px)
     if (element.scrollTop < 100 && hasMore && !isLoadingMore && messages.length > 0) {
       const oldestMessage = messages[0];
       if (oldestMessage) {
@@ -159,13 +159,13 @@ const ChatPage = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Ukuran file maksimal 5MB");
+      alert("File size limit is 5MB");
       return;
     }
 
     setIsUploading(true);
     const formData = new FormData();
-    formData.append('file', file); // key "file" sesuai backend req.file()
+    formData.append('file', file); // key "file" matches backend req.file()
 
     try {
       const res = await api.post('/upload/image', formData, {
@@ -173,12 +173,12 @@ const ChatPage = () => {
       });
 
       if (res.data?.success && res.data.data?.url) {
-        // Kirim pesan tipe image dengan URL hasil upload
+        // Send image message with uploaded URL
         sendMessage(res.data.data.url, 'image');
       }
     } catch (err) {
-      console.error("Upload gagal:", err);
-      alert("Gagal mengupload gambar");
+      console.error("Upload failed:", err);
+      alert("Failed to upload image");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -295,7 +295,7 @@ const ChatPage = () => {
       if (!url) return '';
       const lastDotIndex = url.lastIndexOf('.');
       if (lastDotIndex === -1) return url;
-      // Menyisipkan "_thumb" sebelum ekstensi
+      // Insert "_thumb" before file extension
       return url.substring(0, lastDotIndex) + '_thumb' + url.substring(lastDotIndex);
   };
 
@@ -308,7 +308,7 @@ const ChatPage = () => {
     return `/storage/${path}`;
   };
 
-  // Ambil ID user yang aman (handle kemungkinan user_id dari PHP)
+  // Get safe user ID (handle possible user_id from PHP)
   const currentUserId = user ? Number(user.id || (user as any).user_id) : null;
 
   // --- Init Hook ---
@@ -332,11 +332,11 @@ const ChatPage = () => {
   );
 
   useEffect(() => {
-    // Jika pesan error mengandung kata kunci "nonaktif" atau "disabled"
-    if (socketError && (socketError.toLowerCase().includes('nonaktif') || socketError.toLowerCase().includes('disabled'))) {
+    // If error contains "disabled" keyword
+    if (socketError && (socketError.toLowerCase().includes('disabled') || socketError.toLowerCase().includes('disabled'))) {
       setIsChatDisabled(true);
     } else {
-      // Reset jika error hilang (misal connect ulang) atau error jenis lain
+      // Reset if error clears (e.g. reconnect) or different error type
       setIsChatDisabled(false);
     }
   }, [socketError]);
@@ -344,7 +344,7 @@ const ChatPage = () => {
   // --- Effects ---
   useEffect(() => {
     if (socket && user && isConnected) {
-      // Pastikan user.id dikonversi ke string/number yang sesuai
+      // Ensure user.id is converted to correct string/number
       const userId = user.id || (user as any).user_id; 
       socket.emit('join_user_channel', { user_id: userId });
     }
@@ -386,7 +386,7 @@ const ChatPage = () => {
             window.history.replaceState({}, document.title, '/chat');
           }
         } catch (err) {
-          console.error("Gagal inisialisasi chat:", err);
+          console.error("Failed to initiate chat:", err);
         }
       };
       initChat();
@@ -404,9 +404,9 @@ const ChatPage = () => {
             // Format last_message based on message type from server
             let formattedLastMessage = room.last_message;
             if (room.last_message_type === 'image') {
-              formattedLastMessage = '📷 Gambar';
+              formattedLastMessage = '📷 Image';
             } else if (room.last_message_type === 'item_preview') {
-              formattedLastMessage = '🛍️ Produk';
+              formattedLastMessage = '🛍️ Product';
             }
             
             return {
@@ -426,7 +426,7 @@ const ChatPage = () => {
           });
         }
       } catch (err) {
-        console.error("Gagal memuat list chat:", err);
+        console.error("Failed to load chat list:", err);
       }
     };
     fetchRooms();
@@ -489,7 +489,7 @@ const ChatPage = () => {
   // Helper to format last message based on message type
   const formatLastMessage = (room: ChatRoom) => {
     if (!room.last_message) {
-      return <span className="italic text-gray-400">Belum ada pesan</span>;
+      return <span className="italic text-gray-400">No messages yet</span>;
     }
     
     // Message is already formatted from server or handleNewMessage
@@ -511,11 +511,11 @@ const ChatPage = () => {
         {/* SIDEBAR */}
         <div className={`${activeRoom ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 flex-col border-r border-gray-200 bg-white`}>
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Pesan</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Messages</h2>
             <div className="relative">
               <img src="/assets/icons/search.svg" alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" />
               <Input 
-                placeholder="Cari chat..." 
+                placeholder="Search chats..." 
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -529,18 +529,18 @@ const ChatPage = () => {
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <span className="text-4xl">💬</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Belum ada percakapan</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No conversations yet</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {user?.role === 'BUYER' 
-                    ? 'Mulai chat dengan toko untuk bertanya tentang produk'
-                    : 'Menunggu pembeli menghubungi Anda'}
+                    ? 'Start a chat with a store to ask about products'
+                    : 'Waiting for buyers to reach out'}
                 </p>
                 {user?.role === 'BUYER' && (
                   <Button 
                     onClick={() => setShowNewChatModal(true)}
                     className="bg-[#42b549] hover:bg-[#2d8f34] text-white px-6 py-2 rounded-lg"
                   >
-                    Chat Baru
+                    New Chat
                   </Button>
                 )}
               </div>
@@ -741,52 +741,48 @@ const ChatPage = () => {
                   onChange={handleFileSelect}
                  />
                 
-                 <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-                   <Button 
-                     type="button" 
-                     variant="ghost" 
-                     className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                 <form onSubmit={handleSendMessage} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                   <button
+                     type="button"
                      onClick={() => fileInputRef.current?.click()}
                      disabled={!isConnected || isUploading || isChatDisabled}
+                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: '#6b7280', display: 'flex', alignItems: 'center' }}
                    >
-                     <img src="/assets/icons/image.svg" alt="Upload" className={`w-6 h-6 ${isUploading ? 'animate-pulse' : ''}`} />
-                   </Button>
-
-                   <Button 
-                     type="button" 
-                     variant="ghost" 
-                     className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                   </button>
+                   <button
+                     type="button"
                      onClick={() => setShowProductModal(true)}
                      disabled={!isConnected || isChatDisabled}
-                     title="Kirim Preview Produk"
+                     title="Send Product Preview"
+                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}
                    >
-                     <span className="text-lg">🛍️</span>
-                   </Button>
-                   
-                   <Input 
+                     🛍️
+                   </button>
+                   <Input
                       className="flex-1 rounded-full py-2 px-4 border-gray-300 focus:ring-[#42b549] focus:border-[#42b549]"
-                      placeholder="Tulis pesan..."
+                      placeholder="Type a message..."
                       value={inputMessage}
                       onChange={handleTypingInput}
+                      style={{ marginTop: '13px' }}
                    />
-                   
-                   <Button 
-                      type="submit" 
-                      className={`rounded-full p-2 px-4 ${isConnected ? 'bg-[#42b549] hover:bg-[#2d8f34]' : 'bg-gray-400'}`}
+                   <button
+                      type="submit"
                       disabled={!inputMessage.trim() || !isConnected || isChatDisabled}
+                      style={{ background: isConnected ? '#42b549' : '#9ca3af', border: 'none', borderRadius: '50%', width: '42px', height: '42px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                    >
-                      <img src="/assets/icons/send.svg" alt="Send" className="w-5 h-5" />
-                   </Button>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                   </button>
                 </form>
 
                 {/* Product Preview Modal */}
                 {showProductModal && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                      <h3 className="text-lg font-semibold mb-4">Pilih Produk untuk Preview</h3>
+                      <h3 className="text-lg font-semibold mb-4">Select a Product to Preview</h3>
                       
                       <Input 
-                        placeholder="Cari produk..."
+                        placeholder="Search products..."
                         value={productSearch}
                         onChange={(e) => {
                           setProductSearch(e.target.value);
@@ -797,7 +793,7 @@ const ChatPage = () => {
 
                       <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
                         {isSearchingProducts ? (
-                          <p className="text-sm text-gray-500 text-center py-4">Mencari produk...</p>
+                          <p className="text-sm text-gray-500 text-center py-4">Searching products...</p>
                         ) : searchProducts.length > 0 ? (
                           searchProducts.map((product) => (
                             <div 
@@ -823,7 +819,7 @@ const ChatPage = () => {
                           ))
                         ) : (
                           <p className="text-sm text-gray-500 text-center py-4">
-                            {productSearch ? 'Produk tidak ditemukan' : 'Tidak ada produk tersedia'}
+                            {productSearch ? 'No products found' : 'No products available'}
                           </p>
                         )}
                       </div>
@@ -833,7 +829,7 @@ const ChatPage = () => {
                         variant="secondary"
                         className="w-full"
                       >
-                        Tutup
+                        Close
                       </Button>
                     </div>
                   </div>
@@ -845,8 +841,8 @@ const ChatPage = () => {
                <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                   <span className="text-4xl">👋</span>
                </div>
-               <h3 className="text-xl font-semibold text-gray-600">Selamat Datang di Nimonspedia Chat</h3>
-               <p className="mt-2 text-gray-500">Pilih percakapan untuk mulai berkirim pesan.</p>
+               <h3 className="text-xl font-semibold text-gray-600">Welcome to Nimonspedia Chat</h3>
+               <p className="mt-2 text-gray-500">Select a conversation to start messaging.</p>
             </div>
           )}
           {selectedImage && (
@@ -878,7 +874,7 @@ const ChatPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Mulai Chat Baru</h3>
+              <h3 className="text-lg font-semibold">Start New Chat</h3>
               <button 
                 onClick={() => setShowNewChatModal(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
@@ -888,7 +884,7 @@ const ChatPage = () => {
             </div>
             
             <Input 
-              placeholder="Cari toko..."
+              placeholder="Search stores..."
               value={storeSearch}
               onChange={(e) => {
                 setStoreSearch(e.target.value);
@@ -901,7 +897,7 @@ const ChatPage = () => {
               {isLoadingStores ? (
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#42b549]"></div>
-                  <p className="text-sm text-gray-500 mt-2">Memuat toko...</p>
+                  <p className="text-sm text-gray-500 mt-2">Loading stores...</p>
                 </div>
               ) : stores.length > 0 ? (
                 stores.map((store) => (
@@ -933,7 +929,7 @@ const ChatPage = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-sm text-gray-500">
-                    {storeSearch ? 'Toko tidak ditemukan' : 'Tidak ada toko tersedia'}
+                    {storeSearch ? 'No stores found' : 'No stores available'}
                   </p>
                 </div>
               )}
@@ -944,7 +940,7 @@ const ChatPage = () => {
               variant="secondary"
               className="w-full mt-4"
             >
-              Tutup
+              Close
             </Button>
           </div>
         </div>
