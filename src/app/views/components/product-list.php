@@ -10,8 +10,8 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 
 <?php if (empty($products)): ?>
     <div class="products-empty-state">
-        <h3>Tidak ada produk ditemukan.</h3>
-        <p>Coba sesuaikan pencarian atau filter Anda.</p>
+        <h3>No products found.</h3>
+        <p>Try adjusting your search or filter.</p>
     </div>
 <?php else: ?>
     <div class="products-grid">
@@ -40,24 +40,10 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                     <a href="/product?id=<?= View::escape($product['product_id']) ?>" class="product-name-link">
                         <h3 class="product-name"><?= View::escape($product['product_name']) ?></h3>
                     </a>
-                    
+                    <p class="product-price"><?= View::currency($product['price']) ?></p>
                     <a href="/store?id=<?= View::escape($product['store_id']) ?>" class="product-store-link">
                         <?= View::escape($product['store_name']) ?>
                     </a>
-
-                    <p class="product-price"><?= View::currency($product['price']) ?></p>
-                    
-                    <form class="add-to-cart-listing" data-product-id="<?= View::escape($product['product_id']) ?>">
-                        <input type="hidden" name="product_id" value="<?= View::escape($product['product_id']) ?>">
-                        <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
-                        <input type="hidden" name="quantity" value="1">
-                        <?php if (Auth::check() && $checkoutAccess['allowed']):?>
-                            <button type="submit" class= "btn <?= (($product['stock'] > 0) ? " btn-primary" : "") ?>"  
-                            style="width: 100%;" <?= ($product['stock'] <= 0) ? 'disabled' : '' ?> >
-                                <?= ($product['stock'] > 0) ? 'Add to Cart' : 'Out of Stock' ?>
-                            </button>
-                        <?php endif; ?>
-                    </form>
                 </div>
             </div>
             
@@ -67,7 +53,7 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
     <?php if ($productsData['total_pages'] > 1): ?>
         <nav style="margin-top: 2rem;">
             <div class="pagination" style="justify-content: center;">
-                <?php 
+                <?php
                 $queryParams = $filters ?? [];
                 unset($queryParams['page']);
                 $baseQuery = http_build_query($queryParams);
@@ -75,29 +61,33 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
 
                 $currentPage = (int)$productsData['current_page'];
                 $totalPages = (int)$productsData['total_pages'];
-                
-                $window = 2; 
-                $lastNum = 0; 
+                $window = 2;
+                $lastNum = 0;
+                ?>
 
-                for ($i = 1; $i <= $totalPages; $i++):
-                    $showNumber = false;
-                    if ($i == 1 || $i == $totalPages) $showNumber = true;
-                    elseif ($i >= $currentPage - $window && $i <= $currentPage + $window) $showNumber = true;
-                    
-                    if ($showNumber):
-                        if ($i > $lastNum + 1):
-                ?>
-                            <span class="pagination-item disabled" style="border: none; background: none; color: var(--gray-700);">...</span>
-                <?php
-                        endif;
-                        $isActive = ($i == $currentPage) ? 'active' : '';
-                ?>
-                        <a href="<?= $baseUrl ?>&page=<?= $i ?>" class="pagination-item <?= $isActive ?>"><?= $i ?></a>
-                <?php
-                        $lastNum = $i;
+                <?php if ($currentPage > 1): ?>
+                    <a href="<?= $baseUrl ?>&page=<?= $currentPage - 1 ?>" class="pagination-item pagination-prev">&#8592;</a>
+                <?php else: ?>
+                    <span class="pagination-item pagination-prev disabled">&#8592;</span>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++):
+                    $show = ($i == 1 || $i == $totalPages || ($i >= $currentPage - $window && $i <= $currentPage + $window));
+                    if ($show):
+                        if ($i > $lastNum + 1): ?>
+                            <span class="pagination-item disabled" style="border:none;background:none;">…</span>
+                        <?php endif; ?>
+                        <a href="<?= $baseUrl ?>&page=<?= $i ?>" class="pagination-item <?= $i == $currentPage ? 'active' : '' ?>"><?= $i ?></a>
+                <?php   $lastNum = $i;
                     endif;
-                endfor;
-                ?>
+                endfor; ?>
+
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="<?= $baseUrl ?>&page=<?= $currentPage + 1 ?>" class="pagination-item pagination-next">&#8594;</a>
+                <?php else: ?>
+                    <span class="pagination-item pagination-next disabled">&#8594;</span>
+                <?php endif; ?>
+
             </div>
         </nav>
     <?php endif; ?>

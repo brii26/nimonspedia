@@ -10,9 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
             advancedFilters.classList.toggle('open');
             
             if (advancedFilters.classList.contains('open')) {
-                toggleButton.textContent = 'Tutup Opsi Filter';
+                toggleButton.textContent = 'Close Filter';
             } else {
-                toggleButton.textContent = 'Opsi Filter Lanjutan';
+                toggleButton.textContent = 'Advanced Filter';
             }
         });
     }

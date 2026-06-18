@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButton.addEventListener('click', () => {
             advancedFilters.classList.toggle('open');
             if (advancedFilters.classList.contains('open')) {
-                toggleButton.textContent = 'Tutup Opsi Filter';
+                toggleButton.textContent = 'Close Filter';
             } else {
-                toggleButton.textContent = 'Opsi Filter Lanjutan';
+                toggleButton.textContent = 'Advanced Filter';
             }
         });
     }
@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderEmptyState = () => {
         productListContainer.innerHTML = `
             <div class="products-empty-state">
-                <h3>Tidak ada produk ditemukan.</h3>
-                <p>Coba sesuaikan pencarian atau filter Anda.</p>
+                <h3>No products found.</h3>
+                <p>Try adjusting your search or filter.</p>
             </div>
         `;
     };
@@ -184,33 +184,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPagination = (meta) => {
         if (meta.total_pages <= 1) return;
 
-        let html = '<nav style="margin-top: 2rem;"><div class="pagination" style="justify-content: center;">';
-        
         const currentPage = parseInt(meta.current_page);
         const totalPages = parseInt(meta.total_pages);
-        const window = 2;
+        const w = 2;
         let lastNum = 0;
 
+        const pageUrl = (page) => {
+            const params = new URLSearchParams(new FormData(filterForm));
+            params.set('page', page);
+            return `?${params.toString()}`;
+        };
+
+        let html = '<nav style="margin-top: 2rem;"><div class="pagination" style="justify-content: center;">';
+
+        if (currentPage > 1) {
+            html += `<a href="${pageUrl(currentPage - 1)}" class="pagination-item pagination-prev">&#8592;</a>`;
+        } else {
+            html += `<span class="pagination-item pagination-prev disabled">&#8592;</span>`;
+        }
+
         for (let i = 1; i <= totalPages; i++) {
-            let showNumber = false;
-            if (i === 1 || i === totalPages) showNumber = true;
-            else if (i >= currentPage - window && i <= currentPage + window) showNumber = true;
-
-            if (showNumber) {
-                if (i > lastNum + 1) {
-                    html += '<span class="pagination-item disabled" style="border: none; background: none; color: var(--gray-700);">...</span>';
-                }
-                
-                const isActive = (i === currentPage) ? 'active' : '';
-                // URL untuk href (biar bisa diklik kanan open new tab)
-                const formData = new FormData(filterForm);
-                const params = new URLSearchParams(formData);
-                params.set('page', i);
-                const pageUrl = `?${params.toString()}`;
-
-                html += `<a href="${pageUrl}" class="pagination-item ${isActive}" data-page="${i}">${i}</a>`;
+            const show = (i === 1 || i === totalPages || (i >= currentPage - w && i <= currentPage + w));
+            if (show) {
+                if (i > lastNum + 1) html += '<span class="pagination-item disabled" style="border:none;background:none;">…</span>';
+                html += `<a href="${pageUrl(i)}" class="pagination-item ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</a>`;
                 lastNum = i;
             }
+        }
+
+        if (currentPage < totalPages) {
+            html += `<a href="${pageUrl(currentPage + 1)}" class="pagination-item pagination-next">&#8594;</a>`;
+        } else {
+            html += `<span class="pagination-item pagination-next disabled">&#8594;</span>`;
         }
 
         html += '</div></nav>';
