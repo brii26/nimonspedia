@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // [REVISI] Ganti logika validasi file
             const isValid = validateImage();
             if (!isValid) {
-                this.value = ''; // Hapus file jika tidak valid
+                this.value = ''; // Delete file jika tidak valid
                 clearPreview();
                 return;
             }
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // [REVISI] Ubah logika toast error
-    // Hapus error inline dari server (jika ada) dan tampilkan sebagai toast
+    // Delete error inline dari server (jika ada) dan tampilkan sebagai toast
     document.querySelectorAll('small[id$="-error-server"]').forEach(el => {
         const msg = el.textContent.trim();
         if (msg) {
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Hapus alert error global dari server (jika ada) dan tampilkan sebagai toast
+    // Delete alert error global dari server (jika ada) dan tampilkan sebagai toast
     const serverAlert = document.querySelector('.alert.alert-danger');
     if (serverAlert && serverAlert.textContent.trim()) {
         App.showAlert(serverAlert.textContent.trim(), 'error');

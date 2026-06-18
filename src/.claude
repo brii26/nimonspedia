@@ -1,0 +1,59 @@
+# src/ — PHP Custom MVC Backend
+
+## Purpose
+Core PHP backend handling: auth, products, stores, cart, orders, reviews, auctions (seller side).
+Entry point: /public/index.php → instantiates Application → matches routes → dispatches to controllers.
+
+## Framework
+Custom PHP 8.3 MVC (no Composer framework). Core lives in src/core/.
+
+## Directory Map
+```
+src/
+├── app/
+│   ├── controllers/   Request handlers. BaseController provides json(), view(), redirect() helpers.
+│   ├── models/        Empty (models not implemented — repo pattern used instead)
+│   ├── repository/    Data access layer — raw PDO queries to PostgreSQL
+│   ├── services/      Business logic layer (called by controllers, calls repositories)
+│   └── views/         PHP template files (Blade-like, rendered by View.php)
+├── config/
+│   └── database.php   Returns PDO config from $_ENV vars (POSTGRES_HOST, DB, USER, PASSWORD)
+├── core/
+│   ├── Application.php   Main router/dispatcher — ALL PHP routes defined here (lines 71-163)
+│   ├── Router.php         HTTP method + path matching
+│   ├── Database.php       Singleton PDO connection
+│   ├── Auth.php           Session-based auth helper (uses Redis sessions)
+│   ├── Cache.php          Redis caching wrapper
+│   └── View.php           Template rendering
+└── lib/
+    └── ValidationException.php
+```
+
+## PHP Route List (Application.php:71-163)
+- Auth:      GET/POST /login, /register, POST /logout, GET /profile
+- Products:  GET /products, /product, /store
+- Cart:      POST /cart/add, /cart/update, /cart/remove, GET /cart/count
+- Orders:    GET /orders, POST /checkout, /orders/checkout, GET /orders/show, POST /orders/confirm-received
+- Reviews:   GET /reviews/get, POST /reviews/submit, PUT /reviews/update, DELETE /reviews/delete, GET /reviews/images
+- Seller:    GET /seller/products, /seller/orders, /seller/reviews
+- Auctions:  GET/POST /seller/auctions/*, /seller/auctions/:id/*, /seller/auctions/:id/bids
+- Chat:      GET /api/chat/*, POST /api/chat/*
+
+## Key Services
+- AuthService        — login, register, session management
+- ProductService     — CRUD, search, filtering
+- CartService        — add/update/remove cart items
+- BuyerOrderService  — checkout, order status for buyers
+- SellerOrderService — approve/reject orders for sellers
+- ReviewService      — submit/update/delete reviews + images (complex, 30KB)
+- AuctionService     — seller-side auction management
+- NotificationService— calls Node internal API to trigger push notifications
+- FileService        — handles file uploads to ./storage/
+
+## Sessions
+Redis-based PHP sessions (session.save_handler=redis, configured via REDIS_HOST/REDIS_PORT).
+Auth state: $_SESSION['user_id'], $_SESSION['role'] (BUYER/SELLER/ADMIN).
+
+## Database Connection
+src/core/Database.php — singleton PDO. Uses config from src/config/database.php.
+Falls back to hardcoded defaults: host=db, db=nimonspedia, user=nimonspedia_user.

@@ -71,18 +71,18 @@
                 </div>
                 <div class="profile-card notification-section">
                     <header class="section-header">
-                        <h2>Pengaturan Notifikasi</h2>
+                        <h2>Notification Settings</h2>
                     </header>
                     <div class="section-content">
                         
                         <button id="btn-enable-notif" class="btn btn-primary btn-enable-notif" style="display: none;">
                             <span class="btn-icon">🔔</span>
-                            Aktifkan Push Notification
+                            Enable Push Notifications
                         </button>
 
                         <div id="notification-settings-area" style="display: none;">
                             <div class="notification-status">
-                                <span><i>Notifikasi Aktif di Browser ini</i></span>
+                                <span><i>Notifications Active on this Browser</i></span>
                             </div>
                             
                             <div class="notification-toggles">
@@ -91,7 +91,7 @@
                                         <span class="toggle-icon">💬</span>
                                         <div class="toggle-text">
                                             <span class="toggle-label">Chat Notification</span>
-                                            <span class="toggle-desc">Notifikasi pesan baru</span>
+                                            <span class="toggle-desc">New message notifications</span>
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
@@ -105,7 +105,7 @@
                                         <span class="toggle-icon">🔨</span>
                                         <div class="toggle-text">
                                             <span class="toggle-label">Auction Updates</span>
-                                            <span class="toggle-desc">Update lelang & penawaran</span>
+                                            <span class="toggle-desc">Auction & bid updates</span>
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
@@ -119,7 +119,7 @@
                                         <span class="toggle-icon">📦</span>
                                         <div class="toggle-text">
                                             <span class="toggle-label">Order Status</span>
-                                            <span class="toggle-desc">Update status pesanan</span>
+                                            <span class="toggle-desc">Order status updates</span>
                                         </div>
                                     </div>
                                     <label class="toggle-switch">

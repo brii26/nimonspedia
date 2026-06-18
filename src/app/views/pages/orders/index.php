@@ -5,7 +5,7 @@ $hasMore = $has_more ?? false;
 ?>
 
 <div class="orders-container">
-    <h1 class="mb-4">Pesanan Saya</h1>
+    <h1 class="mb-4">My Orders</h1>
 
     <div class="status-tabs">
         <?php foreach ($statuses as $status): ?>
@@ -19,7 +19,7 @@ $hasMore = $has_more ?? false;
         <div class="order-card-list" id="order-list">
             <?php if (empty($orders)): ?>
                 <div class="empty-state">
-                    <p>Tidak ada pesanan <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
+                    <p>No orders <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
                 </div>
             <?php else: ?>
                 <?php foreach ($orders as $order): ?>

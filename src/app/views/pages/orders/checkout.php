@@ -8,7 +8,7 @@
 
         <div class="checkout-card">
             <div class="checkout-card-header">
-                Alamat Pengiriman
+                Shipping Address
             </div>
             <div class="checkout-card-body address-details">
                 <div id="address-display-group">
@@ -17,16 +17,16 @@
                         <p><?= nl2br(htmlspecialchars($user['address'] ?? 'Alamat belum diatur.')) ?></p>
                     </div>
                     <button type="button" class="btn btn-secondary address-edit-toggle" id="edit-address-btn">
-                        Edit Alamat
+                        Edit Address
                     </button>
                 </div>
 
                 <div id="address-edit-group" style="display: none;">
-                    <label for="address-editor">Edit Alamat Pengiriman (hanya untuk pesanan ini)</label>
+                    <label for="address-editor">Edit Shipping Address ((for this order only))</label>
                     <div id="address-editor" style="min-height: 150px;"><?= htmlspecialchars($user['address'] ?? '') ?></div>
                     <div class="address-edit-actions">
-                        <button type="button" class="btn btn-secondary" id="cancel-address-btn">Batal</button>
-                        <button type="button" class="btn btn-primary" id="save-address-btn">Simpan Alamat</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-address-btn">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="save-address-btn">Save Address</button>
                     </div>
                 </div>
             </div>
@@ -34,15 +34,15 @@
         <?php foreach ($groupedCart as $storeName => $storeData): ?>
             <div class="checkout-card">
                 <div class="checkout-card-header">
-                    Pesanan dari: <strong><?= htmlspecialchars($storeName) ?></strong>
+                    Order from: <strong><?= htmlspecialchars($storeName) ?></strong>
                 </div>
                 
                 <table class="cart-items-table checkout-items-table">
                     <thead>
                         <tr>
-                            <th style="width: 50%;">Produk</th>
-                            <th style="width: 15%;">Jumlah</th>
-                            <th style="width: 20%;">Harga Satuan</th>
+                            <th style="width: 50%;">Product</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 20%;">Unit Price</th>
                             <th style="width: 15%;">Subtotal</th>
                         </tr>
                     </thead>
@@ -73,7 +73,7 @@
                 </table>
                 
                 <div class="cart-store-footer">
-                    <span>Total Toko:</span>
+                    <span>Total Store:</span>
                     <strong>Rp <?= number_format($storeData['subtotal'], 0, ',', '.') ?></strong>
                 </div>
             </div>
@@ -81,28 +81,28 @@
 
         <div class="checkout-summary-card">
             <div class="checkout-card-header">
-                Konfirmasi Pembayaran
+                Confirm Payment
             </div>
             
             <div class="checkout-card-body payment-summary">
                 <ul>
                     <li>
-                        <span>Saldo Anda</span>
+                        <span>Your Balance</span>
                         <span>Rp <?= number_format($user['balance'] ?? 0, 0, ',', '.') ?></span>
                     </li>
                     <li>
-                        <span>Total Belanja</span>
+                        <span>Total</span>
                         <span class="grand-total">- Rp <?= number_format($grandTotal, 0, ',', '.') ?></span>
                     </li>
                     
                     <?php if ($sisaSaldo < 0): ?>
                         <li class="saldo-kurang">
-                            <span>Saldo Tidak Cukup</span>
+                            <span>Insufficient Balance</span>
                             <span>Rp <?= number_format($sisaSaldo, 0, ',', '.') ?></span>
                         </li>
                     <?php else: ?>
                         <li class="sisa-saldo">
-                            <span>Sisa Saldo</span>
+                            <span>Remaining Balance</span>
                             <strong>Rp <?= number_format($sisaSaldo, 0, ',', '.') ?></strong>
                         </li>
                     <?php endif; ?>
@@ -112,10 +112,10 @@
             <div class="checkout-action">
                 <a class = "btn-cart" href = "/cart">Back to Cart</a>
                 <button type="submit" class="btn-checkout" <?= ($sisaSaldo < 0) ? 'disabled' : '' ?>>
-                    <?= ($sisaSaldo < 0) ? 'Saldo Tidak Cukup' : 'Bayar Sekarang' ?>
+                    <?= ($sisaSaldo < 0) ? 'Insufficient Balance' : 'Pay Now' ?>
                 </button>
                 <?php if ($sisaSaldo < 0): ?>
-                    <a href="/profile#balance" class="btn-top-up">Top Up Saldo</a>
+                    <a href="/profile#balance" class="btn-top-up">Top Up Balance</a>
                 <?php endif; ?>
             </div>
         </div>

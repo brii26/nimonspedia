@@ -7,12 +7,12 @@
         <div class="app-modal-card">
             
             <header class="app-modal-header error">
-                <h2 id="app-error-title">Terjadi Kesalahan</h2>
+                <h2 id="app-error-title">An Error Occurred</h2>
                 <button type="button" class="app-modal-close" aria-label="Tutup">×</button>
             </header>
             
             <div class="app-modal-body">
-                <p id="app-error-message">Error tidak diketahui.</p>
+                <p id="app-error-message">Unknown error.</p>
             </div>
             
             <footer class="app-modal-footer">

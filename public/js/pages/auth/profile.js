@@ -274,9 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('confirm:cancel', onCancel, { once: true });
 
             if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-                window.AppConfirm.ask(`Anda yakin ingin top up sebesar Rp ${amountValue}?`);
+                window.AppConfirm.ask(`Are you sure you want to top up Rp ${amountValue}?`);
             } else {
-                confirm(`Anda yakin ingin top up sebesar Rp ${amountValue}?`) ? onConfirm() : onCancel();
+                confirm(`Are you sure you want to top up Rp ${amountValue}?`) ? onConfirm() : onCancel();
             }
         });
     }
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (newPass !== confirmPass) {
-                resultDiv.innerHTML = '<div class="alert alert-error">Konfirmasi password baru tidak cocok.</div>';
+                resultDiv.innerHTML = '<div class="alert alert-error">New password confirmation does not match.</div>';
                 if (submitButton) App.hideLoading(submitButton);
                 return; 
             }
@@ -409,9 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Panggil modal
             if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-                window.AppConfirm.ask('Anda yakin ingin mengubah password?');
+                window.AppConfirm.ask('Are you sure you want to change your password?');
             } else {
-                confirm('Anda yakin ingin mengubah password?') ? onConfirm() : onCancel();
+                confirm('Are you sure you want to change your password?') ? onConfirm() : onCancel();
             }
         });
     }

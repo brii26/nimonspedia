@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Inisialisasi Quill Editor
         const quill = createEditor('#address-editor', null); 
 
-        // 2. Tombol "Edit Alamat" diklik
+        // 2. Tombol "Edit Address" diklik
         editAddressBtn.addEventListener('click', () => {
             // Ambil alamat TERBARU dari hidden input (sumber kebenaran)
             const currentAddress = hiddenInput.value;
@@ -37,21 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
             quill.focus();
         });
 
-        // 3. Tombol "Batal" diklik
+        // 3. Tombol "Cancel" diklik
         const cancelBtn = document.getElementById('cancel-address-btn');
         cancelBtn.addEventListener('click', () => {
             addressEditGroup.style.display = 'none';
             addressDisplayGroup.style.display = 'block';
         });
 
-        // 4. Tombol "Simpan Alamat" diklik
+        // 4. Tombol "Save Address" diklik
         const saveBtn = document.getElementById('save-address-btn');
         saveBtn.addEventListener('click', () => {
             
             // Validasi 10 karakter
             const plainText = quill.getText().trim();
             if (plainText.length < 10) {
-                if(window.App) App.showAlert('Alamat pengiriman harus minimal 10 karakter.', 'error');
+                if(window.App) App.showAlert('Shipping address must be at least 10 characters.', 'error');
                 if (editorElement) {
                     editorElement.classList.add('is-invalid');
                 }
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.App.hideLoading(btn);
         } else if (btn) {
             btn.disabled = false;
-            btn.textContent = original || 'Bayar Sekarang';
+            btn.textContent = original || 'Pay Now';
         }
     }
 
@@ -98,14 +98,14 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
     });
 
-    // Pasang listener di tombol "Bayar Sekarang"
+    // Pasang listener di tombol "Pay Now"
     submitButton.addEventListener('click', (e) => {
         e.preventDefault();
         const originalText = submitButton.textContent;
         if (submitButton.disabled) return;
 
         const onConfirm = () => {
-            // Hapus listener 'confirm:cancel'
+            // Delete listener 'confirm:cancel'
             document.removeEventListener('confirm:cancel', onCancel);
 
             if (window.App && typeof window.App.showLoading === 'function') {
@@ -157,18 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else { 
                     // Fallback jika terjadi sesuatu yang aneh
                     if (window.App && App.showAlert) {
-                        window.App.showAlert('Checkout berhasil, tetapi gagal mengarahkan.', 'info');
+                        window.App.showAlert('Checkout successful, but failed to redirect.', 'info');
                     }
                     window.location = '/orders'; // Paksa redirect
                 }
             }).catch(err => {
                 console.error('Checkout error', err);
                 if (window.AppError && AppError.show) {
-                    AppError.show('Terjadi kesalahan saat melakukan checkout.');
+                    AppError.show('An error occurred during checkout.');
                 } else if (window.App && App.showAlert) {
-                    App.showAlert('Terjadi kesalahan saat melakukan checkout.', 'error');
+                    App.showAlert('An error occurred during checkout.', 'error');
                 } else {
-                    alert('Terjadi kesalahan saat melakukan checkout.');
+                    alert('An error occurred during checkout.');
                 }
                 resetButton(submitButton, originalText);
             });
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }; // Akhir onConfirm
 
         const onCancel = () => {
-             // Hapus listener 'confirm:ok'
+             // Delete listener 'confirm:ok'
             document.removeEventListener('confirm:ok', onConfirm);
         };
 
@@ -186,9 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Panggil modal
         if (window.AppConfirm && typeof window.AppConfirm.ask === 'function') {
-            window.AppConfirm.ask('Anda yakin ingin melanjutkan pembayaran? Saldo Anda akan dipotong.');
+            window.AppConfirm.ask('Are you sure you want to proceed? Your balance will be deducted.');
         } else {
-            if (confirm('Anda yakin ingin melanjutkan pembayaran? Saldo Anda akan dipotong.')) {
+            if (confirm('Are you sure you want to proceed? Your balance will be deducted.')) {
                 onConfirm();
             } else {
                 onCancel();

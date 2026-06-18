@@ -26,14 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const prevValue = input.dataset.previousValue || minVal;
 
         if (isNaN(quantity) || quantity < minVal) {
-            App.showAlert(`Kuantitas minimal adalah ${minVal}`, 'error');
+            App.showAlert(`Minimum quantity is ${minVal}`, 'error');
             input.value = prevValue;
             return; // Hentikan eksekusi
         }
         
         // Jika input > stok, kembalikan ke nilai sebelumnya
         if (!isNaN(maxStock) && quantity > maxStock) {
-            App.showAlert(`Stok tidak mencukupi (maks: ${maxStock})`, 'error');
+            App.showAlert(`Insufficient stock (max: ${maxStock})`, 'error');
             input.value = prevValue;
             return; // Hentikan eksekusi
         }
@@ -73,13 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success && result.data.newCartData) {
                 updateUI(result.data.newCartData);
             } else {
-                throw new Error(result.message || 'Gagal mengupdate keranjang');
+                throw new Error(result.message || 'Failed to update cart');
             }
         })
         .catch(error => {
-            console.error('Gagal mengupdate quantity:', error);
+            console.error('Failed to update quantity:', error);
             if (window.App) {
-                window.App.showAlert(error.error || 'Gagal mengupdate keranjang.', 'error');
+                window.App.showAlert(error.error || 'Failed to update cart.', 'error');
             }
             window.location.reload(); 
         })
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /**
-     * Logika Tombol Hapus (Refactored tanpa async/await)
+     * Logika Tombol Delete (Refactored tanpa async/await)
      */
     if (removeButtons.length > 0) {
         removeButtons.forEach(button => {
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', function() {
                 const clickedButton = this;
                 const productId = clickedButton.dataset.productId;
-                const message = 'Apakah Anda yakin ingin menghapus item ini dari keranjang?';
+                const message = 'Are you sure you want to remove this item from your cart?';
 
                 const onOk = () => {
                     document.removeEventListener('confirm:cancel', onCancel);
@@ -209,14 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             return response.json();
                         }
                         return response.json().then(errData => {
-                            throw new Error(errData.error || 'Gagal menghapus item');
+                            throw new Error(errData.error || 'Failed to remove item');
                         });
                     })
                     .then(result => {
                         if (result.success) {
                             window.location.reload();
                         } else {
-                            throw new Error(result.error || 'Gagal menghapus item');
+                            throw new Error(result.error || 'Failed to remove item');
                         }
                     })
                     .catch(error => {
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.App.showAlert(error.message, 'error');
                         }
                         if (window.App) {
-                            window.App.hideLoading(clickedButton, 'Hapus');
+                            window.App.hideLoading(clickedButton, 'Delete');
                         }
                     });
                 };

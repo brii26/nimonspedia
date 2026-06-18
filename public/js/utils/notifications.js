@@ -60,7 +60,7 @@ const NotificationApp = {
                 document.getElementById('toggle-order').checked = prefs.order_enabled;
             }
         } catch (err) {
-            console.error('Gagal load preferences:', err);
+            console.error('Failed to load preferences:', err);
         }
     },
 
@@ -97,7 +97,7 @@ const NotificationApp = {
         try {
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                alert('Izin notifikasi ditolak.');
+                alert('Notification permission denied.');
                 return;
             }
 
@@ -117,12 +117,12 @@ const NotificationApp = {
                 body: JSON.stringify({ subscription: sub })
             });
 
-            alert('Notifikasi berhasil diaktifkan!');
+            alert('Notifications enabled successfully!');
             this.checkSubscriptionStatus();
 
         } catch (err) {
             console.error('Subscribe error:', err);
-            alert('Gagal mengaktifkan notifikasi.');
+            alert('Failed to enable notifications.');
         }
     },
 

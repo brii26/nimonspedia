@@ -168,7 +168,7 @@ window.addEventListener('unhandledrejection', function(event) {
         let lastFocused = null;
 
         const openConfirmModal = (message) => {
-            messageEl.textContent = message || 'Anda yakin?';
+            messageEl.textContent = message || 'Are you sure?';
             confirmModalNode.style.display = 'flex';
             confirmModalNode.setAttribute('aria-hidden', 'false');
             lastFocused = document.activeElement;
@@ -230,7 +230,7 @@ window.addEventListener('unhandledrejection', function(event) {
             errorModalNode.setAttribute('aria-hidden', 'true');
         };
         const showErrorModal = (message) => {
-            errorModalNode.querySelector('#app-error-message').textContent = message || 'Terjadi error tidak diketahui.';
+            errorModalNode.querySelector('#app-error-message').textContent = message || 'An unknown error occurred.';
             errorModalNode.style.display = 'flex';
             errorModalNode.setAttribute('aria-hidden', 'false');
             errorModalNode.querySelector('.app-modal-close').onclick = closeErrorModal;

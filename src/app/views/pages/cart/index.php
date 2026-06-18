@@ -1,5 +1,5 @@
 <div class="container">
-    <h1 class="mb-4">Keranjang Belanja</h1>
+    <h1 class="mb-4">Shopping Cart</h1>
 
     <?php if (!empty($error)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
@@ -7,8 +7,8 @@
 
     <?php if (empty($groupedCart)): ?>
         <div class="cart-empty">
-            <p>Keranjang Anda kosong.</p>
-            <a href="/" class="btn btn-primary">Mulai Belanja</a>
+            <p>Your cart is empty.</p>
+            <a href="/" class="btn btn-primary">Start Shopping</a>
         </div>
     <?php else: ?>
         
@@ -43,7 +43,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="cart-item-actions"> <button type="button" aria-label="Hapus produk" 
+                                    <div class="cart-item-actions"> <button type="button" aria-label="Remove product" 
                                     class="btn-remove" data-product-id="<?= (int)($it['product_id'] ?? 0)?>">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M3 6h18"></path>
@@ -60,16 +60,16 @@
                                                 $minQty = 1; // Atur minimum quantity di sini
                                             ?>
 
-                                            <button type="button" class="btn-qty btn-qty-minus" aria-label="Kurangi jumlah" 
+                                            <button type="button" class="btn-qty btn-qty-minus" aria-label="Decrease quantity" 
                                                 <?= $currentQty <= $minQty ? 'disabled' : '' ?>
                                             >-</button>
                                             
-                                            <input type="number" class="cart-quantity"  aria-label = "Jumlah sekarang"
+                                            <input type="number" class="cart-quantity"  aria-label = "Current quantity"
                                                 value="<?= $currentQty ?>" 
                                                 min="<?= $minQty ?>" max="<?= $maxStock ?>"
                                                 data-previous-value="<?= $currentQty ?>">
                                             
-                                            <button type="button" class="btn-qty btn-qty-plus" aria-label="Tambah jumlah" 
+                                            <button type="button" class="btn-qty btn-qty-plus" aria-label="Increase quantity" 
                                                 <?= $currentQty >= $maxStock ? 'disabled' : '' ?>
                                             >+</button>
                                         </div>
@@ -84,7 +84,7 @@
                         </div>
 
                         <div class="cart-store-footer">
-                            <span>Subtotal Toko:</span>
+                            <span>Subtotal Store:</span>
                             <strong class="store-subtotal">
                                 Rp <?= number_format($storeData['subtotal'], 0, ',', '.') ?>
                             </strong>
@@ -95,16 +95,16 @@
             </div>
             <div class="cart-summary-card">
                 <div class="summary-total-group">
-                    <span>Total Belanja:</span>
+                    <span>Total:</span>
                     <h3 class="grand-total" id="grand-total-display">
                         Rp <?= number_format($total, 0, ',', '.') ?>
                     </h3>
                 </div>
 
                 <div class="cart-actions">
-                    <button type="button" id="updateCart" class="btn-update">Update Keranjang</button>
+                    <button type="button" id="updateCart" class="btn-update">Update Cart</button>
                     
-                    <a href="/" class="btn btn-secondary btn-continue-shopping">Lanjutkan Belanja</a>
+                    <a href="/" class="btn btn-secondary btn-continue-shopping">Continue Shopping</a>
                     
                     <a href="/checkout" class="btn btn-success btn-checkout">Checkout</a>
                 </div>

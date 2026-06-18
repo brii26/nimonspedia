@@ -17,7 +17,7 @@
  */
 
 $storeId = $storeId ?? null;
-$storeName = $storeName ?? 'Penjual';
+$storeName = $storeName ?? 'Seller';
 $variant = $variant ?? 'primary';
 $size = $size ?? 'md';
 $fullWidth = $fullWidth ?? false;
@@ -58,7 +58,7 @@ $btnClass = implode(' ', $btnClasses);
          class="chat-icon">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
-    <span>Chat Penjual</span>
+    <span>Chat Seller</span>
 </a>
 
 <style>

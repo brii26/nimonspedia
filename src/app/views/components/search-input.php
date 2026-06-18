@@ -7,7 +7,7 @@
  * - $id: string - Input ID (default: 'search-input')
  * - $name: string - Input name attribute (default: 'search')
  * - $value: string - Current search value (default: '')
- * - $placeholder: string - Placeholder text (default: 'Cari...')
+ * - $placeholder: string - Placeholder text (default: 'Search...')
  * - $label: string|null - Optional label text
  * - $showButton: bool - Show submit button (default: false, uses icon only)
  */
@@ -15,7 +15,7 @@
 $id = $id ?? 'search-input';
 $name = $name ?? 'search';
 $value = $value ?? '';
-$placeholder = $placeholder ?? 'Cari...';
+$placeholder = $placeholder ?? 'Search...';
 $label = $label ?? null;
 $showButton = $showButton ?? false;
 ?>

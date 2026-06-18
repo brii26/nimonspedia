@@ -20,7 +20,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                     <div class="store-header-info">
                         <h1><?= View::escape($store['store_name']) ?></h1>
                         <p class="description <?= $desc_placeholder ?>">
-                            <?= $description ?? '<i>Toko ini belum memiliki deskripsi.</i>' ?>
+                            <?= $description ?? '<i>This store has no description yet.</i>' ?>
                         </p>
                     </div>
                 </div>
@@ -29,7 +29,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
                     <div class="store-stat">
                         <div class="store-stat-icon">🛍️</div>
                         <div class="store-stat-content">
-                            <p class="store-stat-label">Total Produk</p>
+                            <p class="store-stat-label">Total Products</p>
                             <p class="store-stat-value"><?= View::escape($productsData['total']) ?></p>
                         </div>
                     </div>
@@ -58,7 +58,7 @@ $desc_placeholder = empty(trim(strip_tags($description))) ? 'placeholder' : '';
 
         <section class="store-products-section">
             <header class="store-products-header">
-                <h2>Semua Produk (<?= View::escape($productsData['total']) ?>)</h2>
+                <h2>All Products (<?= View::escape($productsData['total']) ?>)</h2>
             </header>
             
             <div class="store-products-content">

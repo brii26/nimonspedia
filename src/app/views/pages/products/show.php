@@ -6,7 +6,7 @@ $productName = View::escape($product['product_name']);
 $productImage = '/storage/' . View::escape($product['main_image_path'] ?? 'product_images/default-product.svg');
 $storeLink = "/store?id=" . View::escape($product['store_id']);
 $storeName = View::escape($product['store_name']);
-$storeDescription = SanitizerService::sanitizeRichText($product['store_description']) ?? '<i>Toko ini belum memiliki deskripsi.</i>';
+$storeDescription = SanitizerService::sanitizeRichText($product['store_description']) ?? '<i>This store has no description yet.</i>';
 
 $productPrice = $product['price'];
 $stock = (int)$product['stock'];
@@ -32,11 +32,11 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
             
             <div class="product-meta-info">
                 <span>
-                    Toko: <a href="<?= $storeLink ?>" class="store-link"><?= $storeName ?></a>
+                    Store: <a href="<?= $storeLink ?>" class="store-link"><?= $storeName ?></a>
                 </span>
                 <span class="meta-divider">|</span>
                 <span>
-                    Kategori: <?= View::escape($product['categories']) ?>
+                    Category: <?= View::escape($product['categories']) ?>
                 </span>
             </div>
 
@@ -49,7 +49,7 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
             <!-- Deskripsi Toko sudah dipindah ke sidebar -->
 
             <div class="product-description-section">
-                <h2 class="section-title">Deskripsi Produk</h2>
+                <h2 class="section-title">Product Description</h2>
                 <div class="product-description-html">
                     <?= SanitizerService::sanitizeRichText($product['description']) ?>
                 </div>
@@ -168,13 +168,13 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                             <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                             
                             <div class="quantity-selector-wrapper">
-                                <button type="button" class="btn-quantity" id="btn-qty-minus" aria-label="Kurangi jumlah" <?= $isOutOfStock ? 'disabled' : '' ?>>-</button>
+                                <button type="button" class="btn-quantity" id="btn-qty-minus" aria-label="Decrease quantity" <?= $isOutOfStock ? 'disabled' : '' ?>>-</button>
                                 <input type="number" name="quantity" class="quantity-input" id="quantity-input" 
                                        value="1" min="1" 
                                        max="<?= $stock ?>" 
-                                       aria-label="Jumlah"
+                                       aria-label="Quantity"
                                        <?= $isOutOfStock ? 'disabled' : '' ?>>
-                                <button type="button" class="btn-quantity" id="btn-qty-plus" aria-label="Tambah jumlah" <?= $isOutOfStock ? 'disabled' : '' ?>>+</button>
+                                <button type="button" class="btn-quantity" id="btn-qty-plus" aria-label="Increase quantity" <?= $isOutOfStock ? 'disabled' : '' ?>>+</button>
                             </div>
                             
                             <div class="stock-info">
@@ -196,7 +196,7 @@ $checkoutAccess = FeatureFlagService::checkAccess($userId, 'checkout_enabled');
                                     <?= $isOutOfStock ? 'disabled' : '' ?> 
                                     style=<?= $isOutOfStock ? "background-color:" . "#555" : '' ?>
                                 >
-                                    <?= $isOutOfStock ? 'Stok Habis' : '+ Keranjang' ?>
+                                    <?= $isOutOfStock ? 'Out of Stock' : '+ Cart' ?>
                                 </button>
                             </div>
                         </form>

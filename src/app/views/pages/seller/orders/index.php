@@ -32,7 +32,7 @@
     <div id="seller-order-list-container" class="order-card-list">
         <?php if (empty($orders)): ?>
             <div class="empty-state">
-                <p>Tidak ada pesanan <?= $currentStatus ? "dengan status '" . str_replace('_', ' ', $currentStatus) . "'" : '' ?>.</p>
+                <p>No orders <?= $currentStatus ? "dengan status '" . str_replace('_', ' ', $currentStatus) . "'" : '' ?>.</p>
             </div>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>

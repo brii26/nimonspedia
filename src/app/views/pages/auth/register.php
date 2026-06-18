@@ -105,7 +105,7 @@
                     <label for="input_file">Input Logo</label>
                     <input type="file" id="input_file" name="store_logo" accept="image/*">
                     <small class="error-message" id="input_file-error" hidden></small>
-                    <small>Opsional. Tipe: jpg, png, webp. Maks 2MB.</small>
+                    <small>Optional. Type: jpg, png, webp. Max 2MB.</small>
                 </div>
                 <div class="form-group">
                     <label for="store_description">Store Description</label>

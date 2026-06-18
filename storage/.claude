@@ -1,0 +1,21 @@
+# storage/ — Uploaded Files
+
+## Purpose
+Persistent file storage for user-uploaded content. Mounted into both php and node-server containers.
+
+## Structure
+- storage/products/   Product images uploaded by sellers
+- storage/reviews/    Images attached to buyer reviews
+- storage/stores/     Store logo images
+
+## Access
+- Files served at: /uploads/* → nginx aliases this to /var/www/html/storage/
+- Upload endpoint (Node): POST / with multipart/form-data → saves to /app/public/uploads/ (= ./storage/)
+- Upload endpoint (PHP): FileService.php saves to ./storage/ via $_FILES
+- URL pattern: /uploads/products/filename.jpg, /uploads/stores/logo.png etc.
+
+## Notes
+- chmod -R 777 applied at PHP container start (docker-compose command)
+- node-server volume: ./storage:/app/public/uploads
+- nginx-server volume: ./storage:/var/www/html/storage
+- Nginx serves /uploads/* with 1-year immutable cache (Cache-Control: public, max-age=31536000)

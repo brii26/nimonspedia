@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Monitor error:", err);
                 if (loadingState) loadingState.style.display = 'none';
                 if (emptyState) {
-                    emptyState.textContent = 'Gagal memuat data.';
+                    emptyState.textContent = 'Failed to load data.';
                     emptyState.style.display = 'block';
                 }
             });
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.AppConfirm.ask('U Sure Cancel Auction ??');
                 document.addEventListener('confirm:ok', () => executeCancellation(id), { once: true });
             } else {
-                if (confirm('Batalkan lelang ini?')) executeCancellation(id);
+                if (confirm('Cancel this auction?')) executeCancellation(id);
             }
             return;
         }

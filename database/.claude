@@ -1,0 +1,28 @@
+# database/ — PostgreSQL Initialization
+
+## Purpose
+Contains init.sql which PostgreSQL runs automatically on first container start
+(mounted at /docker-entrypoint-initdb.d/ in docker-compose.yml).
+
+## Tables (init.sql)
+- users             — id, email, password, name, role (ENUM: BUYER/SELLER/ADMIN), created_at
+- stores            — id, user_id (FK→users), name, logo, description
+- categories        — id, name
+- category_items    — product_id + category_id (many-to-many join)
+- products          — id, store_id, name, price, stock, images, description
+- cart_items        — id, user_id, product_id, quantity
+- orders            — id, buyer_id, status ENUM (waiting_approval/approved/rejected/on_delivery/received)
+- order_items       — id, order_id, product_id, quantity, price
+- reviews           — id, order_item_id, user_id, rating, comment
+- review_responses  — seller response to a review
+- review_images     — image paths attached to reviews
+- auctions          — id, product_id, seller_id, start_price, current_price, end_time, status
+- auction_bids      — id, auction_id, bidder_id, amount, created_at
+- chat_rooms        — id, buyer_id, seller_id
+- chat_messages     — id, room_id, sender_id, content, created_at
+- push_subscriptions — Web Push VAPID subscription objects per user
+
+## Notes
+- Only runs on fresh volume. To re-init: `docker compose down -v && docker compose up`
+- Timezone: Asia/Jakarta (set in postgres command and TZ env var)
+- No migrations system — schema changes require manual ALTER or full reinit

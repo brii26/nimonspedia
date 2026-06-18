@@ -11,7 +11,7 @@ $statusClasses = [
 <div class="orders-container">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Detail Pesanan #<?= View::escape($order['order_id']) ?></h3>
+            <h3 class="mb-0">Order Detail #<?= View::escape($order['order_id']) ?></h3>
             <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
                 <?= ucfirst(str_replace('_', ' ', $order['status'])) ?>
             </span>
@@ -20,16 +20,16 @@ $statusClasses = [
             <div class="row">
                 <div class="col-md-6">
                     <div class="section">
-                        <h4>Informasi Pesanan</h4>
-                        <p><strong>Tanggal Pesan:</strong> <?= View::date($order['created_at']) ?></p>
+                        <h4>Order Information</h4>
+                        <p><strong>Order Date:</strong> <?= View::date($order['created_at']) ?></p>
                         <p><strong>Total:</strong> <?= View::currency($order['total_price']) ?></p>
                         <p><strong>Status:</strong> <?= ucfirst(str_replace('_', ' ', $order['status'])) ?></p>
                         <?php if ($order['status'] === 'rejected'): ?>
                             <?php if (!empty($order['reject_reason'])): ?>
-                                <p><strong>Alasan Penolakan:</strong> <?= View::escape($order['reject_reason']) ?></p>
+                                <p><strong>Rejection Reason:</strong> <?= View::escape($order['reject_reason']) ?></p>
                             <?php endif; ?>
 
-                            <p class="text-danger"><strong>Dana Dikembalikan:</strong> 
+                            <p class="text-danger"><strong>Refunded:</strong> 
                                 <span style="font-weight: bold;"><?= View::currency($order['total_price']) ?></span>
                             </p>
                         <?php endif; ?>
@@ -37,20 +37,20 @@ $statusClasses = [
                 </div>
                 <div class="col-md-6">
                     <div class="section">
-                        <h4>Informasi Toko</h4>
-                        <p><strong>Nama Toko:</strong> <?= View::escape($order['store_name']) ?></p>
-                        <p><strong>Alamat Pengiriman:</strong><br><?= nl2br(View::escape($order['buyer_address'] ?? '')) ?></p>
+                        <h4>Store Information</h4>
+                        <p><strong>Nama Store:</strong> <?= View::escape($order['store_name']) ?></p>
+                        <p><strong>Shipping Address:</strong><br><?= nl2br(View::escape($order['buyer_address'] ?? '')) ?></p>
 
                         <?php if ($order['status'] === 'on_delivery' && !empty($order['delivery_time'])): ?>
-                            <p><strong>Estimasi Pengiriman:</strong> <?= View::date($order['delivery_time']) ?></p>
+                            <p><strong>Estimated Delivery:</strong> <?= View::date($order['delivery_time']) ?></p>
                             <?php if (strtotime($order['delivery_time']) <= time()): ?>
                                 <form method="POST" action="/orders/confirm">
                                     <input type="hidden" name="csrf_token" value="<?= View::csrf() ?>">
                                     <input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
-                                    <!-- <button type="submit" class="btn-approve mt-2">Konfirmasi Diterima</button> -->
+                                    <!-- <button type="submit" class="btn-approve mt-2">Confirm Received</button> -->
                                 </form>
                             <?php else: ?>
-                                <p class="text-muted"><small>Anda dapat mengonfirmasi setelah estimasi pengiriman berlalu.</small></p>
+                                <p class="text-muted"><small>You can confirm after the estimated delivery date has passed.</small></p>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
@@ -58,14 +58,14 @@ $statusClasses = [
             </div>
 
             <div class="section mt-4">
-                <h4>Item Pesanan</h4>
+                <h4>Order Items</h4>
                 <div class="table-responsive-stack">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Produk</th>
-                                <th>Harga Satuan</th>
-                                <th>Jumlah</th>
+                                <th>Product</th>
+                                <th>Unit Price</th>
+                                <th>Quantity</th>
                                 <th>Subtotal</th>
                                 <?php if ($order['status'] === 'received'): ?>
                                 <th>Review</th>
@@ -75,7 +75,7 @@ $statusClasses = [
                         <tbody>
                             <?php foreach ($order['items'] as $item): ?>
                                 <tr>
-                                    <td data-label="Produk">
+                                    <td data-label="Product">
                                         <div class="order-item-preview">
                                             <img src="/storage/<?= View::escape($item['main_image_path'] ?? 'product_images/default-product.svg') ?>" 
                                                  alt="<?= View::escape($item['product_name']) ?>" 
@@ -88,9 +88,9 @@ $statusClasses = [
                                         </div>
                                     </td>
                                     
-                                    <td data-label="Harga Satuan"><?= View::currency($item['price_at_order']) ?></td>
+                                    <td data-label="Unit Price"><?= View::currency($item['price_at_order']) ?></td>
                                     
-                                    <td data-label="Jumlah"><?= View::escape($item['quantity']) ?></td>
+                                    <td data-label="Quantity"><?= View::escape($item['quantity']) ?></td>
                                     
                                     <td data-label="Subtotal"><?= View::currency($item['subtotal']) ?></td>
                                     
@@ -151,7 +151,7 @@ $statusClasses = [
     </div>
 
     <div class="text-center mb-4">
-        <a href="/orders" class="btn btn-outline-primary">Kembali ke Daftar Pesanan</a>
+        <a href="/orders" class="btn btn-outline-primary">Back to Orders</a>
     </div>
 </div>
 

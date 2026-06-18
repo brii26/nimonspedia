@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             console.error('Error adding to cart:', error);
-            AppError.show(error.error || 'Gagal menambahkan ke keranjang');
+            AppError.show(error.error || 'Failed to add to cart');
             App.hideLoading(btn);
         });
     });

@@ -8,15 +8,15 @@
         <div class="app-modal-card">
             
             <header class="app-modal-header success">
-                <h2 id="cart-success-title">Berhasil Ditambahkan!</h2>
+                <h2 id="cart-success-title">Added to Cart!</h2>
                 <button type="button" class="app-modal-close" aria-label="Tutup">×</button>
             </header>
             
             <div class="app-modal-body">
-                <p id="cart-success-message">Produk telah berhasil ditambahkan ke keranjang Anda.</p>
+                <p id="cart-success-message">Product has been added to your cart.</p>
                 
                 <?php if (!empty($recommendations)): ?>
-                    <h4 class="recommend-title">Produk Lain yang Mungkin Anda Suka</h4>
+                    <h4 class="recommend-title">You May Also Like</h4>
                     <div class="recommend-grid">
                         <?php foreach ($recommendations as $rec): ?>
                             <a href="/product?id=<?= View::escape($rec['product_id']) ?>" class="recommend-card">
@@ -34,8 +34,8 @@
             </div>
             
             <footer class="app-modal-footer">
-                <button type="button" class="btn btn-secondary app-modal-cancel">Lanjut Belanja</button>
-                <a href="/cart" class="btn btn-primary">Lihat Keranjang</a>
+                <button type="button" class="btn btn-secondary app-modal-cancel">Continue Shopping</button>
+                <a href="/cart" class="btn btn-primary">View Cart</a>
             </footer>
 
         </div>

@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         card.innerHTML = `
             <header class="order-card-header">
-                <span class="order-card-store">Toko: <strong>${escapeHtml(order.store_name || 'N/A')}</strong></span>
+                <span class="order-card-store">Store: <strong>${escapeHtml(order.store_name || 'N/A')}</strong></span>
                 <span class="order-card-date">${formatDate(order.created_at)}</span>
                 <span class="status-badge ${order.status}">${statusLabel}</span>
             </header>
@@ -67,24 +67,24 @@ document.addEventListener('DOMContentLoaded', () => {
                              class="order-item-thumbnail">
                         <div class="order-item-info">
                             <div class="order-item-name">${escapeHtml(firstItem.product_name)}</div>
-                            <div class="order-item-qty">${firstItem.quantity} barang</div>
-                            ${itemsCount > 1 ? `<div class="order-item-more">+${itemsCount - 1} produk lainnya</div>` : ''}
+                            <div class="order-item-qty">${firstItem.quantity} items</div>
+                            ${itemsCount > 1 ? `<div class="order-item-more">+${itemsCount - 1} more products</div>` : ''}
                         </div>
                     </div>
-                ` : '<span style="color: #888; font-size: 0.9rem;">(Produk tidak ditemukan)</span>'}
+                ` : '<span style="color: #888; font-size: 0.9rem;">(Product not found)</span>'}
             </div>
             <footer class="order-card-footer">
                 <div class="order-total">
-                    <span>Total Belanja</span>
+                    <span>Total</span>
                     <strong>${formatCurrency(order.total_price)}</strong>
                 </div>
                 <div class="order-actions">
-                    <a href="/orders/show?id=${order.order_id}" class="btn btn-detail">Lihat Detail</a>
+                    <a href="/orders/show?id=${order.order_id}" class="btn btn-detail">View Detail</a>
                     ${order.status === 'on_delivery' ? `
                         <form action="/orders/confirm-received" method="POST" data-form="confirm-received" style="display: inline;">
                             <input type="hidden" name="csrf_token" value="${getCSRFToken()}">
                             <input type="hidden" name="order_id" value="${order.order_id}">
-                            <button type="submit" class="btn btn-success confirm-received-btn">Konfirmasi Diterima</button>
+                            <button type="submit" class="btn btn-success confirm-received-btn">Confirm Received</button>
                         </form>
                     ` : ''}
                 </div>
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 const statusText = currentStatus !== 'all' ? ` dengan status '${currentStatus}'` : '';
-                orderList.innerHTML = `<div class="empty-state"><p>Tidak ada pesanan${statusText}.</p></div>`;
+                orderList.innerHTML = `<div class="empty-state"><p>No orders${statusText}.</p></div>`;
                 hasMore = false;
             }
 
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } catch (error) {
             console.error('Error fetching orders:', error);
-            orderList.innerHTML = '<div class="empty-state"><p>Gagal memuat pesanan.</p></div>';
+            orderList.innerHTML = '<div class="empty-state"><p>Failed to load orders.</p></div>';
         } finally {
             orderList.style.opacity = '1';
             isLoading = false;
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!submitButton) return;
 
         if (typeof AppConfirm !== 'undefined') {
-            AppConfirm.ask('Apakah Anda yakin sudah menerima pesanan ini?');
+            AppConfirm.ask('Are you sure you have received this order?');
 
             const handleConfirmOk = () => {
                 processConfirmReceived(form, submitButton);
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('confirm:ok', handleConfirmOk, { once: true });
             document.addEventListener('confirm:cancel', handleConfirmCancel, { once: true });
         } else {
-            if (confirm('Apakah Anda yakin sudah menerima pesanan ini?')) {
+            if (confirm('Are you sure you have received this order?')) {
                 processConfirmReceived(form, submitButton);
             }
         }
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 if (typeof App !== 'undefined') {
-                    App.showAlert(result.message || 'Pesanan dikonfirmasi', 'success');
+                    App.showAlert(result.message || 'Order confirmed', 'success');
                 }
                 
                 const orderCard = form.closest('.order-card');
@@ -268,14 +268,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.remove();
             } else {
                 if (typeof App !== 'undefined') {
-                    App.showAlert(result.message || 'Gagal memproses permintaan.', 'error');
+                    App.showAlert(result.message || 'Failed to process request.', 'error');
                     App.hideLoading(submitButton);
                 }
             }
         } catch (error) {
             console.error('Error confirming order:', error);
             if (typeof App !== 'undefined') {
-                App.showAlert('Gagal terhubung ke server.', 'error');
+                App.showAlert('Failed to connect to server.', 'error');
                 App.hideLoading(submitButton);
             }
         }

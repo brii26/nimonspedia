@@ -56,13 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
                          class="order-item-thumbnail">
                     <div class="order-item-info">
                         <div class="order-item-name">${escapeHTML(firstItem.product_name)}</div>
-                        <div class="order-item-qty">${escapeHTML(String(firstItem.quantity))} barang</div>
-                        ${order.items.length > 1 ? `<div class="order-item-more">+${order.items.length - 1} produk lainnya</div>` : ''}
+                        <div class="order-item-qty">${escapeHTML(String(firstItem.quantity))} items</div>
+                        ${order.items.length > 1 ? `<div class="order-item-more">+${order.items.length - 1} more products</div>` : ''}
                     </div>
                 </div>
             `;
         } else {
-            itemsHtml = '<span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Produk tidak ditemukan)</span>';
+            itemsHtml = '<span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Product not found)</span>';
         }
 
         let actionButtons = `
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <article class="order-card" data-order-id="${order.order_id}">
                 <header class="order-card-header">
                     <div>
-                        <span class="order-card-store">Pembeli: <strong>${escapeHTML(order.buyer_name || 'N/A')}</strong></span>
+                        <span class="order-card-store">Buyer: <strong>${escapeHTML(order.buyer_name || 'N/A')}</strong></span>
                         <span class="order-id-display">Order ID: #${escapeHTML(String(order.order_id))}</span>
                     </div>
                     <div id="right-order-header-section">
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="order-card-body">${itemsHtml}</div>
                 <footer class="order-card-footer">
                     <div class="order-total">
-                        <span>Total Belanja</span>
+                        <span>Total</span>
                         <strong>${formatCurrency(order.total_price)}</strong>
                     </div>
                     <div class="order-actions">${actionButtons}</div>
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success && Array.isArray(result.data)) {
                 if (result.data.length === 0) {
                     const statusText = status ? ` dengan status '${status.replace(/_/g, ' ')}'` : '';
-                    orderListContainer.innerHTML = `<div class="empty-state"><p>Tidak ada pesanan${statusText}.</p></div>`;
+                    orderListContainer.innerHTML = `<div class="empty-state"><p>No orders${statusText}.</p></div>`;
                 } else {
                     orderListContainer.innerHTML = result.data.map(buildOrderCardHTML).join('');
                 }
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error reloading orders:', error);
             if (orderListContainer) {
-                orderListContainer.innerHTML = '<div class="empty-state"><p>Gagal memuat daftar pesanan. Coba lagi.</p></div>';
+                orderListContainer.innerHTML = '<div class="empty-state"><p>Failed to load orders. Please try again.</p></div>';
             }
         } finally {
             state.loading = false;
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h4>Informasi Pembeli</h4>
                             <p><strong>Nama:</strong> ${escapeHTML(order.buyer_name || '')}</p>
                             <p><strong>Email:</strong> ${escapeHTML(order.buyer_email || '')}</p>
-                            <p><strong>Alamat:</strong><br>${nl2br(order.buyer_address || '')}</p>
+                            <p><strong>Address:</strong><br>${nl2br(order.buyer_address || '')}</p>
                         </div>
                         <div class="section">
                             <h4>Detail Item</h4>
@@ -305,12 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } else {
-                contentDiv.innerHTML = `<p style="text-align: center; color: red;">Gagal memuat detail pesanan.</p>`;
+                contentDiv.innerHTML = `<p style="text-align: center; color: red;">Failed to load order detail.</p>`;
             }
         })
         .catch(err => {
             console.error('Fetch order detail error:', err);
-            contentDiv.innerHTML = `<p style="text-align: center; color: red;">Terjadi kesalahan: ${err.message}</p>`;
+            contentDiv.innerHTML = `<p style="text-align: center; color: red;">An error occurred: ${err.message}</p>`;
         });
     };
 
@@ -334,16 +334,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const card = orderListContainer.querySelector(`[data-order-id="${orderId}"]`);
                     if (card) card.remove();
                 } else {
-                    AppError.show(result.message || 'Gagal menyetujui pesanan.');
+                    AppError.show(result.message || 'Failed to approve order.');
                 }
             })
             .catch(err => {
                 console.error('Approve order error:', err);
-                AppError.show('Terjadi kesalahan jaringan saat menyetujui.');
+                AppError.show('A network error occurred while approving.');
             });
         };
 
-        AppConfirm.ask('Anda yakin ingin menyetujui (approve) pesanan ini?');
+        AppConfirm.ask('Are you sure you want to approve this order?');
         document.addEventListener('confirm:ok', onConfirm, { once: true });
     };
 

@@ -7,14 +7,14 @@ $totalPages = $totalPages ?? 1;
 <div class="order-card-list">
     <?php if (empty($orders)): ?>
         <div class="empty-state">
-            <p>Tidak ada pesanan <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
+            <p>No orders <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
         </div>
     <?php else: ?>
         <?php foreach ($orders as $order): ?>
             <article class="order-card">
 			<header class="order-card-header">
 				<div>
-					<span class="order-card-store">Pembeli: <strong><?= View::escape($order['buyer_name'] ?? 'N/A') ?></strong></span>
+					<span class="order-card-store">Buyer: <strong><?= View::escape($order['buyer_name'] ?? 'N/A') ?></strong></span>
 					<span class="order-id-display">Order ID: #<?= View::escape($order['order_id']) ?></span>
 				</div>
 				<div id="right-order-header-section">
@@ -34,20 +34,20 @@ $totalPages = $totalPages ?? 1;
                                  class="order-item-thumbnail">
                             <div class="order-item-info">
                                 <div class="order-item-name"><?= View::escape($firstItem['product_name']) ?></div>
-                                <div class="order-item-qty"><?= View::escape($firstItem['quantity']) ?> barang</div>
+                                <div class="order-item-qty"><?= View::escape($firstItem['quantity']) ?> items</div>
                                 <?php if (count($order['items']) > 1): ?>
-                                    <div class="order-item-more">+<?= (count($order['items']) - 1) ?> produk lainnya</div>
+                                    <div class="order-item-more">+<?= (count($order['items']) - 1) ?> more products</div>
                                 <?php endif; ?>
                             </div>
                         </div>
                     <?php else: ?>
-                        <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Produk tidak ditemukan)</span>
+                        <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Product not found)</span>
                     <?php endif; ?>
                 </div>
 
                 <footer class="order-card-footer">
                     <div class="order-total">
-                        <span>Total Belanja</span>
+                        <span>Total</span>
                         <strong><?= View::currency($order['total_price']) ?></strong>
                     </div>
                     <div class="order-actions">

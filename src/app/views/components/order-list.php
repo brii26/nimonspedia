@@ -7,17 +7,17 @@
 							<input type="hidden" name="csrf_token" value="<?= Auth::csrfToken() ?>">
 							<input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
 							<button type="submit" class="btn btn-success confirm-received-btn">
-								Konfirmasi Diterima
+								Confirm Received
 							</button>
 						</form>mpty($orders)): ?>
         <div class="empty-state">
-            <p>Tidak ada pesanan <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
+            <p>No orders <?= $currentStatus !== 'all' ? "dengan status '$currentStatus'" : '' ?>.</p>
         </div>
     <?php else: ?>
         <?php foreach ($orders as $order): ?>
             <article class="order-card">
                 <header class="order-card-header">
-                    <span class="order-card-store">Toko: <strong><?= View::escape($order['store_name'] ?? 'N/A') ?></strong></span>
+                    <span class="order-card-store">Store: <strong><?= View::escape($order['store_name'] ?? 'N/A') ?></strong></span>
                     <span class="order-card-date"><?= View::date($order['created_at'], 'd M Y') ?></span>
                     <span class="status-badge <?= htmlspecialchars($order['status']) ?>">
                         <?= ucfirst(str_replace('_', ' ', htmlspecialchars($order['status']))) ?>
@@ -33,31 +33,31 @@
                                  class="order-item-thumbnail">
                             <div class="order-item-info">
                                 <div class="order-item-name"><?= View::escape($firstItem['product_name']) ?></div>
-                                <div class="order-item-qty"><?= View::escape($firstItem['quantity']) ?> barang</div>
+                                <div class="order-item-qty"><?= View::escape($firstItem['quantity']) ?> items</div>
                                 <?php if (count($order['items']) > 1): ?>
-                                    <div class="order-item-more">+<?= (count($order['items']) - 1) ?> produk lainnya</div>
+                                    <div class="order-item-more">+<?= (count($order['items']) - 1) ?> more products</div>
                                 <?php endif; ?>
                             </div>
                         </div>
                     <?php else: ?>
-                        <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Produk tidak ditemukan)</span>
+                        <span style="color: #888; font-size: 0.9rem; padding: 1rem 0;">(Product not found)</span>
                     <?php endif; ?>
                 </div>
                 <footer class="order-card-footer">
 					<div class="order-total">
-						<span>Total Belanja</span>
+						<span>Total</span>
 						<strong><?= View::currency($order['total_price']) ?></strong>
 					</div>
 					<div class="order-actions">
 						<a href="/orders/show?id=<?= View::escape($order['order_id']) ?>" class="btn btn-detail">
-							Lihat Detail
+							View Detail
 						</a>
 						<?php if ($order['status'] === 'on_delivery'): ?>
 							<form action="/orders/confirm-received" method="POST" data-form="confirm-received" style="display: inline;">
 								<input type="hidden" name="csrf-token" value="<?= Auth::csrfToken() ?>">
 								<input type="hidden" name="order_id" value="<?= View::escape($order['order_id']) ?>">
 								<button type="submit" class="btn btn-success confirm-received-btn">
-									Konfirmasi Diterima
+									Confirm Received
 								</button>
 							</form>
 						<?php endif; ?>
